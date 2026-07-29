@@ -1,0 +1,56 @@
+{
+    "health":{
+        "health": 100,
+        "max_health": 100,
+        "heal_amount": 30,
+        "heal_time": 1,
+        "heal_movement_speed_mul": 0.25
+    },
+    "speed":{
+        "speed": 300
+    },
+    "dodge":{
+        "dodge_speed_mul": 1.5,
+        "dodge_duration": 0.625,
+        "dodge_invuln_window_start": 0.2,
+        "dodge_invuln_window_end": 0.4,
+        "dodge_cooldown": 0.25
+    },
+    "spoon":{
+        "spoon_damages":[
+            {
+                "type": "Bludgeoning",
+                "value": 55
+            }
+        ],
+        "spoon_damage_mul": 1,
+        "spoon_swing_duration":0.625,
+        "spoon_hurt_window_start": 0.125,
+        "spoon_hurt_window_end": 0.25,
+        "spoon_recovery_time": 0.25
+    },
+    "sling":{
+        "sling_damages":[
+            {
+                "type": "Bludgeoning",
+                "value": 30
+            }
+        ],
+        "sling_bullet_speed": 600,
+        "sling_damage_mul": 1,
+        "sling_movement_speed_mul": 0.5,
+        "sling_charge_time": 0.75
+    },
+    "inventory":[
+        {
+            "type": "SlingBullet",
+            "quantity": 0,
+            "capacity": 8
+        },
+        {
+            "type": "Root",
+            "quantity": 0,
+            "capacity": 4
+        }
+    ]
+}

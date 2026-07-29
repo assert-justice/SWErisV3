@@ -1,0 +1,60 @@
+{
+    "base":{
+        "base_filename": "hsm_bars_base",
+        "x": 0,
+        "y": 0
+    },
+    "bar":{
+        "fill_x": 0,
+        "fill_y": 2,
+        "segment_x": 1,
+        "segment_y": 0,
+        "segment_length_offset": -2,
+        "cap_x": 1,
+        "cap_y": 1
+    },
+    "item_slot":{
+        "frame_filename": "item_slot",
+        "icons_filename": "icons",
+        "digits_filename": "digits_sheet",
+        "icon_x": 2,
+        "icon_y": 2,
+        "tens_digit_x": 24,
+        "tens_digit_y": 27,
+        "ones_digit_x": 29,
+        "ones_digit_y": 27
+    },
+    "health":{
+        "fill_filename": "health_bar_fill",
+        "cap_filename": "health_bar_cap",
+        "segment_filename": "health_bar_segment",
+        "x": 16,
+        "y": 3
+    },
+    "stamina":{
+        "fill_filename": "stam_bar_fill",
+        "cap_filename": "stam_bar_cap",
+        "segment_filename": "stam_bar_segment",
+        "x": 16,
+        "y": 15
+    },
+    "mana":{
+        "fill_filename": "mana_bar_fill",
+        "cap_filename": "mana_bar_cap",
+        "segment_filename": "mana_bar_segment",
+        "x": 16,
+        "y": 27
+    },
+    "root": {
+        "x": 140,
+        "y": 2
+    },
+    "ammo": {
+        "x": 184,
+        "y": 2
+    },
+    "item": {
+        "x": 228,
+        "y": 2
+    }
+}

@@ -1,0 +1,86 @@
+{
+    "buttons":{
+        "attack": {
+            "buffer": 0.25,
+            "mouse_buttons":["Left"],
+            "gamepad_buttons": ["West","RightShoulder"]
+        },
+        "fire": {
+            "mouse_buttons":["Left"],
+            "gamepad_buttons": ["West","RightShoulder"]
+        },
+        "charge": {
+            "mouse_buttons":["Right"],
+            "gamepad_axes_high":["RightTrigger"]
+        },
+        "dodge": {
+            "buffer": 0.25,
+            "keys":["Space"],
+            "gamepad_buttons":["East", "LeftShoulder"]
+        },
+        "pause":{
+            "keys": ["Escape"],
+            "gamepad_buttons": ["Start"]
+        },
+        "ui_confirm":{
+            "keys": ["Enter", "Space"],
+            "gamepad_buttons": ["South"]
+        },
+        "ui_cancel":{
+            "keys": ["Escape"],
+            "gamepad_buttons": ["East"]
+        },
+        "ui_left":{
+            "pulse_cooldown": 0.25,
+            "pulse_delay": 0.2,
+            "keys": ["A","Left"],
+            "gamepad_buttons": ["DpadLeft"],
+            "gamepad_axes_low":["LeftX"]
+        },
+        "ui_right":{
+            "pulse_cooldown": 0.25,
+            "pulse_delay": 0.2,
+            "keys": ["D","Right"],
+            "gamepad_buttons": ["DpadRight"],
+            "gamepad_axes_high":["LeftX"]
+        },
+        "ui_up":{
+            "pulse_cooldown": 0.25,
+            "pulse_delay": 0.2,
+            "keys": ["W","Up"],
+            "gamepad_buttons": ["DpadUp"],
+            "gamepad_axes_low":["LeftY"]
+        },
+        "ui_down":{
+            "pulse_cooldown": 0.25,
+            "pulse_delay": 0.2,
+            "keys": ["S","Down"],
+            "gamepad_buttons": ["DpadDown"],
+            "gamepad_axes_high":["LeftY"]
+        }
+    },
+    "axes2":{
+        "move":{
+            "deadzone": 0.2,
+            "x":{
+                "gamepad_axes": ["LeftX"],
+                "neg_keys": ["A"],
+                "pos_keys": ["D"]
+            },
+            "y":{
+                "gamepad_axes": ["LeftY"],
+                "neg_keys": ["W"],
+                "pos_keys": ["S"]
+            }
+        },
+        "aim":{
+            "deadzone": 0.2,
+            "x":{
+                "gamepad_axes": ["RightX"]
+            },
+            "y":{
+                "gamepad_axes": ["RightY"]
+            }
+        }
+    }
+}

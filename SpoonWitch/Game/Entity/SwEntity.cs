@@ -1,0 +1,148 @@
+using System.Text.Json.Nodes;
+using Eris;
+using ErisMath;
+using Prion.Node;
+using Prion.Parser;
+using SpoonWitch.ByteStream;
+using SpoonWitch.Game.Entity.Component;
+using SpoonWitch.Game.Entity.Component.Sprite;
+
+namespace SpoonWitch.Game.Entity;
+
+public abstract class SwEntity
+{
+    private readonly Dictionary<(Type,string), SwComponent> ComponentLookup = [];
+    private readonly List<SwComponent> Components = [];
+    abstract protected byte GetTypeId{get;}
+    public int Id{get;}
+    private int _CurrentHeadIndex = -1;
+    public int CurrentHeadIndex{get => _CurrentHeadIndex;}
+    private int _LastHeadIndex = -1;
+    public int LastHeadIndex{get => _LastHeadIndex;}
+    public ErVec2 Position;
+    public ErVec2 Velocity;
+    public bool Visible = true;
+    public virtual ErVec2 Size => new(32,32);
+    public virtual uint Mask => 1;
+    protected SwComponent RegisterComponent(SwComponent component)
+    {
+        // Note: this method should only really be used from the entity's constructor
+        // Todo: make improper use throw an exception? or log a warning?
+        if(ComponentLookup.TryAdd((component.GetType(), component.Name), component)) Components.Add(component);
+        else ErEngine.LogError("Failed to register component of name '", component.Name, "' and type '", component.GetType(), "'.");
+        return component;
+    }
+    public bool TryGetComponent<T>(string name, out T component) where T: SwComponent
+    {
+        component = null!;
+        if(!ComponentLookup.TryGetValue((typeof(T),name), out var comp)) return false;
+        if(comp is not T c) return false;
+        component = c;
+        return true;
+    }
+    /* Fields:
+    type id
+    last head index
+    current head index
+    position
+    velocity
+    visible
+    */
+    // public virtual void Ready(){}
+    public virtual void Read(SwByteStream byteStream)
+    {
+        // read type byte
+        if(!byteStream.TryReadByte(out _)) throw new Exception("no type id");
+        if(!byteStream.TryReadI32(out _CurrentHeadIndex)) throw new Exception("oops2");
+        if(!byteStream.TryReadI32(out _LastHeadIndex)) throw new Exception("oops3");
+        // ErEngine.Log("head: ", byteStream.Head, " length: ", byteStream.Length, " remaining: ", byteStream.BytesRemaining());
+        if(!byteStream.TryReadVec2(out Position)) throw new Exception("oops4");
+        if(!byteStream.TryReadVec2(out Velocity)) throw new Exception("oops5");
+        if(!byteStream.TryReadBool(out Visible)) throw new Exception("oops6");
+        // ErEngine.Log("read vis: ", _Visible);
+        // read components
+        foreach (var item in Components)
+        {
+            item.Read(byteStream);
+        }
+    }
+    public virtual void Write(SwByteStream byteStream)
+    {
+        int head = byteStream.Head;
+        // write type byte
+        byteStream.WriteByte(GetTypeId);
+        // write head position -1 as current head index
+        byteStream.WriteI32(head);
+        // write current head index as last head index
+        // Note: if it is negative, that means there is no valid last head index. this is relevant for drawing.
+        byteStream.WriteI32(_CurrentHeadIndex);
+        if (Velocity.IsNonzero())
+        {
+            // queue move
+            SwGame.EnqueueMove(Id,Mask,Size,byteStream.Head);
+        }
+        byteStream.WriteVec2(Position);
+        byteStream.WriteVec2(Velocity);
+        byteStream.WriteBool(Visible);
+        // write components
+        foreach (var item in Components)
+        {
+            item.Write(byteStream);
+        }
+    }
+    // protected virtual void Ready(){}
+    public virtual void Update()
+    {
+        foreach (var comp in Components)
+        {
+            comp.Update();
+        }
+    }
+    public void Draw(SwEntity nextState)
+    {
+        if(!Visible) return;
+        if(nextState.GetType() != GetType()) throw new Exception("type mismatch");
+        if(nextState.Components.Count != Components.Count) throw new Exception("component mismatch");
+        for (int idx = 0; idx < Components.Count; idx++)
+        {
+            var comp = Components[idx];
+            var nextComp = nextState.Components[idx];
+            comp.Draw(nextComp);
+        }
+        DrawImpl(nextState);
+    }
+    public abstract SwEntity New();
+    protected virtual void DrawImpl(SwEntity nextState){}
+    protected bool TryLoadSprites(string filepath)
+    {
+        // Todo: cache filepaths
+        PriNode data;
+        try
+        {
+            string text = File.ReadAllText(filepath);
+            var json = JsonNode.Parse(text);
+            data = PriParser.Parser.JsonToPrion(json);
+        }
+        catch
+        {
+            return false;
+        }
+        if(!data.Get("sprites").TryAs(out PriDict sprites))
+        {
+            return ErEngine.LogError("not a dictionary");
+        }
+        foreach (var (name, spriteData) in sprites.Data)
+        {
+            if(!spriteData.TryAs(out PriDict spriteDict))
+            {
+                return ErEngine.LogError("bad sprite data");
+            }
+            if(!SwSprite.TryFromData(filepath, spriteDict, this, name, out var sprite))
+            {
+                return ErEngine.LogError("failed to create sprite");
+            }
+            RegisterComponent(sprite);
+        }
+        return true;
+    }
+}

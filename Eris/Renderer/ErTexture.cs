@@ -1,0 +1,106 @@
+using ErisMath;
+using SDL3;
+
+namespace Eris.Renderer;
+
+public class ErTexture
+{
+    public readonly nint Handle;
+    public readonly ErVec2 Size;
+    private ErTexture(nint handle)
+    {
+        Handle = handle;
+        SDL.GetTextureSize(Handle, out float w, out float h);
+        Size = new(w, h);
+    }
+    public static ErTexture GetRenderTexture(int width, int height)
+    {
+        if(ErEngine.Renderer is null) throw new Exception("Renderer not initialized");
+        nint handle = SDL.CreateTexture(ErEngine.Renderer.Handle, SDL.PixelFormat.RGBA8888, SDL.TextureAccess.Target, width, height);
+        ErEngine.Renderer.TextureManager.AddTextureHandle(handle);
+        return new(handle);
+    }
+    public static ErTexture GetColoredTexture(int width, int height, ErColor color)
+    {
+        if(ErEngine.Renderer is null) throw new Exception("Renderer not initialized");
+        nint surface = SDL.CreateSurface(width, height, SDL.PixelFormat.RGBA8888);
+        SDL.Rect rect = new()
+        {
+            X = 0,
+            Y = 0,
+            W = width,
+            H = height,
+        };
+        uint c = SDL.MapSurfaceRGBA(surface, color.R, color.G, color.B, color.A);
+        SDL.FillSurfaceRect(surface, rect, c);
+        nint handle = SDL.CreateTextureFromSurface(ErEngine.Renderer.Handle, surface);
+        ErEngine.Renderer.TextureManager.AddTextureHandle(handle);
+        SDL.DestroySurface(surface);
+        return new(handle);
+    }
+    public static bool TryFromPath(string filepath, out ErTexture texture)
+    {
+        texture = default!;
+        if(ErEngine.Renderer is null) return false;
+        if(!ErEngine.Renderer.TextureManager.TryGetTexture(filepath, out nint handle)) return false;
+        texture = new(handle);
+        return true;
+    }
+    public static bool TryFromPath(string filepath, out ErTexture texture, out nint surfaceHandle)
+    {
+        texture = default!;
+        surfaceHandle = default;
+        if(ErEngine.Renderer is null) return false;
+        if(!ErEngine.Renderer.TextureManager.TryGetTexture(filepath, out nint textureHandle, out surfaceHandle)) return false;
+        texture = new(textureHandle);
+        return true;
+    }
+    public static bool TryFromPath(string filepath, nint palletHandle, out ErTexture texture)
+    {
+        texture = default!;
+        if(ErEngine.Renderer is null) return false;
+        if(!ErEngine.Renderer.TextureManager.TryGetTextureWithPallet(filepath, palletHandle, out nint handle)) return false;
+        texture = new(handle);
+        return true;
+    }
+    public void Draw(ErVec2 position,
+        ErVec2? size = null,
+        ErRect2? sourceRect = null,
+        ErVec2? origin = null,
+        double angle = 0,
+        bool hFlip = false,
+        bool vFlip = false)
+    {
+        size ??= Size;
+        ErRect2 destRect = new(position, size.Value);
+        sourceRect ??= new(ErVec2.Zero, size.Value);
+        origin ??= ErVec2.Zero;
+        // if(origin is null) origin = ErVec2.Zero;
+        // else origin *= ErEngine.Renderer.ViewportTransform.Size;
+        // destRect = destRect.TranslateAndScale(ErEngine.Renderer.ViewportTransform).Translate(-origin.Value);
+        destRect = destRect.Translate(-ErEngine.Renderer.ViewportTransform.Position-origin.Value);
+        // ErEngine.Log("dest rect: ", destRect);
+        // ErEngine.Log("src rect: ", sourceRect);
+        SDL.FlipMode flipMode = SDL.FlipMode.None;
+        if(hFlip) flipMode |= SDL.FlipMode.Horizontal;
+        if(vFlip) flipMode |= SDL.FlipMode.Vertical;
+        SDL.RenderTextureRotated(ErEngine.Renderer.Handle, 
+            Handle, 
+            sourceRect.Value.ToSdlRect(), 
+            destRect.ToSdlRect(),
+            ErMath.RadToDeg(angle),
+            origin.Value.ToSdlPoint(),
+            flipMode);
+    }
+    public void DrawFullscreen()
+    {
+        var viewSize = ErEngine.Renderer.ViewportTransform.Size;
+        double xScale = viewSize.X / Size.X;
+        double yScale = viewSize.Y / Size.Y;
+        double scale = xScale < yScale ? xScale : yScale;
+        ErVec2 size = Size * scale;
+        ErRect2 destRect = new(viewSize * 0.5 - size * 0.5, size);
+        ErRect2 srcRect = new(ErVec2.Zero,Size);
+        SDL.RenderTexture(ErEngine.Renderer.Handle, Handle, srcRect.ToSdlRect(), destRect.ToSdlRect());
+    }
+}
