@@ -36,7 +36,7 @@ public class SwApp : IErApp
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
         Game = new();
         // Game.Init();
-        Game.AddEntity(new SwPlayer());
+        Game.AddEntity(SwPlayer.Primary);
         SwGame.TryLoadMap("game_data/map/demo_map.ldtk");
     }
     public void Update()

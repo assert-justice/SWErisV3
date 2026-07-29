@@ -5,7 +5,7 @@ using Prion.Node;
 using Prion.Parser;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Game.Entity;
-using SpoonWitch.Game.Entity.Actor.Player;
+// using SpoonWitch.Game.Entity.Actor.Player;
 using SpoonWitch.Game.Map;
 using SpoonWitch.UI.Hud;
 
@@ -22,10 +22,9 @@ public class SwGame
     private static SwMap Map = new();
     private static readonly Queue<SwMove> MoveQueue = [];
     private readonly Dictionary<byte, (SwEntity,SwEntity)> Prototypes = [];
-    private readonly Dictionary<Type, (SwEntity,SwEntity)> TypeLookup = [];
-    private readonly Queue<SwEntity> NewEntities = [];
     private SwByteStream LastStream = new();
     private SwByteStream NextStream = new();
+    private readonly SwByteStream NewEntities = new();
     private SwRoom? CurrentRoom;
     private readonly SwHud Hud = new();
     private static readonly SwCamera Camera = new();
@@ -44,61 +43,50 @@ public class SwGame
     }
     public SwGame()
     {
-        // Camera = new(DrawScene);
         Camera.DrawFn = DrawScene;
     }
-    // public void Init()
-    // {
-    //     AddEntity(new SwPlayer());
-    // }
     public static void EnqueueMove(int id, uint mask, ErVec2 size, int head)
     {
         MoveQueue.Enqueue(new(){Id=id,Mask=mask,Size=size,Head=head});
     }
-    // public static void MoveAndSlide(int id, uint mask, ErVec2 size, ref ErVec2 position, ref ErVec2 velocity)
-    // {
-    //     ErVec2 vel = velocity * DeltaTime;
-    //     Map.CollisionLayer.MoveAndSlide(id, mask, size, ref position, ref vel);
-    //     velocity = vel / DeltaTime;
-    // }
     public static void AddCollider(SwCollisionLayer.SwEntRect entRect)
     {
         Map.CollisionLayer.AddCollider(entRect);
+    }
+    private bool TryReadEnt(SwByteStream bs, out SwEntity entity)
+    {
+        entity = default!;
+        if(!bs.TryPeekByte(out byte typeId)) return false;
+        if(!Prototypes.TryGetValue(typeId, out var pair))
+        {
+            return ErEngine.LogError("Unregistered type id '", typeId, "'.");
+        }
+        entity = pair.Item1;
+        entity.Read(bs);
+        return true;
     }
     public void Update()
     {
         HandleRooms();
         Camera.Update();
-        // SwCollisionLayer.SwEntRect temp = new(){Id = 1, Mask = 1, Rect = new(256,512-128+32,128,128)};
         Map.CollisionLayer.ClearColliders();
-        // Map.CollisionLayer.AddCollider(temp);
         (LastStream,NextStream) = (NextStream,LastStream);
         LastStream.Reset();
         NextStream.Clear();
-        while(LastStream.BytesRemaining() > 0)
+        while(TryReadEnt(LastStream, out var entity))
         {
-            LastStream.TryPeekByte(out byte typeId);
-            if(!Prototypes.TryGetValue(typeId, out var pair))
-            {
-                ErEngine.LogError("Unregistered type id '", typeId, "'.");
-                continue;
-            }
-            var (ent,_) = pair;
-            ent.Read(LastStream);
-            ent.Update();
-            ent.Write(NextStream);
+            entity.Update();
+            entity.Write(NextStream);
         }
-        while(NewEntities.TryDequeue(out var entity))
-        // foreach (var entity in NewEntities)
+        if(NewEntities.Head > 0)
         {
-            // init entity
-            if(!TypeLookup.TryGetValue(entity.GetType(), out var pair))
+            NewEntities.Reset();
+            while(TryReadEnt(NewEntities, out var entity))
             {
-                pair = (entity, entity.New());
-                TypeLookup.Add(entity.GetType(), pair);
-                Prototypes.Add(0, pair);
+                entity.Ready();
+                entity.Write(NextStream);
             }
-            pair.Item1.Write(NextStream);
+            NewEntities.Clear();
         }
         // Handle moves
         while(MoveQueue.TryDequeue(out var move))
@@ -124,7 +112,6 @@ public class SwGame
     }
     private void HandleRooms()
     {
-        // if(CurrentRoom is null) return;// Camera.UseBounds = false;
         if (CurrentRoom is not null && CurrentRoom.RectPx.Contains(PlayerPos)){}
         else if(!Map.TryGetRoom(PlayerPos, out var room))
         {
@@ -160,9 +147,14 @@ public class SwGame
             lastEnt.Draw(nextEnt);
         }
     }
-    public void AddEntity(SwEntity entity)
+    public void AddEntity<T>(T entity) where T: SwEntity,ISwEntity<T>
     {
-        NewEntities.Enqueue(entity);
+        if(!Prototypes.TryGetValue(T.TypeId, out _))
+        {
+            var pair = (T.Primary,T.Secondary);
+            Prototypes.Add(T.TypeId, pair);
+        }
+        entity.Write(NewEntities);
     }
     public static bool TryLoadMap(string filepath)
     {
@@ -179,12 +171,6 @@ public class SwGame
         }
         if(!SwMap.TryFromData(filepath, data, out var map)) return ErEngine.LogWarning("failed to load map '", filepath, "'.");
         Map = map;
-        // Camera.SnapToPosition()
-        // if(map.TryGetRoom(new(32,32), out var room))
-        // {
-        //     Camera.UseBounds = true;
-        //     Camera.SetBounds(room.RectPx);
-        // }
         return true;
     }
 }

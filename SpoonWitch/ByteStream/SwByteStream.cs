@@ -70,6 +70,21 @@ public class SwByteStream
         Reserve(values.Length);
         WriteBytesUnchecked(values);
     }
+    public void Extend(SwByteStream byteStream)
+    {
+        Reserve(byteStream.BytesRemaining());
+        while(byteStream.TryReadByte(out byte b)) WriteByte(b);
+    }
+    public void Extend(SwByteStream byteStream, int length)
+    {
+        Reserve(length);
+        for (int idx = 0; idx < length; idx++)
+        {
+            if(!byteStream.TryReadByte(out var b)) return;
+            WriteByte(b);
+        }
+        // while(byteStream.TryReadByte(out byte b)) WriteByte(b);
+    }
     public void WriteBool(bool value)
     {
         WriteByte((byte)(value ? 1 : 0));

@@ -34,13 +34,11 @@ public abstract class SwEntity
         else ErEngine.LogError("Failed to register component of name '", component.Name, "' and type '", component.GetType(), "'.");
         return component;
     }
-    public bool TryGetComponent<T>(string name, out T component) where T: SwComponent
+    public virtual void Ready()
     {
-        component = null!;
-        if(!ComponentLookup.TryGetValue((typeof(T),name), out var comp)) return false;
-        if(comp is not T c) return false;
-        component = c;
-        return true;
+        _Id = SwApp.GetNextId();
+        _CurrentHeadIndex = -1;
+        _LastHeadIndex = -1;
     }
     /* Fields:
     type id
@@ -95,10 +93,6 @@ public abstract class SwEntity
             item.Write(byteStream);
         }
     }
-    public virtual void Ready()
-    {
-        _Id = SwApp.GetNextId();
-    }
     // public virtual bool TryHandleCommand(SwCommand command)
     // {
     //     return false;
@@ -124,7 +118,15 @@ public abstract class SwEntity
         }
         DrawImpl(nextState);
     }
-    public abstract SwEntity New();
+    public bool TryGetComponent<T>(string name, out T component) where T: SwComponent
+    {
+        component = null!;
+        if(!ComponentLookup.TryGetValue((typeof(T),name), out var comp)) return false;
+        if(comp is not T c) return false;
+        component = c;
+        return true;
+    }
+    // public abstract SwEntity New();
     protected virtual void DrawImpl(SwEntity nextState){}
     protected bool TryLoadSprites(string filepath)
     {

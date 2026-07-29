@@ -53,8 +53,8 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         // ErEngine.Log("ft: ", ft, " ftr: ", ftr, " weight: ", weight);
         // Texture.Draw(ErMath.Lerp(Position, nextState.Position, SwGame.FrameProgress));
     }
-    public override SwEntity New()
-    {
-        return new SwPlayer();
-    }
+    // public override SwEntity New()
+    // {
+    //     return new SwPlayer();
+    // }
 }
