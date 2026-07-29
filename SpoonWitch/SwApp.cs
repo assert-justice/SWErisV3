@@ -5,6 +5,7 @@ using Eris.Renderer;
 using ErisMath;
 using Prion.Node;
 using Prion.Parser;
+using SpoonWitch.Command;
 using SpoonWitch.Game;
 using SpoonWitch.Game.Entity.Actor.Player;
 
@@ -16,8 +17,9 @@ public class SwApp : IErApp
     public const int INTERNAL_HEIGHT = 360;
     public const int HUD_HEIGHT = 40;
     private SwGame? Game;
-    private int NextId;
+    private static int NextId;
     private ErTexture RenderTexture;
+    public static readonly SwCommandStore CommandStore = new();
     public static int Main()
     {
         SwApp app = new();
@@ -40,6 +42,7 @@ public class SwApp : IErApp
     public void Update()
     {
         Game?.Update();
+        CommandStore.Flush();
     }
     public void Draw()
     {
@@ -52,7 +55,7 @@ public class SwApp : IErApp
     {
         //
     }
-    public int GetNextId()
+    public static int GetNextId()
     {
         int id = NextId;
         // Todo: check for overflow

@@ -4,6 +4,7 @@ using ErisMath;
 using Prion.Node;
 using Prion.Parser;
 using SpoonWitch.ByteStream;
+using SpoonWitch.Command;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.Sprite;
 
@@ -14,7 +15,8 @@ public abstract class SwEntity
     private readonly Dictionary<(Type,string), SwComponent> ComponentLookup = [];
     private readonly List<SwComponent> Components = [];
     abstract protected byte GetTypeId{get;}
-    public int Id{get;}
+    private int _Id;
+    public int Id => _Id;
     private int _CurrentHeadIndex = -1;
     public int CurrentHeadIndex{get => _CurrentHeadIndex;}
     private int _LastHeadIndex = -1;
@@ -53,6 +55,8 @@ public abstract class SwEntity
     {
         // read type byte
         if(!byteStream.TryReadByte(out _)) throw new Exception("no type id");
+        // if()
+        if(!byteStream.TryReadI32(out _Id)) throw new Exception("jerkbag");
         if(!byteStream.TryReadI32(out _CurrentHeadIndex)) throw new Exception("oops2");
         if(!byteStream.TryReadI32(out _LastHeadIndex)) throw new Exception("oops3");
         // ErEngine.Log("head: ", byteStream.Head, " length: ", byteStream.Length, " remaining: ", byteStream.BytesRemaining());
@@ -71,7 +75,8 @@ public abstract class SwEntity
         int head = byteStream.Head;
         // write type byte
         byteStream.WriteByte(GetTypeId);
-        // write head position -1 as current head index
+        byteStream.WriteI32(_Id);
+        // write head position as current head index
         byteStream.WriteI32(head);
         // write current head index as last head index
         // Note: if it is negative, that means there is no valid last head index. this is relevant for drawing.
@@ -90,9 +95,17 @@ public abstract class SwEntity
             item.Write(byteStream);
         }
     }
-    // protected virtual void Ready(){}
+    public virtual void Ready()
+    {
+        _Id = SwApp.GetNextId();
+    }
+    // public virtual bool TryHandleCommand(SwCommand command)
+    // {
+    //     return false;
+    // }
     public virtual void Update()
     {
+        // SwApp.CommandStore.GetCommands()
         foreach (var comp in Components)
         {
             comp.Update();
