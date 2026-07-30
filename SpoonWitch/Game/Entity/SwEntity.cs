@@ -26,7 +26,9 @@ public abstract class SwEntity
     public bool Visible = true;
     public virtual ErVec2 Size => new(32,32);
     public virtual uint Mask => 1;
-    protected readonly SwCommandHandler CommandHandler = new(SwApp.CommandStore);
+    public bool IsFreeQueued{get; private set;}
+    // protected readonly SwCommandHandler CommandHandler = new(SwApp.CommandStore);
+    // private static readonly Dictionary<>
     protected SwComponent RegisterComponent(SwComponent component)
     {
         // Note: this method should only really be used from the entity's constructor
@@ -57,8 +59,10 @@ public abstract class SwEntity
             item.Read(byteStream);
         }
     }
+    protected virtual void HandleCommands(){}
     public virtual void Write(SwByteStream byteStream)
     {
+        if(IsFreeQueued) return;
         int head = byteStream.Head;
         // write type byte
         byteStream.WriteByte(GetTypeId);
@@ -84,7 +88,9 @@ public abstract class SwEntity
     }
     public virtual void Update()
     {
-        CommandHandler.Dispatch();
+        // CommandHandler.Dispatch();
+        IsFreeQueued = false;
+        HandleCommands();
         foreach (var comp in Components)
         {
             comp.Update();
