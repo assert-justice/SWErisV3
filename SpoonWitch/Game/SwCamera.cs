@@ -11,19 +11,10 @@ public class SwCamera
     public double Speed = 1200;
     public Action DrawFn = ()=>{};
     private static readonly ErVec2 Offset = new(0,SwApp.HUD_HEIGHT);
+    private static readonly ErColor CamColor = new(100, 149, 237);
+    private static readonly ErColor ClearColor = default;
     private ErRect2 Bounds;
-    // public ErRect2 Bounds;
     public bool UseBounds = false;
-    // public ErVec2 Position
-    // {
-    //     get => NextPos;
-    //     set
-    //     {
-    //         LastPos = NextPos;
-    //         if(!UseBounds) NextPos = value;
-    //         else NextPos = Bounds.Clamp(value);
-    //     }
-    // }
     private ErVec2 TargetPos;
     private ErVec2 CurrentPos;
     private ErVec2 NextPos;
@@ -74,9 +65,11 @@ public class SwCamera
     {
         var pos = ErMath.Lerp(CurrentPos,NextPos,SwGame.FrameProgress);
         ErEngine.Renderer.PushViewport(pos-Half, Texture);
+        ErEngine.Renderer.SetClearColor(CamColor);
         ErEngine.Renderer.Clear();
         DrawFn();
         ErEngine.Renderer.PopViewport();
         Texture.Draw(Offset);
+        ErEngine.Renderer.SetClearColor(ClearColor);
     }
 }

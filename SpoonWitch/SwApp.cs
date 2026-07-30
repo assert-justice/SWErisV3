@@ -22,6 +22,7 @@ public class SwApp : IErApp
     public static int Main()
     {
         SwApp app = new();
+        ErEngine.Renderer.SetWindow("Spoon Witch", new(1920, 1080));
         ErEngine.Run(app);
         return 0;
     }

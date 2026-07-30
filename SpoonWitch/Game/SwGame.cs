@@ -27,7 +27,7 @@ public class SwGame
     private SwByteStream NextStream = new();
     private readonly SwByteStream NewEntities = new();
     private SwRoom? CurrentRoom;
-    private readonly SwHud Hud = new();
+    private readonly SwHud Hud;// = new();
     private static readonly SwCamera Camera = new();
     private static ErVec2 PlayerPos = new(32,32);
     public static void SetPlayerPos(ErVec2 position)
@@ -44,6 +44,7 @@ public class SwGame
     }
     public SwGame()
     {
+        if(!SwHud.TryLoad(ErVec2.Zero, out Hud)) throw new("bad hud");
         Camera.DrawFn = DrawScene;
         AddEntity(SwPlayer.Primary);
         SwSlume.Primary.Position = new(256,256);
@@ -132,8 +133,8 @@ public class SwGame
     }
     private void DrawScene()
     {
-        Map.DebugDraw();
-        // Map.Draw();
+        // Map.DebugDraw();
+        Map.Draw();
         LastStream.Reset();
         NextStream.Reset();
         while(NextStream.BytesRemaining() > 0)

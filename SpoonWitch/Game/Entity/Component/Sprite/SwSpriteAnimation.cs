@@ -75,22 +75,6 @@ public class SwSpriteAnimation
         Name = name;
         Frames = [..frames];
     }
-    public static bool TryGetFrame(out SwFrame frame, ErTexture texture, int index, ErVec2 size)
-    {
-        frame = default;
-        int xTiles = ErMath.FloorToInt(texture.Size.X / size.X);
-        int yTiles = ErMath.FloorToInt(texture.Size.Y / size.Y);
-        int yt = index / xTiles;
-        int xt = index % xTiles;
-        if(yt >= yTiles) return false;
-        if(xt >= xTiles) return false;
-        frame = new()
-        {
-            Texture = texture,
-            SourceRect = new(size.X * xt, size.Y * yt, size.X, size.Y),
-        };
-        return true;
-    }
     public bool IsFrame(int frame)
     {
         return frame >= 0 && frame < Frames.Count;
@@ -155,11 +139,50 @@ public class SwSpriteAnimation
     }
     public void Draw(SwSprite sprite, ErVec2 position, double dt)
     {
+        // Todo: it looks like I'm not actually using hflip or vflip?
         if(!IsFrame(Frame)) return;
         State.Clone(ref NextState);
         Next(dt, ref NextState);
         var frame = Frames[NextState.Frame];
         ErVec2 origin = sprite.Centered ? frame.SourceRect.Size * 0.5 : ErVec2.Zero;
         frame.Texture.Draw(position + sprite.Offset, frame.SourceRect.Size, frame.SourceRect, origin);
+    }
+    public void Draw(ErVec2 position, int frameIdx)
+    {
+        if(!IsFrame(frameIdx)) return;
+        var frame = Frames[frameIdx];
+        frame.Texture.Draw(position, frame.SourceRect.Size, frame.SourceRect);
+    }
+    public static bool TryGetFrame(out SwFrame frame, ErTexture texture, int index, ErVec2 size)
+    {
+        frame = default;
+        int xTiles = ErMath.FloorToInt(texture.Size.X / size.X);
+        int yTiles = ErMath.FloorToInt(texture.Size.Y / size.Y);
+        int yt = index / xTiles;
+        int xt = index % xTiles;
+        if(yt >= yTiles) return false;
+        if(xt >= xTiles) return false;
+        frame = new()
+        {
+            Texture = texture,
+            SourceRect = new(size.X * xt, size.Y * yt, size.X, size.Y),
+        };
+        return true;
+    }
+    public static bool TryFromTexture(ErTexture texture, ErVec2 size, out SwSpriteAnimation spriteAnimation)
+    {
+        spriteAnimation = default!;
+        int xTiles = ErMath.FloorToInt(texture.Size.X / size.X);
+        int yTiles = ErMath.FloorToInt(texture.Size.Y / size.Y);
+        List<SwFrame> frames = new(xTiles * yTiles);
+        for (int xt = 0; xt < xTiles; xt++)
+        {
+            for (int yt = 0; yt < yTiles; yt++)
+            {
+                frames.Add(new(){Texture=texture,SourceRect=new(size.X * xt, size.Y * yt, size.X, size.Y)});
+            }
+        }
+        spriteAnimation = new(string.Empty, frames);
+        return true;
     }
 }
