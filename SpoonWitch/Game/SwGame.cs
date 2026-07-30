@@ -5,7 +5,8 @@ using Prion.Node;
 using Prion.Parser;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Game.Entity;
-// using SpoonWitch.Game.Entity.Actor.Player;
+using SpoonWitch.Game.Entity.Actor.Enemy.Slume;
+using SpoonWitch.Game.Entity.Actor.Player;
 using SpoonWitch.Game.Map;
 using SpoonWitch.UI.Hud;
 
@@ -44,6 +45,9 @@ public class SwGame
     public SwGame()
     {
         Camera.DrawFn = DrawScene;
+        AddEntity(SwPlayer.Primary);
+        SwSlume.Primary.Position = new(256,256);
+        AddEntity(SwSlume.Primary);
     }
     public static void EnqueueMove(int id, uint mask, ErVec2 size, int head)
     {
@@ -129,6 +133,7 @@ public class SwGame
     private void DrawScene()
     {
         Map.DebugDraw();
+        // Map.Draw();
         LastStream.Reset();
         NextStream.Reset();
         while(NextStream.BytesRemaining() > 0)

@@ -1,25 +1,28 @@
 {
-    "tile_width": 64,
-    "tile_height": 64,
+    "tile_width": 32,
+    "tile_height": 32,
     "sprites": {
         "body": {
+            "width": 32,
+            "height": 32,
             "animations": {
                 "idle_d": {
-                    "texture": "slume_idle_d",
+                    "texture": "images/slume_idle_d.png",
                     "first_frame": 0,
                     "last_frame": 8,
                     "fps": 8,
-                    "loops": true
+                    "loops": true,
+                    "autoplay": true
                 },
                 "idle_dr": {
-                    "texture": "slume_idle_dr",
+                    "texture": "images/slume_idle_dr.png",
                     "first_frame": 0,
                     "last_frame": 8,
                     "fps": 8,
                     "loops": true
                 },
                 "idle_dl": {
-                    "texture": "slume_idle_dr",
+                    "texture": "images/slume_idle_dr.png",
                     "first_frame": 0,
                     "last_frame": 8,
                     "fps": 8,
@@ -27,28 +30,28 @@
                     "loops": true
                 },
                 "idle_u": {
-                    "texture": "slume_idle_u",
+                    "texture": "images/slume_idle_u.png",
                     "first_frame": 0,
                     "last_frame": 8,
                     "fps": 8,
                     "loops": true
                 },
                 "move_d": {
-                    "texture": "slume_move_d",
+                    "texture": "images/slume_move_d.png",
                     "first_frame": 0,
                     "last_frame": 3,
                     "fps": 8,
                     "loops": true
                 },
                 "move_dr": {
-                    "texture": "slume_move_dr",
+                    "texture": "images/slume_move_dr.png",
                     "first_frame": 0,
                     "last_frame": 3,
                     "fps": 8,
                     "loops": true
                 },
                 "move_dl": {
-                    "texture": "slume_move_dr",
+                    "texture": "images/slume_move_dr.png",
                     "first_frame": 0,
                     "last_frame": 3,
                     "fps": 8,
@@ -56,14 +59,14 @@
                     "loops": true
                 },
                 "move_u": {
-                    "texture": "slume_move_u",
+                    "texture": "images/slume_move_u.png",
                     "first_frame": 0,
                     "last_frame": 3,
                     "fps": 8,
                     "loops": true
                 },
                 "death":{
-                    "texture": "slume_death",
+                    "texture": "images/slume_death.png",
                     "first_frame": 0,
                     "last_frame": 3,
                     "fps": 8,

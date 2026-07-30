@@ -142,10 +142,6 @@ public class SwSpriteAnimation
                 animState.Frame = FirstFrame;
             }
             else animState.IsPlaying = false;
-            // if(Name == "idle_2h_d")
-            // {
-            //     ErEngine.Log("name: ", Name, " frame: ", animState.Frame, " loops: ", IsLooping);
-            // }
         }
     }
     public void Update(double dt)
@@ -164,6 +160,6 @@ public class SwSpriteAnimation
         Next(dt, ref NextState);
         var frame = Frames[NextState.Frame];
         ErVec2 origin = sprite.Centered ? frame.SourceRect.Size * 0.5 : ErVec2.Zero;
-        frame.Texture.Draw(position + sprite.Offset, new(64,64), frame.SourceRect, origin);
+        frame.Texture.Draw(position + sprite.Offset, frame.SourceRect.Size, frame.SourceRect, origin);
     }
 }

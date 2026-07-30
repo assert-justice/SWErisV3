@@ -53,15 +53,12 @@ public abstract class SwEntity
     {
         // read type byte
         if(!byteStream.TryReadByte(out _)) throw new Exception("no type id");
-        // if()
         if(!byteStream.TryReadI32(out _Id)) throw new Exception("jerkbag");
         if(!byteStream.TryReadI32(out _CurrentHeadIndex)) throw new Exception("oops2");
         if(!byteStream.TryReadI32(out _LastHeadIndex)) throw new Exception("oops3");
-        // ErEngine.Log("head: ", byteStream.Head, " length: ", byteStream.Length, " remaining: ", byteStream.BytesRemaining());
         if(!byteStream.TryReadVec2(out Position)) throw new Exception("oops4");
         if(!byteStream.TryReadVec2(out Velocity)) throw new Exception("oops5");
         if(!byteStream.TryReadBool(out Visible)) throw new Exception("oops6");
-        // ErEngine.Log("read vis: ", _Visible);
         // read components
         foreach (var item in Components)
         {
@@ -116,7 +113,6 @@ public abstract class SwEntity
             var nextComp = nextState.Components[idx];
             comp.Draw(nextComp);
         }
-        DrawImpl(nextState);
     }
     public bool TryGetComponent<T>(string name, out T component) where T: SwComponent
     {
@@ -126,11 +122,9 @@ public abstract class SwEntity
         component = c;
         return true;
     }
-    // public abstract SwEntity New();
-    protected virtual void DrawImpl(SwEntity nextState){}
     protected bool TryLoadSprites(string filepath)
     {
-        // Todo: cache filepaths
+        // Todo: cache filepaths?
         PriNode data;
         try
         {

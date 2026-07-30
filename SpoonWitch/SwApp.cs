@@ -7,7 +7,6 @@ using Prion.Node;
 using Prion.Parser;
 using SpoonWitch.Command;
 using SpoonWitch.Game;
-using SpoonWitch.Game.Entity.Actor.Player;
 
 namespace SpoonWitch;
 
@@ -36,7 +35,7 @@ public class SwApp : IErApp
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
         Game = new();
         // Game.Init();
-        Game.AddEntity(SwPlayer.Primary);
+        // Game.AddEntity(SwPlayer.Primary);
         SwGame.TryLoadMap("game_data/map/demo_map.ldtk");
     }
     public void Update()
