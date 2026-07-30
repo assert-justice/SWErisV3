@@ -26,6 +26,7 @@ public abstract class SwEntity
     public bool Visible = true;
     public virtual ErVec2 Size => new(32,32);
     public virtual uint Mask => 1;
+    protected readonly SwCommandHandler CommandHandler = new(SwApp.CommandStore);
     protected SwComponent RegisterComponent(SwComponent component)
     {
         // Note: this method should only really be used from the entity's constructor
@@ -40,15 +41,6 @@ public abstract class SwEntity
         _CurrentHeadIndex = -1;
         _LastHeadIndex = -1;
     }
-    /* Fields:
-    type id
-    last head index
-    current head index
-    position
-    velocity
-    visible
-    */
-    // public virtual void Ready(){}
     public virtual void Read(SwByteStream byteStream)
     {
         // read type byte
@@ -90,13 +82,9 @@ public abstract class SwEntity
             item.Write(byteStream);
         }
     }
-    // public virtual bool TryHandleCommand(SwCommand command)
-    // {
-    //     return false;
-    // }
     public virtual void Update()
     {
-        // SwApp.CommandStore.GetCommands()
+        CommandHandler.Dispatch();
         foreach (var comp in Components)
         {
             comp.Update();

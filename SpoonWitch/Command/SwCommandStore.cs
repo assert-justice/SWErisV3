@@ -1,3 +1,5 @@
+using Eris;
+
 namespace SpoonWitch.Command;
 
 public class SwCommandStore
@@ -6,20 +8,16 @@ public class SwCommandStore
     {
         private readonly List<SwCommand> Commands = [];
         private readonly Queue<SwCommand> Overflow = [];
-        private bool IsReading = false;
         public IEnumerable<SwCommand> GetCommands()
         {
-            IsReading = true;
             foreach (var item in Commands)
             {
                 yield return item;
             }
-            IsReading = false;
         }
         public void AddCommand(SwCommand command)
         {
-            if(IsReading) Overflow.Enqueue(command);
-            else Commands.Add(command);
+            Overflow.Enqueue(command);
         }
         public void Flush()
         {
@@ -52,7 +50,7 @@ public class SwCommandStore
         else if(!TryGetStoreLookup(command.TargetId, out storeLookup))
         {
             storeLookup = [];
-            if(command.TargetId < 0) TargetedStores.Add(command.TargetId, storeLookup);
+            TargetedStores.Add(command.TargetId, storeLookup);
         }
         if(!storeLookup.TryGetValue(command.Verb, out var store))
         {
