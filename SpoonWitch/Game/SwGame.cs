@@ -80,7 +80,7 @@ public class SwGame
         while(TryReadEnt(LastStream, out var entity))
         {
             entity.Update();
-            entity.Write(NextStream);
+            if(!entity.IsFreeQueued) entity.Write(NextStream);
         }
         if(NewEntities.Head > 0)
         {

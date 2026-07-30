@@ -31,7 +31,7 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             if(input.GetKeyDown(SDL3.SDL.Scancode.S)) y+=1;
             if(input.GetMouseButtonDown(SDL3.SDL.MouseButtonFlags.Left)) StateMachine.Value.SetState("attack");
             if(input.GetMouseButtonDown(SDL3.SDL.MouseButtonFlags.Right)) StateMachine.Value.SetState("charging");
-            if(input.GetKeyDown(SDL3.SDL.Scancode.Space)) SwApp.CommandStore.AddCommand(new("damage", new PriNumber(10), Player.Id));
+            if(input.GetKeyDown(SDL3.SDL.Scancode.Space)) SwApp.CommandStore.AddCommand(new("damage", new PriNumber(10), 1));
             ErVec2 move = new(x,y);
             if (Player.Velocity.IsNonzero())
             {

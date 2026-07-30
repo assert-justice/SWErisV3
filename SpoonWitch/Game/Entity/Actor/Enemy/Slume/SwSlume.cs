@@ -22,4 +22,9 @@ public class SwSlume : SwEnemy, ISwEntity<SwSlume>
         StateMachine = SwSlumeState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
     }
+    protected override void Die()
+    {
+        base.Die();
+        QueueFree();
+    }
 }

@@ -59,6 +59,10 @@ public abstract class SwEntity
             item.Read(byteStream);
         }
     }
+    protected void QueueFree()
+    {
+        IsFreeQueued = true;
+    }
     protected virtual void HandleCommands(){}
     public virtual void Write(SwByteStream byteStream)
     {
