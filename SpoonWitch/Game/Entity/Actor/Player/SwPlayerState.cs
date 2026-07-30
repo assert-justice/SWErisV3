@@ -1,31 +1,21 @@
 using Eris;
 using Eris.Utils;
 using ErisMath;
+using SpoonWitch.ByteStream;
 using SpoonWitch.Game.Entity.Component.Sprite;
 using SpoonWitch.Game.Entity.Component.State;
 
 namespace SpoonWitch.Game.Entity.Actor.Player;
 
-public abstract class SwPlayerState : SwState
+public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
 {
-    protected readonly SwPlayer Player;
-    protected SwPlayerState(SwPlayer parent) : base(parent)
+    protected readonly SwPlayer Player = parent;
+    protected ErWrapper<SwSprite> BodySprite = new(() => parent.GetComponent<SwSprite>("body")!);
+    protected ErWrapper<SwSprite> SpoonSprite = new(() => parent.GetComponent<SwSprite>("spoon")!);
+    protected ErWrapper<SwSprite> SlingSprite = new(() => parent.GetComponent<SwSprite>("sling")!);
+    protected ErWrapper<SwStateMachine> StateMachine = new(() => parent.GetComponent<SwStateMachine>("state_machine")!);
+    public class Default(SwPlayer parent) : SwPlayerState(parent)
     {
-        Player = parent;
-        BodySprite = new(()=>parent.GetComponent<SwSprite>("body")!);
-        SpoonSprite = new(()=>parent.GetComponent<SwSprite>("spoon")!);
-        SlingSprite = new(()=>parent.GetComponent<SwSprite>("sling")!);
-        StateMachine = new(()=>parent.GetComponent<SwStateMachine>("state_machine")!);
-    }
-    protected ErWrapper<SwSprite> BodySprite;
-    protected ErWrapper<SwSprite> SpoonSprite;
-    protected ErWrapper<SwSprite> SlingSprite;
-    protected ErWrapper<SwStateMachine> StateMachine;
-    public class Default : SwPlayerState
-    {
-        public Default(SwPlayer parent) : base(parent)
-        {
-        }
         public override string Name => "default";
         public override void Update()
         {
@@ -39,6 +29,7 @@ public abstract class SwPlayerState : SwState
             if(input.GetKeyDown(SDL3.SDL.Scancode.W)) y-=1;
             if(input.GetKeyDown(SDL3.SDL.Scancode.S)) y+=1;
             if(input.GetMouseButtonDown(SDL3.SDL.MouseButtonFlags.Left)) StateMachine.Value.SetState("attack");
+            if(input.GetMouseButtonDown(SDL3.SDL.MouseButtonFlags.Right)) StateMachine.Value.SetState("charging");
             ErVec2 move = new(x,y);
             if (Player.Velocity.IsNonzero())
             {
@@ -48,14 +39,11 @@ public abstract class SwPlayerState : SwState
             {
                 BodySprite.Value.Play("idle_2h_d");
             }
-            Player.Velocity = move * Player.Speed;
+            Player.Velocity = move * Player.BaseSpeed;
         }
     }
-    public class Attack : SwPlayerState
+    public class Attack(SwPlayer parent) : SwPlayerState(parent)
     {
-        public Attack(SwPlayer parent) : base(parent)
-        {
-        }
         public override string Name => "attack";
         public override void BeginState(string lastState)
         {
@@ -75,11 +63,68 @@ public abstract class SwPlayerState : SwState
             SpoonSprite.Value.Visible = false;
         }
     }
+    public class Charging(SwPlayer parent) : SwPlayerState(parent)
+    {
+        private double ChargeTime;
+
+        public override string Name => "charging";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            SlingSprite.Value.Visible = true;
+            SlingSprite.Value.Play("charging");
+            ChargeTime = 1;
+        }
+        public override void Update()
+        {
+            base.Update();
+            if (!ErEngine.Input.GetMouseButtonDown(SDL3.SDL.MouseButtonFlags.Right))
+            {
+                SlingSprite.Value.Visible = false;
+                SlingSprite.Value.Stop();
+                StateMachine.Value.SetState("default");
+                return;
+            }
+            if(ChargeTime > 0) ChargeTime -= SwGame.DeltaTime;
+            else StateMachine.Value.SetState("charged");
+        }
+        public override void Read(SwByteStream byteStream)
+        {
+            base.Read(byteStream);
+            if(!byteStream.TryReadF64(out ChargeTime)) throw new("bad charge time");
+        }
+        public override void Write(SwByteStream byteStream)
+        {
+            base.Write(byteStream);
+            byteStream.WriteF64(ChargeTime);
+        }
+    }
+    public class Charged(SwPlayer parent) : SwPlayerState(parent)
+    {
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            SlingSprite.Value.Play("charged");
+        }
+        public override void Update()
+        {
+            base.Update();
+            if (!ErEngine.Input.GetMouseButtonDown(SDL3.SDL.MouseButtonFlags.Right))
+            {
+                SlingSprite.Value.Visible = false;
+                SlingSprite.Value.Stop();
+                StateMachine.Value.SetState("default");
+            }
+        }
+        public override string Name => "charged";
+    }
     public static SwStateMachine GetPlayerStateMachine(SwPlayer parent, string name)
     {
         return new(parent, name, [
             new Default(parent),
             new Attack(parent),
+            new Charging(parent),
+            new Charged(parent),
         ]);
     }
 }

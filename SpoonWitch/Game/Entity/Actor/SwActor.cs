@@ -5,7 +5,8 @@ namespace SpoonWitch.Game.Entity.Actor;
 
 public abstract class SwActor: SwEntity
 {
-    public virtual double Speed => 300;
+    public virtual double BaseSpeed => 300;
+    // public virtual double Speed => BaseSpeed;
     public override void Read(SwByteStream byteStream)
     {
         base.Read(byteStream);

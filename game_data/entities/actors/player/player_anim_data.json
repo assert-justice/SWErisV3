@@ -225,11 +225,18 @@
         "sling": {
             "visible": false,
             "animations": {
-                "charge": {
+                "charging": {
                     "texture": "images/bella_sling.png",
                     "first_frame": 0,
                     "last_frame": 3,
                     "fps": 8,
+                    "loops": true
+                },
+                "charged": {
+                    "texture": "images/bella_sling.png",
+                    "first_frame": 0,
+                    "last_frame": 3,
+                    "fps": 16,
                     "loops": true
                 }
             }
