@@ -11,8 +11,7 @@
                     "first_frame": 0,
                     "last_frame": 8,
                     "fps": 8,
-                    "loops": true,
-                    "autoplay": true
+                    "loops": true
                 },
                 "idle_dr": {
                     "texture": "images/slume_idle_dr.png",

@@ -1,4 +1,5 @@
 using Eris;
+using ErisMath;
 
 namespace SpoonWitch.Game.Entity.Actor.Enemy.Slume;
 
@@ -10,10 +11,11 @@ public class SwSlume : SwEnemy, ISwEntity<SwSlume>
     public static SwSlume Primary => _Primary ??= new();
     public static SwSlume Secondary => _Secondary ??= new();
     protected override byte GetTypeId => TypeId;
+    public override ErVec2 Size => new(16,16);
     public SwSlume()
     {
         string path = "game_data/entities/actors/slume/slume_anim_data.json";
         if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load slume sprites");
-        // RegisterComponent(SwPlayerState.GetPlayerStateMachine(this, "state_machine"));
+        RegisterComponent(SwSlumeState.GetStateMachine(this, "state_machine"));
     }
 }

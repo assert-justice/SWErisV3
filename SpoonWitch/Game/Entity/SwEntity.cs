@@ -122,6 +122,11 @@ public abstract class SwEntity
         component = c;
         return true;
     }
+    public T? GetComponent<T>(string name) where T: SwComponent
+    {
+        if(!TryGetComponent(name, out T component)) return null;
+        return component;
+    }
     protected bool TryLoadSprites(string filepath)
     {
         // Todo: cache filepaths?
