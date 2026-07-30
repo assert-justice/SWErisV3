@@ -124,8 +124,9 @@ public abstract class SwEntity
     }
     public T? GetComponent<T>(string name) where T: SwComponent
     {
-        if(!TryGetComponent(name, out T component)) return null;
-        return component;
+        if(TryGetComponent(name, out T component)) return component;
+        ErEngine.LogWarning("entity does not have a valid '", name, "' component");
+        return null;
     }
     protected bool TryLoadSprites(string filepath)
     {
