@@ -2,6 +2,20 @@
     "tile_width": 64,
     "tile_height": 64,
     "sprites": {
+        "spoon": {
+            "offset_x": 0,
+            "offset_y": 9,
+            "visible": false,
+            "animations": {
+                "attack": {
+                    "texture": "images/bella_spoon_d.png",
+                    "first_frame": 0,
+                    "last_frame": 4,
+                    "fps": 8,
+                    "loops": false
+                }
+            }
+        },
         "body": {
             "animations": {
                 "idle_2h_d": {
@@ -204,20 +218,6 @@
                     "first_frame": 0,
                     "last_frame": 7,
                     "fps": 16,
-                    "loops": false
-                }
-            }
-        },
-        "spoon": {
-            "offset_x": 0,
-            "offset_y": 9,
-            "visible": false,
-            "animations": {
-                "attack": {
-                    "texture": "images/bella_spoon_d.png",
-                    "first_frame": 0,
-                    "last_frame": 4,
-                    "fps": 8,
                     "loops": false
                 }
             }

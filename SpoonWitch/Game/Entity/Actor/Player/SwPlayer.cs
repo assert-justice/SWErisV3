@@ -1,4 +1,6 @@
 using Eris;
+using Eris.Utils;
+using SpoonWitch.Game.Entity.Component.Sprite;
 using SpoonWitch.Game.Entity.Component.State;
 
 namespace SpoonWitch.Game.Entity.Actor.Player;
@@ -14,20 +16,25 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     public override uint Mask => 3;
     public double ChargeTime = 1;
     public double ChargeSpeedMul = 0.5;
-    // private readonly SwStateMachine StateMachine;
+    private readonly ErWrapper<SwSprite> ReticleSprite;// = new(()=>this.g)
+    private readonly SwStateMachine StateMachine;
+    private readonly SwPlayerControls Controls;
     public SwPlayer()
     {
-        var controls = new SwPlayerControls(this);
-        RegisterComponent(controls);
+        Controls = new SwPlayerControls(this);
+        ReticleSprite = new(()=>GetComponent<SwSprite>("reticle")!);
+        RegisterComponent(Controls);
         string path = "game_data/entities/actors/player/player_anim_data.json";
         if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load player sprites");
-        var StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
+        StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
         Position = new(128,128);
     }
     public override void Update()
     {
         base.Update();
+
+        // if(Controls.r)
         SwGame.SetPlayerPos(Position);
     }
 }

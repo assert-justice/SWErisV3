@@ -63,7 +63,8 @@ public class SwPlayerControls: SwComponent
         IsCharging = Charge.Pressed;
         if(!SwApp.Settings.TryGet("auto_charge", out bool auto_charge)) auto_charge = true;
         if(!SwApp.Settings.TryGet("kb_aiming", out bool kb_aiming)) kb_aiming = true;
-        if(!SwApp.Settings.TryGet("force_reticle_visible", out bool force_reticle_visible)) force_reticle_visible = false;
+        if(!SwApp.Settings.TryGet("reticle_always_visible_gp", out bool reticle_always_visible_gp)) reticle_always_visible_gp = false;
+        if(!SwApp.Settings.TryGet("reticle_always_visible_kb", out bool reticle_always_visible_kb)) reticle_always_visible_kb = true;
         if (isGamepad)
         {
             if (Aim.IsNonzero())
@@ -74,19 +75,22 @@ public class SwPlayerControls: SwComponent
                 LastFacing = Aim;
             }
             else if(Move.IsNonzero()) LastFacing = Move.Normalized();
-            ReticlePosition = Aim * GAMEPAD_CURSOR_DISTANCE + SwApp.ScreenSize * 0.5;
+            ReticlePosition = Aim * GAMEPAD_CURSOR_DISTANCE;
+            ReticleVisible = IsCharging || (Aim.IsNonzero() && reticle_always_visible_gp);
         }
         else
         {
             // Note: this is where we figure out where the mouse is relative to the player.
-            ReticlePosition = ErEngine.Input.GetMousePosition() / (ErVec2)ErEngine.Renderer.WindowSize * SwApp.ScreenSize;
             var playerScreenPos = SwGame.PlayerPos - SwGame.Camera.Position;
-            Aim = (ReticlePosition - playerScreenPos - SwApp.ScreenSize * 0.5).Normalized();
+            // Todo: make this less horrible
+            ReticlePosition = ErEngine.Input.GetMousePosition() / (ErVec2)ErEngine.Renderer.WindowSize * SwApp.ScreenSize - SwApp.ScreenSize * 0.5 - playerScreenPos + new ErVec2(0, -SwApp.HUD_HEIGHT * 0.5);
+            Aim = ReticlePosition.Normalized();
             // Note: If we're not charging and we're using keyboard aiming we aim in the last direction we moved as the aim vector.
             if(IsCharging || !kb_aiming) LastFacing = Aim;
             else if(Move.IsNonzero()) LastFacing = Move.Normalized();
+            ReticleVisible = IsCharging || (Aim.IsNonzero() && reticle_always_visible_kb);
         }
-        ReticleVisible = IsCharging || (Aim.IsNonzero() && force_reticle_visible);
+        ReticleVisible = IsCharging || (Aim.IsNonzero() && reticle_always_visible_kb);
         LastFacingIdx = ErMath.RoundAngleToInt(LastFacing.GetAngle(), 4);
     }
 }

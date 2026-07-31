@@ -7,5 +7,6 @@
     },
     "auto_charge": true,
     "kb_aiming": false,
-    "force_reticle_visible": false
+    "reticle_always_visible_gp": false,
+    "reticle_always_visible_kb": true
 }

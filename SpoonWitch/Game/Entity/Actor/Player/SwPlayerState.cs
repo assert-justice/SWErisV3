@@ -62,6 +62,23 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             ],
         ],
     ];
+    public override void Update()
+    {
+        base.Update();
+        ReticleSprite.Value.Visible = Controls.Value.ReticleVisible;
+        switch (StateMachine.Value.CurrentState.Name)
+        {
+            case "charging":
+            case "charged":
+            ReticleSprite.Value.Play("aiming");
+            break;
+            default:
+            ReticleSprite.Value.Play("still");
+            break;
+        }
+        ReticleSprite.Value.Offset = Controls.Value.ReticlePosition;
+        // if(Controls.Value.ReticleVisible)
+    }
     public class Default(SwPlayer parent) : SwPlayerState(parent)
     {
         public override string Name => "default";
@@ -82,8 +99,9 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
         {
             base.BeginState(lastState);
             SpoonSprite.Value.Visible = true;
-            SpoonSprite.Value.Angle = ErMath.RoundAngle(Controls.Value.Aim.GetAngle() - ErMath.HALF_PI, 4);
+            SpoonSprite.Value.Angle = (Controls.Value.LastFacingIdx - 1) * ErMath.HALF_PI;
             SpoonSprite.Value.Play();
+            BodySprite.Value.Play(BodyAnims[0][0][Controls.Value.LastFacingIdx]);
             Player.Velocity = ErVec2.Zero;
         }
         public override void Update()
