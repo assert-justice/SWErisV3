@@ -26,6 +26,7 @@ public class SwSprite : SwComponent
     public bool IsPlaying{get => CurrentAnim?.IsPlaying ?? false;}
     public bool Visible = true;
     public bool Centered = true;
+    public double Angle = 0;
     public ErVec2 Offset = ErVec2.Zero;
     public ErVec2 Size{get; private set;} = new(64,64);
     public SwSprite(SwEntity parent, string name) : base(parent, name)
@@ -74,6 +75,7 @@ public class SwSprite : SwComponent
         byteStream.TryReadI32(out CurrentAnimIdx);
         byteStream.TryReadBool(out HFlip);
         byteStream.TryReadBool(out VFlip);
+        byteStream.TryReadF64(out Angle);
         byteStream.TryReadI32(out int frame);
         byteStream.TryReadF64(out double frameProgress);
         byteStream.TryReadBool(out bool isPlaying);
@@ -91,6 +93,7 @@ public class SwSprite : SwComponent
         byteStream.WriteI32(CurrentAnimIdx);
         byteStream.WriteBool(HFlip);
         byteStream.WriteBool(VFlip);
+        byteStream.WriteF64(Angle);
         byteStream.WriteI32(Frame);
         byteStream.WriteF64(FrameProgress);
         byteStream.WriteBool(IsPlaying);
@@ -143,11 +146,9 @@ public class SwSprite : SwComponent
                 if(SwSpriteAnimation.TryGetFrame(out var frame, texture, frameIdx, sprite.Size)) frames.Add(frame);
                 else return ErEngine.LogError("Invalid frame index '", frameIdx, "' for texture '", texturePath, "'.");
             }
-            SwSpriteAnimation anim = new(animName, frames)
+            SwSpriteAnimation anim = new(animName, frames, hFlip, vFlip)
             {
                 Fps = fps,
-                HFlip = hFlip,
-                VFlip = vFlip,
                 IsLooping = loops,
                 IsBouncing = bounce,
                 IsReversed = reversed,

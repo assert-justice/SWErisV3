@@ -17,6 +17,8 @@ public class SwCamera
     public bool UseBounds = false;
     private ErVec2 TargetPos;
     private ErVec2 CurrentPos;
+    public ErVec2 Position => CurrentPos;//+ Half;
+    // public ErVec2 Corner => CurrentPos - Half;
     private ErVec2 NextPos;
     public ErVec2 Size => Texture.Size;
     public SwCamera()

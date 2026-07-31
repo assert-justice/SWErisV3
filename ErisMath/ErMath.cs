@@ -28,7 +28,7 @@ public static class ErMath
     public static double RoundAngle(double angle, int segments, double offset = 0)
     {
         double mul = segments / TAU;
-        return Math.Round((angle + offset) * mul) * mul;
+        return Math.Round((angle + offset) * mul) / mul;
     }
     public static int RoundAngleToInt(double angle, int segments, double offset = 0)
     {

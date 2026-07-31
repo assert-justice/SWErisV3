@@ -15,7 +15,7 @@ public class SwHudItem
     private readonly SwSpriteAnimation Digits;
     private readonly ErVec2 TensOff;
     private readonly ErVec2 OnesOff;
-    public int ItemIdx;
+    public int ItemIdx = 2;
     public int MaxQuantity;
     public int Quantity = 69;
     private SwHudItem(ErVec2 offset, string dirpath, PriNode node)

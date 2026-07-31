@@ -15,10 +15,14 @@ public class SwApp : IErApp
     public const int INTERNAL_WIDTH = 640;
     public const int INTERNAL_HEIGHT = 360;
     public const int HUD_HEIGHT = 40;
+    public static readonly ErVec2 ScreenSize = new(INTERNAL_WIDTH, INTERNAL_HEIGHT);
+    public static readonly ErVec2 CameraSize = new(INTERNAL_WIDTH, INTERNAL_HEIGHT - HUD_HEIGHT);
     private SwGame? Game;
     private static int NextId;
     private ErTexture RenderTexture;
     public static readonly SwCommandStore CommandStore = new();
+    public static PriNode Settings{get; private set;} = new PriDict();
+    public static PriNode SaveData{get; private set;} = new PriDict();
     public static int Main()
     {
         SwApp app = new();

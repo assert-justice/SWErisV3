@@ -14,12 +14,14 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     public override uint Mask => 3;
     public double ChargeTime = 1;
     public double ChargeSpeedMul = 0.5;
-    private readonly SwStateMachine StateMachine;
+    // private readonly SwStateMachine StateMachine;
     public SwPlayer()
     {
+        var controls = new SwPlayerControls(this);
+        RegisterComponent(controls);
         string path = "game_data/entities/actors/player/player_anim_data.json";
         if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load player sprites");
-        StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
+        var StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
         Position = new(128,128);
     }

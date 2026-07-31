@@ -1,0 +1,11 @@
+{
+    "volume":{
+        "main": 1,
+        "music": 1,
+        "sfx": 1,
+        "voice": 1
+    },
+    "auto_charge": true,
+    "kb_aiming": false,
+    "force_reticle_visible": false
+}

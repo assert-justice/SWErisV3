@@ -65,15 +65,17 @@ public class SwSpriteAnimation
             State.FrameDir = value;
         }
     }
-    public bool HFlip = false;
-    public bool VFlip = false;
+    public readonly bool HFlip = false;
+    public readonly bool VFlip = false;
     public bool IsPlaying{get => State.IsPlaying; set => State.IsPlaying = value;}
     private int FirstFrame{get => IsReversed ? Frames.Count - 1 : 0;}
     private int LastFrame{get => IsReversed ? 0 : Frames.Count - 1;}
-    public SwSpriteAnimation(string name, IEnumerable<SwFrame> frames)
+    public SwSpriteAnimation(string name, IEnumerable<SwFrame> frames, bool hFlip = false, bool vFlip = false)
     {
         Name = name;
         Frames = [..frames];
+        HFlip = hFlip;
+        VFlip = vFlip;
     }
     public bool IsFrame(int frame)
     {
@@ -145,7 +147,9 @@ public class SwSpriteAnimation
         Next(dt, ref NextState);
         var frame = Frames[NextState.Frame];
         ErVec2 origin = sprite.Centered ? frame.SourceRect.Size * 0.5 : ErVec2.Zero;
-        frame.Texture.Draw(position + sprite.Offset, frame.SourceRect.Size, frame.SourceRect, origin);
+        bool hFlip = HFlip ? !sprite.HFlip : sprite.HFlip;
+        bool vFlip = VFlip ? !sprite.VFlip : sprite.VFlip;
+        frame.Texture.Draw(position + sprite.Offset, frame.SourceRect.Size, frame.SourceRect, origin, sprite.Angle, hFlip, vFlip);
     }
     public void Draw(ErVec2 position, int frameIdx)
     {

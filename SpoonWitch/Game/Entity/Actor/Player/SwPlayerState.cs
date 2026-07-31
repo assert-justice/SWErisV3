@@ -14,34 +14,65 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
     protected ErWrapper<SwSprite> BodySprite = new(() => parent.GetComponent<SwSprite>("body")!);
     protected ErWrapper<SwSprite> SpoonSprite = new(() => parent.GetComponent<SwSprite>("spoon")!);
     protected ErWrapper<SwSprite> SlingSprite = new(() => parent.GetComponent<SwSprite>("sling")!);
+    protected ErWrapper<SwSprite> ReticleSprite = new(() => parent.GetComponent<SwSprite>("reticle")!);
     protected ErWrapper<SwStateMachine> StateMachine = new(() => parent.GetComponent<SwStateMachine>("state_machine")!);
+    protected ErWrapper<SwPlayerControls> Controls = new(() => parent.GetComponent<SwPlayerControls>("controls")!);
+    // private static readonly string[] Dirs = ["dr", "d", "dl", "u"];
+    // name, hands, facing
+    // Todo: make this less dumb. Or not, I dgaf
+    private static readonly string[][][] BodyAnims = [
+        [
+            [
+                "idle_0h_dr",
+                "idle_0h_d",
+                "idle_0h_dl",
+                "idle_0h_u",
+            ],
+            [
+                "idle_1h_dr",
+                "idle_1h_d",
+                "idle_1h_dl",
+                "idle_1h_u",
+            ],
+            [
+                "idle_2h_dr",
+                "idle_2h_d",
+                "idle_2h_dl",
+                "idle_2h_u",
+            ],
+        ],
+        [
+            [
+                "run_0h_dr",
+                "run_0h_d",
+                "run_0h_dl",
+                "run_0h_u",
+            ],
+            [
+                "run_1h_dr",
+                "run_1h_d",
+                "run_1h_dl",
+                "run_1h_u",
+            ],
+            [
+                "run_2h_dr",
+                "run_2h_d",
+                "run_2h_dl",
+                "run_2h_u",
+            ],
+        ],
+    ];
     public class Default(SwPlayer parent) : SwPlayerState(parent)
     {
         public override string Name => "default";
         public override void Update()
         {
             base.Update();
-            // handle movement
-            var input = ErEngine.Input;
-            double x = 0;
-            double y = 0;
-            if(input.GetKeyDown(SDL3.SDL.Scancode.A)) x-=1;
-            if(input.GetKeyDown(SDL3.SDL.Scancode.D)) x+=1;
-            if(input.GetKeyDown(SDL3.SDL.Scancode.W)) y-=1;
-            if(input.GetKeyDown(SDL3.SDL.Scancode.S)) y+=1;
-            if(input.GetMouseButtonDown(SDL3.SDL.MouseButtonFlags.Left)) StateMachine.Value.SetState("attack");
-            if(input.GetMouseButtonDown(SDL3.SDL.MouseButtonFlags.Right)) StateMachine.Value.SetState("charging");
-            if(input.GetKeyDown(SDL3.SDL.Scancode.Space)) SwApp.CommandStore.AddCommand(new("damage", new PriNumber(10), 1));
-            ErVec2 move = new(x,y);
-            if (Player.Velocity.IsNonzero())
-            {
-                BodySprite.Value.Play("run_2h_d");
-            }
-            else
-            {
-                BodySprite.Value.Play("idle_2h_d");
-            }
-            Player.Velocity = move * Player.BaseSpeed;
+            int animIdx = Player.Velocity.IsNonzero() ? 1 : 0;
+            BodySprite.Value.Play(BodyAnims[animIdx][2][Controls.Value.LastFacingIdx]);
+            Player.Velocity = Controls.Value.Move * Player.BaseSpeed;
+            if(Controls.Value.AttackJustPressed) StateMachine.Value.SetState("attack");
+            else if(Controls.Value.IsCharging) StateMachine.Value.SetState("charging");
         }
     }
     public class Attack(SwPlayer parent) : SwPlayerState(parent)
@@ -51,6 +82,7 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
         {
             base.BeginState(lastState);
             SpoonSprite.Value.Visible = true;
+            SpoonSprite.Value.Angle = ErMath.RoundAngle(Controls.Value.Aim.GetAngle() - ErMath.HALF_PI, 4);
             SpoonSprite.Value.Play();
             Player.Velocity = ErVec2.Zero;
         }
@@ -80,7 +112,10 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
         public override void Update()
         {
             base.Update();
-            if (!ErEngine.Input.GetMouseButtonDown(SDL3.SDL.MouseButtonFlags.Right))
+            int animIdx = Player.Velocity.IsNonzero() ? 1 : 0;
+            BodySprite.Value.Play(BodyAnims[animIdx][1][Controls.Value.LastFacingIdx]);
+            Player.Velocity = Controls.Value.Move * Player.BaseSpeed * Player.ChargeSpeedMul;
+            if (!Controls.Value.IsCharging)
             {
                 SlingSprite.Value.Visible = false;
                 SlingSprite.Value.Stop();
@@ -103,6 +138,7 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
     }
     public class Charged(SwPlayer parent) : SwPlayerState(parent)
     {
+        public override string Name => "charged";
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
@@ -111,14 +147,16 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
         public override void Update()
         {
             base.Update();
-            if (!ErEngine.Input.GetMouseButtonDown(SDL3.SDL.MouseButtonFlags.Right))
+            int animIdx = Player.Velocity.IsNonzero() ? 1 : 0;
+            BodySprite.Value.Play(BodyAnims[animIdx][1][Controls.Value.LastFacingIdx]);
+            Player.Velocity = Controls.Value.Move * Player.BaseSpeed * Player.ChargeSpeedMul;
+            if (!Controls.Value.IsCharging)
             {
                 SlingSprite.Value.Visible = false;
                 SlingSprite.Value.Stop();
                 StateMachine.Value.SetState("default");
             }
         }
-        public override string Name => "charged";
     }
     public static SwStateMachine GetStateMachine(SwPlayer parent, string name)
     {

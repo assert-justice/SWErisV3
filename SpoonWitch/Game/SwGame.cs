@@ -16,7 +16,7 @@ public class SwGame
 {
     public static double DeltaTimeRaw{get => ErEngine.DeltaTime * GameSpeed;}
     public static double DeltaTime{get => Camera.IsInBounds() ? DeltaTimeRaw : 0;}
-    public static double FrameTime{get => ErEngine.FrameTime * AnimSpeed;}
+    public static double FrameTime{get => ErEngine.FrameDuration * AnimSpeed;}
     public static double FrameProgress{get => ErEngine.FrameTimeRemaining / DeltaTimeRaw;}
     public static double GameSpeed{get; private set;} = 1;
     public static double AnimSpeed{get; private set;} = 1;
@@ -28,8 +28,8 @@ public class SwGame
     private readonly SwByteStream NewEntities = new();
     private SwRoom? CurrentRoom;
     private readonly SwHud Hud;// = new();
-    private static readonly SwCamera Camera = new();
-    private static ErVec2 PlayerPos = new(32,32);
+    public static readonly SwCamera Camera = new();
+    public static ErVec2 PlayerPos{get; private set;} = new(32,32);
     public static void SetPlayerPos(ErVec2 position)
     {
         PlayerPos = position;

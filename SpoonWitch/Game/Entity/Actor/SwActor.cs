@@ -8,7 +8,7 @@ namespace SpoonWitch.Game.Entity.Actor;
 
 public abstract class SwActor: SwEntity
 {
-    public virtual double BaseSpeed => 300;
+    public virtual double BaseSpeed => 150;
     public virtual double MaxHealth => 100;
     public virtual double InvulnTime => 0.5;
     public virtual bool IsInvuln => InvulnClock > 0;
@@ -19,7 +19,6 @@ public abstract class SwActor: SwEntity
     public override void Ready()
     {
         base.Ready();
-        // CommandHandler.AddHandler((c) =>{Damage(c);}, "damage", Id);
         Health = MaxHealth;
         _IsAlive = true;
     }

@@ -30,8 +30,10 @@ public static class ErEngine
     }
     public static bool IsRunning{get; private set;}
     public static double DeltaTime{get; private set;}
-    public static double FrameTime{get; private set;}
+    public static double FrameDuration{get; private set;}
     public static double FrameTimeRemaining{get; private set;}
+    public static double LastFrameTime{get; private set;}
+    public static double CurrentTime{get; private set;}
     private static bool Init(IErApp app)
     {
         List<Action> initList = [
@@ -64,24 +66,18 @@ public static class ErEngine
     {
         IsRunning = true;
         if(!Init(app)) return;
-        double CurrentTime = GetCurrentTime();
+        LastFrameTime = GetCurrentTime();
         DeltaTime = 1 / (double)Tickrate;
         while (IsRunning)
         {
-            // while(SDL.PollEvent(out SDL.Event e))
-            // {
-            //     if(((SDL.EventType)e.Type) == SDL.EventType.Quit)
-            //     {
-            //         Quit();
-            //     }
-            // }
-            Input.Poll();
             double newTime = GetCurrentTime();
-            FrameTime = newTime - CurrentTime;
-            CurrentTime = newTime;
-            FrameTimeRemaining += FrameTime;
+            FrameDuration = newTime - LastFrameTime;
+            LastFrameTime = newTime;
+            FrameTimeRemaining += FrameDuration;
             while(FrameTimeRemaining >= DeltaTime)
             {
+                CurrentTime = GetCurrentTime();
+                Input.Poll();
                 app.Update();
                 FrameTimeRemaining -= DeltaTime;
             }
