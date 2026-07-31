@@ -20,6 +20,7 @@ public class SwGame
     public static double FrameProgress{get => ErEngine.FrameTimeRemaining / DeltaTimeRaw;}
     public static double GameSpeed{get; private set;} = 1;
     public static double AnimSpeed{get; private set;} = 1;
+    private static readonly Dictionary<int,SwEntProps> EntProps = [];
     private static SwMap Map = new();
     private static readonly Queue<SwMove> MoveQueue = [];
     private readonly Dictionary<byte, (SwEntity,SwEntity)> Prototypes = [];
@@ -27,7 +28,7 @@ public class SwGame
     private SwByteStream NextStream = new();
     private readonly SwByteStream NewEntities = new();
     private SwRoom? CurrentRoom;
-    private readonly SwHud Hud;// = new();
+    private readonly SwHud Hud;
     public static readonly SwCamera Camera = new();
     public static ErVec2 PlayerPos{get; private set;} = new(32,32);
     public static void SetPlayerPos(ErVec2 position)
@@ -49,6 +50,10 @@ public class SwGame
         AddEntity(SwPlayer.Primary);
         SwSlume.Primary.Position = new(256,256);
         AddEntity(SwSlume.Primary);
+    }
+    public static bool TryGetEntProps(int id, out SwEntProps entProps)
+    {
+        return EntProps.TryGetValue(id, out entProps!);
     }
     public static void EnqueueMove(int id, uint mask, ErVec2 size, int head)
     {
@@ -82,13 +87,13 @@ public class SwGame
         {
             entity.Update();
             if(!entity.IsFreeQueued) entity.Write(NextStream);
+            else EntProps.Remove(entity.Id);
         }
         if(NewEntities.Head > 0)
         {
             NewEntities.Reset();
             while(TryReadEnt(NewEntities, out var entity))
             {
-                entity.Ready();
                 entity.Write(NextStream);
             }
             NewEntities.Clear();
@@ -153,13 +158,15 @@ public class SwGame
             lastEnt.Draw(nextEnt);
         }
     }
-    public void AddEntity<T>(T entity) where T: SwEntity,ISwEntity<T>
+    public void AddEntity<T>(T entity, SwEntProps? entProps = null) where T: SwEntity,ISwEntity<T>
     {
         if(!Prototypes.TryGetValue(T.TypeId, out _))
         {
             var pair = (T.Primary,T.Secondary);
             Prototypes.Add(T.TypeId, pair);
         }
+        entity.Init(entProps ?? new());
+        EntProps.Add(entity.Id, entity.EntProps);
         entity.Write(NewEntities);
     }
     public static bool TryLoadMap(string filepath)

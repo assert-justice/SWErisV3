@@ -51,7 +51,8 @@ public abstract class SwActor: SwEntity
     protected override void HandleCommands()
     {
         base.HandleCommands();
-        foreach (var item in SwApp.CommandStore.GetCommands("damage", Id))
+        // foreach (var item in SwApp.CommandStore.GetCommands("damage", Id))
+        foreach (var item in EntProps.GetCommands())
         {
             Damage(item);
         }

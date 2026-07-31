@@ -14,6 +14,7 @@ public abstract class SwEntity
 {
     private readonly Dictionary<(Type,string), SwComponent> ComponentLookup = [];
     private readonly List<SwComponent> Components = [];
+    public SwEntProps EntProps{get; private set;} = null!;
     abstract protected byte GetTypeId{get;}
     private int _Id;
     public int Id => _Id;
@@ -37,12 +38,16 @@ public abstract class SwEntity
         else ErEngine.LogError("Failed to register component of name '", component.Name, "' and type '", component.GetType(), "'.");
         return component;
     }
-    public virtual void Ready()
+    public void Init(SwEntProps entProps)
     {
-        _Id = SwApp.GetNextId();
+        _Id = entProps.Id;
+        EntProps = entProps;
+        // SwGame.EntProps.Add(_Id, entProps);
         _CurrentHeadIndex = -1;
         _LastHeadIndex = -1;
+        Ready();
     }
+    public virtual void Ready(){}
     public virtual void Read(SwByteStream byteStream)
     {
         // read type byte
@@ -58,6 +63,8 @@ public abstract class SwEntity
         {
             item.Read(byteStream);
         }
+        if(!SwGame.TryGetEntProps(Id, out var entProps)) ErEngine.LogError("no properties found for for entity ", Id);
+        EntProps = entProps!;
     }
     protected void QueueFree()
     {

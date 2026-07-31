@@ -64,6 +64,10 @@ public class SwApp : IErApp
         NextId++;
         return id;
     }
+    public static int PeekNextId()
+    {
+        return NextId;
+    }
     public static bool TryLoadPrion(string filepath, out PriNode priNode)
     {
         priNode = PriNull.Null;
