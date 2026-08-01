@@ -9,7 +9,6 @@ namespace SpoonWitch.Game.Map;
 public class SwMap
 {
     private readonly Dictionary<string,SwRoom> Rooms = [];
-    // private readonly Dictionary<ErVec2I,SwSector> Sectors = [];
     private readonly Dictionary<string,SwRoom> LoadedRooms = [];
     private readonly Dictionary<ErVec2I, SwRoom> SectorLookup = [];
     private readonly List<SwTileData> TileData = [];
@@ -45,18 +44,11 @@ public class SwMap
     {
         Rooms.Add(room.Id, room);
         room.Load();
-        // room.GetSectors()
-        // ErEngine.Log("room id: ", room.Id, " pos: ", room.RectSectors.Position);
         foreach (var sector in room.GetSectors())
         {
             SectorLookup.Add(sector,room);
         }
     }
-    // public void AddSector(SwSector sector)
-    // {
-        // ErEngine.Log(sector.PositionSectors);
-        // if(!Sectors.TryAdd(sector.PositionSectors, sector)) ErEngine.LogWarning("bad sector: ", sector.PositionSectors);
-    // }
     public void Update(){}
     public void Draw()
     {
@@ -64,11 +56,10 @@ public class SwMap
         {
             item.Draw();
         }
-    }
-    public void DebugDraw()
-    {
-        Draw();
-        CollisionLayer.DebugDraw();
+        if (SwApp.Debug)
+        {
+            CollisionLayer.DebugDraw();
+        }
     }
     public bool TryGetRoom(ErVec2 position, out SwRoom room)
     {
@@ -114,13 +105,11 @@ public class SwMap
             if(SwRoom.TryFromData(map, roomData, out var room)) map.AddRoom(room);
             else return ErEngine.LogWarning("malformed room");
         }
-        // ErEngine.Log("here");
         foreach (var tileset in tilesetList.Values)
         {
             if(!tileset.Get("identifier").TryAs(out string ident)) continue;
             if(ident != "tile_pallet") continue;
             if(!tileset.Get("customData").TryAs(out PriList tiles)) return ErEngine.LogWarning("no custom data");
-            // if(!SwTileData.TryFromFile(tileset.Get()))
             foreach (var t in tiles.Values)
             {
                 if(!t.Get("data").TryAs(out string dataStr)) return false;

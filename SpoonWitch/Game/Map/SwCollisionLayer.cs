@@ -1,6 +1,7 @@
 using Eris;
 using Eris.Renderer;
 using ErisMath;
+using Microsoft.VisualBasic;
 
 namespace SpoonWitch.Game.Map;
 
@@ -11,6 +12,7 @@ public class SwCollisionLayer
     private readonly Dictionary<ErVec2I,SwCell> Cells = [];
     private readonly SwMap Map;
     private readonly HashSet<ErVec2I> ActiveCells = [];
+    private readonly Queue<(ErRect2,ErColor)> DebugRectDrawQueue = []; 
     public readonly struct SwEntRect
     {
         public readonly int Id{get; init;}
@@ -73,27 +75,15 @@ public class SwCollisionLayer
     }
     public int GetTilePx(ErVec2 position)
     {
-        int xi = ErMath.FloorToInt(position.X / Map.TileSize.X);
-        int yi = ErMath.FloorToInt(position.Y / Map.TileSize.Y);
-        return GetTile(new(xi,yi)); 
+        return GetTile(position.FloorToInt() / Map.TileSize);
     }
     private ErVec2I GetCellCoords(ErVec2 position)
     {
-        int x = ErMath.FloorToInt(position.X / CellSizePx.X);
-        int y = ErMath.FloorToInt(position.Y / CellSizePx.Y);
-        return new(x,y);
+        return (position / (ErVec2)CellSizePx).FloorToInt();
     }
-    // private ErVec2I GetCellCoords(ErVec2 position)
-    // {
-    //     int x = ErMath.FloorToInt(position.X / CellSizePx.X);
-    //     int y = ErMath.FloorToInt(position.Y / CellSizePx.Y);
-    //     return new(x,y);
-    // }
     private ErVec2I GetTileCoords(ErVec2 position)
     {
-        int x = ErMath.FloorToInt(position.X / Map.TileSize.X);
-        int y = ErMath.FloorToInt(position.Y / Map.TileSize.Y);
-        return new(x,y);
+        return (position / (ErVec2)Map.TileSize).FloorToInt();
     }
     private ErRect2 GetTileRect(ErVec2I coord)
     {
@@ -118,11 +108,6 @@ public class SwCollisionLayer
     }
     private IEnumerable<(ErVec2I,SwCell)> GetActive(ErRect2 rect)
     {
-        // ActiveCells.Clear();
-        // ActiveCells.Add(GetCellCoords(rect.Position));
-        // ActiveCells.Add(GetCellCoords(rect.Position + new ErVec2(rect.Size.X, 0)));
-        // ActiveCells.Add(GetCellCoords(rect.Position + new ErVec2(0, rect.Size.Y)));
-        // ActiveCells.Add(GetCellCoords(rect.Position+rect.Size));
         foreach (var cellPos in GetCells(rect))
         {
             if(!Cells.TryGetValue(cellPos, out var cell)) continue;
@@ -131,11 +116,6 @@ public class SwCollisionLayer
     }
     private IEnumerable<(ErVec2I,SwCell)> InitActive(ErRect2 rect)
     {
-        // ActiveCells.Clear();
-        // ActiveCells.Add(GetCellCoords(rect.Position));
-        // ActiveCells.Add(GetCellCoords(rect.Position + new ErVec2(rect.Size.X, 0)));
-        // ActiveCells.Add(GetCellCoords(rect.Position + new ErVec2(0, rect.Size.Y)));
-        // ActiveCells.Add(GetCellCoords(rect.Position+rect.Size));
         foreach (var cellPos in GetCells(rect))
         {
             if(!Cells.TryGetValue(cellPos, out var cell))
@@ -146,7 +126,7 @@ public class SwCollisionLayer
             yield return (cellPos,cell);
         }
     }
-    private IEnumerable<ErRect2> GetTiles(int id, uint mask, ErRect2 rect)
+    private IEnumerable<ErRect2> GetColliders(int id, uint mask, ErRect2 rect)
     {
         var tl = GetTileCoords(rect.Position);
         var br = GetTileCoords(rect.Position + rect.Size);
@@ -180,7 +160,7 @@ public class SwCollisionLayer
     {
         ErRect2 rect = new(x+dx,y,size.X,size.Y);
         double maxX = double.MaxValue;
-        foreach (var tile in GetTiles(id, mask, rect))
+        foreach (var tile in GetColliders(id, mask, rect))
         {
             if(tile.Left < maxX) maxX = tile.Left;
         }
@@ -194,7 +174,7 @@ public class SwCollisionLayer
     {
         ErRect2 rect = new(x+dx,y,size.X,size.Y);
         double minX = double.MinValue;
-        foreach (var tile in GetTiles(id, mask, rect))
+        foreach (var tile in GetColliders(id, mask, rect))
         {
             if(tile.Right > minX) minX = tile.Right;
         }
@@ -205,7 +185,7 @@ public class SwCollisionLayer
     {
         ErRect2 rect = new(x,y+dy,size.X,size.Y);
         double maxY = double.MaxValue;
-        foreach (var tile in GetTiles(id, mask, rect))
+        foreach (var tile in GetColliders(id, mask, rect))
         {
             if(tile.Top < maxY) maxY = tile.Top;
         }
@@ -216,7 +196,7 @@ public class SwCollisionLayer
     {
         ErRect2 rect = new(x,y+dy,size.X,size.Y);
         double minY = double.MinValue;
-        foreach (var tile in GetTiles(id, mask, rect))
+        foreach (var tile in GetColliders(id, mask, rect))
         {
             if(tile.Bottom > minY) minY = tile.Bottom;
         }
@@ -234,17 +214,20 @@ public class SwCollisionLayer
             cell.Rects.Add(entRect);
         }
     }
-    // public void SetColliders(IEnumerable<SwEntRect> entRects)
-    // {
-    //     ClearColliders();
-        // foreach (var item in entRects)
-        // {
-        //     foreach (var (_,cell) in InitActive(item.Rect))
-        //     {
-        //         cell.Rects.Add(item);
-        //     }
-        // }
-    // }
+    public IEnumerable<int> GetRectIds(ErRect2 rect, uint mask = uint.MaxValue)
+    {
+        if(SwApp.Debug) DebugRectDrawQueue.Enqueue((rect,ErColor.Blue));
+        ErEngine.Log("here");
+        foreach (var (cellPos,cell) in GetActive(rect))
+        {
+            foreach (var entRect in cell.Rects)
+            {
+                ErEngine.Log(entRect.Rect);
+                if((entRect.Mask & mask) == 0) continue;
+                yield return entRect.Id;
+            }
+        }
+    }
     public void MoveAndSlide(int id, uint mask, ErVec2 size, ref ErVec2 position, ref ErVec2 velocity)
     {
         double x = position.X; double y = position.Y;
@@ -282,6 +265,11 @@ public class SwCollisionLayer
             {
                 ErEngine.Renderer.DebugDrawRect(ErColor.Green, item.Rect, false);
             }
+        }
+        while(DebugRectDrawQueue.TryDequeue(out var item))
+        {
+            var(rect,color) = item;
+            ErEngine.Renderer.DebugDrawRect(color, rect, false);
         }
     }
 }

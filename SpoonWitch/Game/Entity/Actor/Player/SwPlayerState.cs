@@ -77,7 +77,6 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             break;
         }
         ReticleSprite.Value.Offset = Controls.Value.ReticlePosition;
-        // if(Controls.Value.ReticleVisible)
     }
     public class Default(SwPlayer parent) : SwPlayerState(parent)
     {
@@ -102,6 +101,10 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             SpoonSprite.Value.Angle = (Controls.Value.LastFacingIdx - 1) * ErMath.HALF_PI;
             SpoonSprite.Value.Play();
             BodySprite.Value.Play(BodyAnims[0][0][Controls.Value.LastFacingIdx]);
+            foreach (int id in SwGame.GetRectIds(GetHurtbox()))
+            {
+                ErEngine.Log("hit ent ", id);
+            }
             Player.Velocity = ErVec2.Zero;
         }
         public override void Update()
@@ -113,6 +116,14 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
         {
             base.EndState(nextState);
             SpoonSprite.Value.Visible = false;
+        }
+        private ErRect2 GetHurtbox()
+        {
+            var dir = Controls.Value.LastFacing;
+            double dis = 32;
+            ErVec2 size = new(32, 32);
+            var pos = Parent.Position + dir * dis;
+            return ErRect2.Centered(pos, size);
         }
     }
     public class Charging(SwPlayer parent) : SwPlayerState(parent)

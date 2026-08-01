@@ -753,13 +753,16 @@
 			"customData": [
 				{
 					"tileId": 0,
-					"data": "{\n  \"source\": \"tilesets/water_tileset.png\",\n  \"is_solid\": true,\n  \"move_speed_mul\": 0\n}"
+					"data": "{\n  \"source\": \"tilesets/sea_tileset.png\",\n  \"is_solid\": true,\n  \"move_speed_mul\": 0\n}"
 				},
-				{ "tileId": 1, "data": "{\n  \"source\": \"tilesets/beach_tileset.png\",\n  \"move_speed_mul\": 0.5\n}" },
+				{ "tileId": 1, "data": "{\n  \"source\": \"tilesets/grove_tileset.png\",\n  \"move_speed_mul\": 0.5\n}" },
 				{ "tileId": 2, "data": "{\n  \"source\": \"tilesets/demo_dirt_tiles.png\"\n}" },
 				{ "tileId": 3, "data": "{\n  \"source\": \"tilesets/grassland_tileset.png\"\n}" },
 				{ "tileId": 4, "data": "{\n  \"source\": \"tilesets/floor_wooden_tileset.png\"\n}" },
-				{ "tileId": 5, "data": "{\n  \"source\": \"tilesets/wall_tileset.png\",\n  \"is_solid\": true\n}" }
+				{
+					"tileId": 5,
+					"data": "{\n  \"source\": \"tilesets/wall_tileset.png\",\n  \"is_solid\": true,\n  \"is_opaque\": true\n}"
+				}
 			],
 			"savedSelections": [],
 			"cachedPixelData": { "opaqueTiles": "111111", "averageColors": "f6bcfff2f851f0b0f920f444" }
@@ -985,8 +988,6 @@
 						{ "px": [320,32], "src": [32,0], "f": 0, "t": 1, "d": [30], "a": 1 },
 						{ "px": [352,32], "src": [32,0], "f": 0, "t": 1, "d": [31], "a": 1 },
 						{ "px": [384,32], "src": [32,0], "f": 0, "t": 1, "d": [32], "a": 1 },
-						{ "px": [416,32], "src": [32,0], "f": 0, "t": 1, "d": [33], "a": 1 },
-						{ "px": [448,32], "src": [32,0], "f": 0, "t": 1, "d": [34], "a": 1 },
 						{ "px": [480,32], "src": [32,0], "f": 0, "t": 1, "d": [35], "a": 1 },
 						{ "px": [512,32], "src": [32,0], "f": 0, "t": 1, "d": [36], "a": 1 },
 						{ "px": [544,32], "src": [32,0], "f": 0, "t": 1, "d": [37], "a": 1 },
@@ -1005,7 +1006,6 @@
 						{ "px": [352,64], "src": [32,0], "f": 0, "t": 1, "d": [51], "a": 1 },
 						{ "px": [384,64], "src": [32,0], "f": 0, "t": 1, "d": [52], "a": 1 },
 						{ "px": [416,64], "src": [32,0], "f": 0, "t": 1, "d": [53], "a": 1 },
-						{ "px": [448,64], "src": [32,0], "f": 0, "t": 1, "d": [54], "a": 1 },
 						{ "px": [480,64], "src": [32,0], "f": 0, "t": 1, "d": [55], "a": 1 },
 						{ "px": [512,64], "src": [32,0], "f": 0, "t": 1, "d": [56], "a": 1 },
 						{ "px": [544,64], "src": [32,0], "f": 0, "t": 1, "d": [57], "a": 1 },
@@ -1180,7 +1180,6 @@
 						{ "px": [320,64], "src": [96,0], "f": 0, "t": 3, "d": [50], "a": 1 },
 						{ "px": [352,64], "src": [96,0], "f": 0, "t": 3, "d": [51], "a": 1 },
 						{ "px": [384,64], "src": [96,0], "f": 0, "t": 3, "d": [52], "a": 1 },
-						{ "px": [416,64], "src": [96,0], "f": 0, "t": 3, "d": [53], "a": 1 },
 						{ "px": [448,64], "src": [96,0], "f": 0, "t": 3, "d": [54], "a": 1 },
 						{ "px": [480,64], "src": [96,0], "f": 0, "t": 3, "d": [55], "a": 1 },
 						{ "px": [512,64], "src": [96,0], "f": 0, "t": 3, "d": [56], "a": 1 },

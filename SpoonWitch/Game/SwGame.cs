@@ -63,6 +63,10 @@ public class SwGame
     {
         Map.CollisionLayer.AddCollider(entRect);
     }
+    public static IEnumerable<int> GetRectIds(ErRect2 rect, uint mask = uint.MaxValue)
+    {
+        return Map.CollisionLayer.GetRectIds(rect, mask);
+    }
     private bool TryReadEnt(SwByteStream bs, out SwEntity entity)
     {
         entity = default!;
@@ -118,7 +122,6 @@ public class SwGame
     {
         Camera.Draw();
         Hud.Draw();
-        // DrawScene();
     }
     private void HandleRooms()
     {
@@ -138,7 +141,6 @@ public class SwGame
     }
     private void DrawScene()
     {
-        // Map.DebugDraw();
         Map.Draw();
         LastStream.Reset();
         NextStream.Reset();
