@@ -19,9 +19,6 @@ public class SwEntProps
     }
     public IEnumerable<SwCommand> GetCommands()
     {
-        foreach (var item in Commands)
-        {
-            yield return item;
-        }
+        while(Commands.TryDequeue(out var command)) yield return command;
     }
 }

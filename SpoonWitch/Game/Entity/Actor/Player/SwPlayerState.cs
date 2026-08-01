@@ -101,11 +101,8 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             SpoonSprite.Value.Angle = (Controls.Value.LastFacingIdx - 1) * ErMath.HALF_PI;
             SpoonSprite.Value.Play();
             BodySprite.Value.Play(BodyAnims[0][0][Controls.Value.LastFacingIdx]);
-            foreach (int id in SwGame.GetRectIds(GetHurtbox()))
-            {
-                ErEngine.Log("hit ent ", id);
-            }
             Player.Velocity = ErVec2.Zero;
+            SwGame.EnqueueAction(DoDamage);
         }
         public override void Update()
         {
@@ -124,6 +121,15 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             ErVec2 size = new(32, 32);
             var pos = Parent.Position + dir * dis;
             return ErRect2.Centered(pos, size);
+        }
+        private void DoDamage()
+        {
+            foreach (int id in SwGame.GetRectIds(GetHurtbox(), 4))
+            {
+                // ErEngine.Log("hit ent ", id);
+                if(!SwGame.TryGetEntProps(id, out var entProps)) continue;
+                entProps.AddCommand(new("damage", new PriNumber(10)));
+            }
         }
     }
     public class Charging(SwPlayer parent) : SwPlayerState(parent)

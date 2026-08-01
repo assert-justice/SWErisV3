@@ -31,6 +31,7 @@ public class SwGame
     private readonly SwHud Hud;
     public static readonly SwCamera Camera = new();
     public static ErVec2 PlayerPos{get; private set;} = new(32,32);
+    private static readonly Queue<Action> QueuedActions = [];
     public static void SetPlayerPos(ErVec2 position)
     {
         PlayerPos = position;
@@ -50,6 +51,10 @@ public class SwGame
         AddEntity(SwPlayer.Primary);
         SwSlume.Primary.Position = new(256,256);
         AddEntity(SwSlume.Primary);
+    }
+    public static void EnqueueAction(Action action)
+    {
+        QueuedActions.Enqueue(action);
     }
     public static bool TryGetEntProps(int id, out SwEntProps entProps)
     {
@@ -93,15 +98,6 @@ public class SwGame
             if(!entity.IsFreeQueued) entity.Write(NextStream);
             else EntProps.Remove(entity.Id);
         }
-        if(NewEntities.Head > 0)
-        {
-            NewEntities.Reset();
-            while(TryReadEnt(NewEntities, out var entity))
-            {
-                entity.Write(NextStream);
-            }
-            NewEntities.Clear();
-        }
         // Handle moves
         while(MoveQueue.TryDequeue(out var move))
         {
@@ -117,6 +113,17 @@ public class SwGame
             NextStream.WriteVec2(pos);
             NextStream.WriteVec2(vel);
         }
+        if(NewEntities.Head > 0)
+        {
+            NewEntities.Reset();
+            while(TryReadEnt(NewEntities, out var entity))
+            {
+                entity.Write(NextStream);
+            }
+            NewEntities.Clear();
+        }
+        // if(QueuedActions.Count > 0) ErEngine.Log("q count: ", QueuedActions.Count);
+        while(QueuedActions.TryDequeue(out var action)) action();
     }
     public void Draw()
     {

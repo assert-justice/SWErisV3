@@ -1,7 +1,6 @@
 using Eris;
 using Eris.Renderer;
 using ErisMath;
-using Microsoft.VisualBasic;
 
 namespace SpoonWitch.Game.Map;
 
@@ -12,6 +11,7 @@ public class SwCollisionLayer
     private readonly Dictionary<ErVec2I,SwCell> Cells = [];
     private readonly SwMap Map;
     private readonly HashSet<ErVec2I> ActiveCells = [];
+    private readonly HashSet<int> IntSet = [];
     private readonly Queue<(ErRect2,ErColor)> DebugRectDrawQueue = []; 
     public readonly struct SwEntRect
     {
@@ -217,15 +217,19 @@ public class SwCollisionLayer
     public IEnumerable<int> GetRectIds(ErRect2 rect, uint mask = uint.MaxValue)
     {
         if(SwApp.Debug) DebugRectDrawQueue.Enqueue((rect,ErColor.Blue));
-        ErEngine.Log("here");
+        IntSet.Clear();
         foreach (var (cellPos,cell) in GetActive(rect))
         {
             foreach (var entRect in cell.Rects)
             {
-                ErEngine.Log(entRect.Rect);
                 if((entRect.Mask & mask) == 0) continue;
-                yield return entRect.Id;
+                if(!rect.Overlaps(entRect.Rect)) continue;
+                IntSet.Add(entRect.Id);
             }
+        }
+        foreach (int id in IntSet)
+        {
+            yield return id;
         }
     }
     public void MoveAndSlide(int id, uint mask, ErVec2 size, ref ErVec2 position, ref ErVec2 velocity)
