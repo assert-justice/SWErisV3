@@ -13,6 +13,7 @@ public class SwCollisionLayer
     private readonly HashSet<ErVec2I> ActiveCells = [];
     private readonly HashSet<int> IntSet = [];
     private readonly Queue<(ErRect2,ErColor)> DebugRectDrawQueue = []; 
+    private readonly Queue<(ErRect2,ErColor)> DebugLineDrawQueue = []; 
     public readonly struct SwEntRect
     {
         public readonly int Id{get; init;}
@@ -243,10 +244,47 @@ public class SwCollisionLayer
         position = new(x,y);
         velocity = new(dx, dy);
     }
-    public bool Raycast(uint mask, ErVec2 start, ErVec2 end, out ErVec2 position, out int? id)
+    // public bool Raycast(uint mask, ErVec2 start, ErVec2 end, out ErVec2 position, out int? id)
+    // {
+    //     if(SwApp.Debug) DebugLineDrawQueue.Enqueue((new(start, end - start), ErColor.Blue));
+    //     position = default;
+    //     id = null;
+    //     return false;
+    // }
+    private static double ManDistance(ErVec2 start, ErVec2 end)
     {
-        position = default;
-        id = null;
+        var diff = end - start;
+        return Math.Abs(diff.X) + Math.Abs(diff.Y);
+    }
+    private IEnumerable<ErVec2I> GetLine(ErVec2 start, ErVec2 end)
+    {
+        double dist = ManDistance(start, end);
+        // for (let step = 0; step <= N; step++) {
+        // let t = N === 0? 0.0 : step / N;
+        // points.push(round_point(lerp_point(p0, p1, t)));
+        for(int step = 0; step < dist; step++)
+        {
+            double t = dist == 0 ? 0 : step / dist;
+            yield return GetTileCoords(ErMath.Lerp(start, end, t));
+        }
+    }
+    public bool Raycast(uint mask, ErVec2 start, ErVec2 end)
+    {
+        if (SwApp.Debug)
+        {
+            DebugLineDrawQueue.Enqueue((new(start, end - start), ErColor.Blue));
+            foreach (var coord in GetLine(start, end))
+            {
+                DebugRectDrawQueue.Enqueue((GetTileRect(coord), ErColor.Blue));
+            }
+        }
+        foreach (var coord in GetLine(start, end))
+        {
+            int tileId = GetTile(coord);
+            uint tileMask = Map.GetTileData(tileId).CollisionMask;
+            if((mask & tileMask) != 0) return true;
+            // DebugRectDrawQueue.Enqueue((GetTileRect(cell), ErColor.Blue));
+        }
         return false;
     }
     public void DebugDraw()
@@ -274,6 +312,11 @@ public class SwCollisionLayer
         {
             var(rect,color) = item;
             ErEngine.Renderer.DebugDrawRect(color, rect, false);
+        }
+        while(DebugLineDrawQueue.TryDequeue(out var item))
+        {
+            var(rect,color) = item;
+            ErEngine.Renderer.DebugDrawLine(color, rect.Position, rect.Position + rect.Size);
         }
     }
 }

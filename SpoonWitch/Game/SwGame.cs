@@ -37,6 +37,10 @@ public class SwGame
         PlayerPos = position;
         Camera.SetTargetPosition(position);
     }
+    public static SwMap GetMap()
+    {
+        return Map;
+    }
     private readonly struct SwMove
     {
         public int Id{get; init;}

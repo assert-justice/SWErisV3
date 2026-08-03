@@ -126,4 +126,11 @@ public class ErRenderer
         if (filled)SDL.RenderFillRect(Handle, rect.ToSdlRect());
         else SDL.RenderRect(Handle, rect.ToSdlRect());
     }
+    public void DebugDrawLine(ErColor color, ErVec2 start, ErVec2 end)
+    {
+        start -= ViewportTransform.Position;
+        end -= ViewportTransform.Position;
+        SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, color.A);
+        SDL.RenderLine(Handle, (float)start.X, (float)start.Y, (float)end.X, (float)end.Y);
+    }
 }

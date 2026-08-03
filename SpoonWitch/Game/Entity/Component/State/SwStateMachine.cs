@@ -23,11 +23,11 @@ public class SwStateMachine: SwComponent
     }
     public void SetState(string state)
     {
-        if (!string.IsNullOrEmpty(NextState))
-        {
-            ErEngine.LogWarning("attempted to set state '", state, "' while state '", NextState, "' was already queued.");
-            return;
-        }
+        // if (!string.IsNullOrEmpty(NextState))
+        // {
+        //     ErEngine.LogWarning("attempted to set state '", state, "' while state '", NextState, "' was already queued.");
+        //     return;
+        // }
         if(state == CurrentState.Name) return;
         if(!StateLookup.ContainsKey(state))
         {
