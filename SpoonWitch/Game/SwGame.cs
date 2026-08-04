@@ -141,6 +141,7 @@ public class SwGame
         }
         // if(QueuedActions.Count > 0) ErEngine.Log("q count: ", QueuedActions.Count);
         while(QueuedActions.TryDequeue(out var action)) action();
+        Hud.Update();
     }
     public void Draw()
     {

@@ -50,6 +50,7 @@ public class SwApp : IErApp
     public void Draw()
     {
         ErEngine.Renderer.PushViewport(ErVec2.Zero, RenderTexture);
+        ErEngine.Renderer.Clear();
         Game?.Draw();
         ErEngine.Renderer.PopViewport();
         RenderTexture.DrawFullscreen();

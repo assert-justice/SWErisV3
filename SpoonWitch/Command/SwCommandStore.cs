@@ -4,47 +4,47 @@ namespace SpoonWitch.Command;
 
 public class SwCommandStore
 {
-    // private class SwStore
-    // {
-    //     private readonly List<SwCommand> Commands = [];
-    //     private readonly Queue<SwCommand> Overflow = [];
-    //     public IEnumerable<SwCommand> GetCommands()
-    //     {
-    //         foreach (var item in Commands)
-    //         {
-    //             yield return item;
-    //         }
-    //     }
-    //     public void AddCommand(SwCommand command)
-    //     {
-    //         Overflow.Enqueue(command);
-    //     }
-    //     public void Flush()
-    //     {
-    //         Commands.Clear();
-    //         while(Overflow.TryDequeue(out var command)) Commands.Add(command);
-    //     }
-    // }
-    private readonly List<SwCommand> Commands = [];
-    private readonly Queue<SwCommand> Overflow = [];
-    public IEnumerable<SwCommand> GetCommands()
+    private class SwStore
     {
-        foreach (var item in Commands)
+        private readonly List<SwCommand> Commands = [];
+        private readonly Queue<SwCommand> Overflow = [];
+        public IEnumerable<SwCommand> GetCommands()
         {
-            yield return item;
+            foreach (var item in Commands)
+            {
+                yield return item;
+            }
+        }
+        public void AddCommand(SwCommand command)
+        {
+            Overflow.Enqueue(command);
+        }
+        public void Flush()
+        {
+            Commands.Clear();
+            while(Overflow.TryDequeue(out var command)) Commands.Add(command);
         }
     }
-    public void AddCommand(SwCommand command)
-    {
-        Overflow.Enqueue(command);
-    }
-    public void Flush()
-    {
-        Commands.Clear();
-        while(Overflow.TryDequeue(out var command)) Commands.Add(command);
-    }
+    // private readonly List<SwCommand> Commands = [];
+    // private readonly Queue<SwCommand> Overflow = [];
+    // public IEnumerable<SwCommand> GetCommands()
+    // {
+    //     foreach (var item in Commands)
+    //     {
+    //         yield return item;
+    //     }
+    // }
+    // public void AddCommand(SwCommand command)
+    // {
+    //     Overflow.Enqueue(command);
+    // }
+    // public void Flush()
+    // {
+    //     Commands.Clear();
+    //     while(Overflow.TryDequeue(out var command)) Commands.Add(command);
+    // }
 
-    // private readonly Dictionary<string, SwStore> GeneralStores = [];
+    private readonly Dictionary<string, SwStore> GeneralStores = [];
     // private readonly Dictionary<int,Dictionary<string, SwStore>> TargetedStores = [];
     // private bool TryGetStoreLookup(int targetId, out Dictionary<string, SwStore> storeLookup)
     // {
@@ -56,40 +56,45 @@ public class SwCommandStore
     //     storeLookup = lookup;
     //     return true;
     // }
-    // public IEnumerable<SwCommand> GetCommands(string verb, int targetId = -1)
-    // {
-    //     if(!TryGetStoreLookup(targetId, out var storeLookup)) return [];
-    //     else if(!storeLookup.TryGetValue(verb, out var store)) return [];
-    //     else return store.GetCommands();
-    // }
-    // public void AddCommand(SwCommand command)
-    // {
-    //     Dictionary<string, SwStore> storeLookup;
-    //     if(command.TargetId < 0) storeLookup = GeneralStores;
-    //     else if(!TryGetStoreLookup(command.TargetId, out storeLookup))
-    //     {
-    //         storeLookup = [];
-    //         TargetedStores.Add(command.TargetId, storeLookup);
-    //     }
-    //     if(!storeLookup.TryGetValue(command.Verb, out var store))
-    //     {
-    //         store = new();
-    //         storeLookup.Add(command.Verb, store);
-    //     }
-    //     store.AddCommand(command);
-    // }
-    // public void Flush()
-    // {
-    //     foreach (var item in GeneralStores.Values)
-    //     {
-    //         item.Flush();
-    //     }
-    //     foreach (var item in TargetedStores.Values)
-    //     {
-    //         foreach (var store in item.Values)
-    //         {
-    //             store.Flush();
-    //         }
-    //     }
-    // }
+    public IEnumerable<SwCommand> GetCommands(string verb)
+    {
+        // if(!TryGetStoreLookup(targetId, out var storeLookup)) return [];
+        if(!GeneralStores.TryGetValue(verb, out var store)) return [];
+        else return store.GetCommands();
+    }
+    public void AddCommand(SwCommand command)
+    {
+        // Dictionary<string, SwStore> storeLookup;
+        // if(command.TargetId < 0) storeLookup = GeneralStores;
+        // else if(!TryGetStoreLookup(command.TargetId, out storeLookup))
+        // {
+        //     storeLookup = [];
+        //     TargetedStores.Add(command.TargetId, storeLookup);
+        // }
+        // if(!storeLookup.TryGetValue(command.Verb, out var store))
+        // {
+        //     store = new();
+        //     storeLookup.Add(command.Verb, store);
+        // }
+        if(!GeneralStores.TryGetValue(command.Verb, out var store))
+        {
+            store = new();
+            GeneralStores[command.Verb] = store;
+        }
+        store.AddCommand(command);
+    }
+    public void Flush()
+    {
+        foreach (var item in GeneralStores.Values)
+        {
+            item.Flush();
+        }
+        // foreach (var item in TargetedStores.Values)
+        // {
+        //     foreach (var store in item.Values)
+        //     {
+        //         store.Flush();
+        //     }
+        // }
+    }
 }

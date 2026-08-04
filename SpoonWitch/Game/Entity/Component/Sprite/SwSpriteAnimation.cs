@@ -18,12 +18,14 @@ public class SwSpriteAnimation
         public int FrameDir = 1;
         public double FrameProgress;
         public bool IsPlaying;
+        public bool IsPaused;
         public SwAnimState Clone(ref SwAnimState state)
         {
             state.Frame = Frame;
             state.FrameDir = FrameDir;
             state.FrameProgress = FrameProgress;
             state.IsPlaying = IsPlaying;
+            state.IsPaused = IsPaused;
             return state;
         }
     }
@@ -68,6 +70,7 @@ public class SwSpriteAnimation
     public readonly bool HFlip = false;
     public readonly bool VFlip = false;
     public bool IsPlaying{get => State.IsPlaying; set => State.IsPlaying = value;}
+    public bool IsPaused{get => State.IsPaused; set => State.IsPaused = value;}
     private int FirstFrame{get => IsReversed ? Frames.Count - 1 : 0;}
     private int LastFrame{get => IsReversed ? 0 : Frames.Count - 1;}
     public SwSpriteAnimation(string name, IEnumerable<SwFrame> frames, bool hFlip = false, bool vFlip = false)
@@ -83,6 +86,7 @@ public class SwSpriteAnimation
     }
     public void Play()
     {
+        if(!IsPlaying && !IsPaused) State.Frame = FirstFrame;
         State.IsPlaying = true;
     }
     public void Pause()

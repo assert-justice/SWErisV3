@@ -73,14 +73,9 @@ public class ErTexture
     {
         size ??= Size;
         ErRect2 destRect = new(position, size.Value);
-        sourceRect ??= new(ErVec2.Zero, size.Value);
+        sourceRect ??= new(ErVec2.Zero, Size);
         origin ??= ErVec2.Zero;
-        // if(origin is null) origin = ErVec2.Zero;
-        // else origin *= ErEngine.Renderer.ViewportTransform.Size;
-        // destRect = destRect.TranslateAndScale(ErEngine.Renderer.ViewportTransform).Translate(-origin.Value);
         destRect = destRect.Translate(-ErEngine.Renderer.ViewportTransform.Position-origin.Value);
-        // ErEngine.Log("dest rect: ", destRect);
-        // ErEngine.Log("src rect: ", sourceRect);
         SDL.FlipMode flipMode = SDL.FlipMode.None;
         if(hFlip) flipMode |= SDL.FlipMode.Horizontal;
         if(vFlip) flipMode |= SDL.FlipMode.Vertical;

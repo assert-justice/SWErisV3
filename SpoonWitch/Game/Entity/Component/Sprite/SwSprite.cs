@@ -24,6 +24,7 @@ public class SwSprite : SwComponent
     public int Frame{get => CurrentAnim?.Frame ?? 0;}
     public double FrameProgress{get => CurrentAnim?.FrameProgress ?? 0;}
     public bool IsPlaying{get => CurrentAnim?.IsPlaying ?? false;}
+    public bool IsPaused{get => CurrentAnim?.IsPaused ?? false;}
     public bool Visible = true;
     public bool Centered = true;
     public double Angle = 0;
@@ -79,6 +80,7 @@ public class SwSprite : SwComponent
         byteStream.TryReadI32(out int frame);
         byteStream.TryReadF64(out double frameProgress);
         byteStream.TryReadBool(out bool isPlaying);
+        byteStream.TryReadBool(out bool isPaused);
         byteStream.TryReadBool(out bool frameDir);
         if(CurrentAnim is not null)
         {
@@ -86,6 +88,7 @@ public class SwSprite : SwComponent
             CurrentAnim.FrameProgress = frameProgress;
             CurrentAnim.FrameDir = frameDir ? 1 : -1;
             CurrentAnim.IsPlaying = isPlaying;
+            CurrentAnim.IsPaused = isPaused;
         }
     }
     public override void Write(SwByteStream byteStream)
@@ -97,6 +100,7 @@ public class SwSprite : SwComponent
         byteStream.WriteI32(Frame);
         byteStream.WriteF64(FrameProgress);
         byteStream.WriteBool(IsPlaying);
+        byteStream.WriteBool(IsPaused);
         byteStream.WriteBool(CurrentAnim?.FrameDir > 0);
     }
     public override void Update()

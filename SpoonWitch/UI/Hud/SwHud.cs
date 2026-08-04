@@ -32,7 +32,28 @@ public class SwHud
         if(!SwHudBar.TryLoad(offset, dirpath, "mana", node, out ManaBar)) throw new("no mana bar");
         if(!SwHudBar.TryLoad(offset, dirpath, "stamina", node, out StaminaBar)) throw new("no stamina bar");
     }
-    public void Update(){}
+    public void Update()
+    {
+        foreach (var item in SwApp.CommandStore.GetCommands("hud_set"))
+        {
+            TryHandleSet(item.Payload);
+        }
+    }
+    private bool TryHandleSet(PriNode node)
+    {
+        if(!node.TryGet("key", out string key)) return ErEngine.LogWarning("hud set payload missing key");
+        if(!node.TryGet("value", out double value)) return ErEngine.LogWarning("hud set payload missing value");
+        if(value < 0) value = 0;
+        switch (key)
+        {
+            case "health":
+            HealthBar.Value = value;
+            break;
+            default:
+            return ErEngine.LogWarning("invalid hud key '", key, "'");
+        }
+        return true;
+    }
     public void Draw()
     {
         Base.Draw(Offset + BaseOff);
