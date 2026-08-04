@@ -102,7 +102,11 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             SpoonSprite.Value.Play();
             BodySprite.Value.Play(BodyAnims[0][0][Controls.Value.LastFacingIdx]);
             Player.Velocity = ErVec2.Zero;
-            SwGame.EnqueueAction(DoDamage);
+            // SwGame.EnqueueAction(DoDamage);
+            SwDamage damage = new(10, Player.Position);
+            // SwGame.EnqueueCommandRect(2, ErRect2.Centered(Position, HurtboxSize), new("damage", damage.ToPri()));
+
+            SwGame.EnqueueCommandRect(4, GetHurtbox(), new("damage", damage.ToPri()));
         }
         public override void Update()
         {
@@ -122,15 +126,15 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             var pos = Parent.Position + dir * dis;
             return ErRect2.Centered(pos, size);
         }
-        private void DoDamage()
-        {
-            foreach (int id in SwGame.GetRectIds(GetHurtbox(), 4))
-            {
-                // ErEngine.Log("hit ent ", id);
-                if(!SwGame.TryGetEntProps(id, out var entProps)) continue;
-                entProps.AddCommand(new("damage", new PriNumber(10)));
-            }
-        }
+        // private void DoDamage()
+        // {
+        //     foreach (int id in SwGame.GetRectIds(GetHurtbox(), 4))
+        //     {
+        //         // ErEngine.Log("hit ent ", id);
+        //         if(!SwGame.TryGetEntProps(id, out var entProps)) continue;
+        //         entProps.AddCommand(new("damage", new PriNumber(10)));
+        //     }
+        // }
     }
     public class Charging(SwPlayer parent) : SwPlayerState(parent)
     {

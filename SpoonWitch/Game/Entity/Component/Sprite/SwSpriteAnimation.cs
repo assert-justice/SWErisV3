@@ -136,7 +136,7 @@ public class SwSpriteAnimation
         if(FrameProgress < FrameDuration)
         {
             Next(dt, ref State);
-            if(!IsPlaying) Stop();
+            // if(!IsPlaying) Stop();
         }
     }
     public void Draw(SwSprite sprite, ErVec2 position, double dt)

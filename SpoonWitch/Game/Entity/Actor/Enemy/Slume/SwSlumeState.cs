@@ -12,11 +12,27 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
     protected readonly SwSlume Slume = parent;
     protected ErWrapper<SwSprite> Sprite = new(() => parent.GetComponent<SwSprite>("body")!);
     protected ErWrapper<SwStateMachine> StateMachine = new(() => parent.GetComponent<SwStateMachine>("state_machine")!);
-    public override void BeginState(string lastState)
+    private static readonly string[] DirStrings = [
+        "move_dr",
+        "move_d",
+        "move_dl",
+        "move_u",
+    ];
+    private void PlayBodyAnim()
     {
-        base.BeginState(lastState);
-        // ErEngine.Log(Name);
+        int facingIdx = ErMath.RoundAngleToInt(Slume.Velocity.GetAngle(), 4);
+        Sprite.Value.Play(DirStrings[facingIdx]);
     }
+    // public override void BeginState(string lastState)
+    // {
+    //     base.BeginState(lastState);
+    //     ErEngine.Log(Name);
+    // }
+    // public override void Update()
+    // {
+    //     base.Update();
+    //     if(Slume.IsKnockback) ErEngine.Log(Name, " ", Slume.Velocity);
+    // }
     private class Default(SwSlume parent) : SwSlumeState(parent)
     {
         public override string Name => "default";
@@ -34,17 +50,14 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
     private class Chasing(SwSlume parent) : SwSlumeState(parent)
     {
         public override string Name => "chasing";
-        public override void BeginState(string lastState)
-        {
-            base.BeginState(lastState);
-            Sprite.Value.Play("move_d");
-        }
         public override void Update()
         {
             base.Update();
             Slume.TargetPosition = SwGame.PlayerPos;
             if(!Slume.CanSeePlayer())StateMachine.Value.SetState("seeking");
             Slume.MoveToTarget(Slume.BaseSpeed);
+            Slume.DoDamage();
+            PlayBodyAnim();
         }
     }
     private class Seeking(SwSlume parent) : SwSlumeState(parent)
@@ -53,7 +66,6 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
-            Sprite.Value.Play("move_d");
             Slume.TimeoutClock = 1;
         }
         public override void Update()
@@ -63,6 +75,8 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
             else if(Slume.TimeoutClock > 0) Slume.TimeoutClock -= SwGame.DeltaTime;
             else StateMachine.Value.SetState("wandering");
             Slume.MoveToTarget(Slume.BaseSpeed);
+            Slume.DoDamage();
+            PlayBodyAnim();
         }
     }
     private class Wandering(SwSlume parent) : SwSlumeState(parent)
@@ -84,7 +98,7 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
         }
         private void SetNewWander()
         {
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 50; i++)
             {
                 if(TryRandomTarget()) return;
             }
@@ -93,28 +107,60 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
-            // Slume.TargetPosition = SwGame.PlayerPos;
-            Sprite.Value.Play("move_d");
             SetNewWander();
-            // ErEngine.Log("wandering");
-            // Pick random wander point
         }
         public override void Update()
         {
             base.Update();
             if(Slume.CanSeePlayer())StateMachine.Value.SetState("chasing");
-            // else if(Slume.DistanceToTarget() < 64)SetNewWander();
             else if(Slume.TimeoutClock > 0)
             {
                 Slume.TimeoutClock -= SwGame.DeltaTime;
                 Slume.MoveToTarget(Slume.BaseSpeed * Slume.WanderSpeedMul);
             }
-            // else if wander point is far away, move towards it
             else
             {
                 // pick a new random wander point
                 SetNewWander();
             }
+            Slume.DoDamage();
+            PlayBodyAnim();
+        }
+    }
+    private class Dead(SwSlume parent) : SwSlumeState(parent)
+    {
+        public override string Name => "dead";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            Sprite.Value.Play("death");
+            Slume.TimeoutClock = 1;
+            Slume.Velocity = ErVec2.Zero;
+        }
+        public override void EndState(string nextState)
+        {
+            base.EndState(nextState);
+            ErEngine.LogWarning("slume attempted to leave death state! ", nextState);
+        }
+    }
+    private class Knockback(SwSlume parent) : SwSlumeState(parent)
+    {
+        public override string Name => "knockback";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            // Note: use the first frame of the death animation
+            Sprite.Value.Play("death");
+            Sprite.Value.Stop();
+        }
+        public override void Update()
+        {
+            base.Update();
+            double speed = Slume.Velocity.GetLength();
+            if(speed > ErMath.EPSILON) Slume.Velocity = Slume.Velocity.Normalized() * speed * 0.95;
+            if(Slume.IsKnockback) return;
+            if(Slume.IsAlive) StateMachine.Value.SetState("wandering");
+            else StateMachine.Value.SetState("dead");
         }
     }
     public static SwStateMachine GetStateMachine(SwSlume parent, string name)
@@ -124,6 +170,8 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
             new Chasing(parent),
             new Seeking(parent),
             new Wandering(parent),
+            new Knockback(parent),
+            new Dead(parent),
         ]);
     }
 }

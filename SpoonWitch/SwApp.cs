@@ -23,7 +23,7 @@ public class SwApp : IErApp
     public static readonly SwCommandStore CommandStore = new();
     public static PriNode Settings{get; private set;} = new PriDict();
     public static PriNode SaveData{get; private set;} = new PriDict();
-    public static bool Debug{get; private set;} = true;
+    public static bool Debug{get; private set;} = false;
     public static int Main()
     {
         SwApp app = new();

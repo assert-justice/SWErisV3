@@ -4,6 +4,7 @@ using ErisMath;
 using Prion.Node;
 using Prion.Parser;
 using SpoonWitch.ByteStream;
+using SpoonWitch.Command;
 using SpoonWitch.Game.Entity;
 using SpoonWitch.Game.Entity.Actor.Enemy.Slume;
 using SpoonWitch.Game.Entity.Actor.Player;
@@ -59,6 +60,18 @@ public class SwGame
     public static void EnqueueAction(Action action)
     {
         QueuedActions.Enqueue(action);
+    }
+    public static void EnqueueCommandRect(uint mask, ErRect2 rect, SwCommand command)
+    {
+        void fn()
+        {
+            foreach (int id in Map.CollisionLayer.GetRectIds(rect, mask))
+            {
+                if(!TryGetEntProps(id, out var entProps)) continue;
+                entProps.AddCommand(command);
+            }
+        }
+        QueuedActions.Enqueue(fn);
     }
     public static bool TryGetEntProps(int id, out SwEntProps entProps)
     {
