@@ -3,6 +3,7 @@ using Eris;
 using ErisMath;
 using Prion.Node;
 using Prion.Parser;
+using SpoonWitch.Game.Map.MapObject;
 
 namespace SpoonWitch.Game.Map;
 
@@ -18,6 +19,7 @@ public class SwMap
     public readonly ErVec2I TileSize;
     public readonly ErVec2I SectorSizeTiles;
     public readonly ErVec2I SectorSizePx;
+    private readonly Dictionary<string,SwMapObject> GlobalMapObjects = [];
     public SwMap(string id = "", int numTileLayers = 0, ErVec2I? tileSize = null, ErVec2I? sectorSizePx = null)
     {
         Id = id;
@@ -30,6 +32,10 @@ public class SwMap
         SectorSizePx = sectorSizePx ?? new(640, 320);
         SectorSizeTiles = SectorSizePx / TileSize;
         CollisionLayer = new(this);
+    }
+    public void AddGlobalObject(SwMapObject mapObject)
+    {
+        GlobalMapObjects.Add(mapObject.Id, mapObject);
     }
     public SwTileData GetTileData(int tileId)
     {
@@ -49,12 +55,26 @@ public class SwMap
             SectorLookup.Add(sector,room);
         }
     }
-    public void Update(){}
+    public void Update()
+    {
+        foreach (var item in GlobalMapObjects.Values)
+        {
+            item.Update();
+        }
+        foreach (var room in LoadedRooms.Values)
+        {
+            room.Update();
+        }
+    }
     public void Draw()
     {
-        foreach (var item in DisplayLayers)
+        foreach (var layer in DisplayLayers)
         {
-            item.Draw();
+            layer.Draw();
+        }
+        foreach (var room in LoadedRooms.Values)
+        {
+            room.Draw();
         }
         if (SwApp.Debug)
         {

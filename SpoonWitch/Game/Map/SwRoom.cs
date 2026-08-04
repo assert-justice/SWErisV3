@@ -1,6 +1,7 @@
 using Eris;
 using ErisMath;
 using Prion.Node;
+using SpoonWitch.Game.Map.MapObject;
 
 namespace SpoonWitch.Game.Map;
 
@@ -8,7 +9,7 @@ public class SwRoom
 {
     private readonly HashSet<ErVec2I> Sectors = [];
     private readonly Dictionary<string,SwMapObject> MapObjects = [];
-    private readonly Dictionary<string,Dictionary<string,SwMapObject>> MapObjectLookup = [];
+    // private readonly Dictionary<string,Dictionary<string,SwMapObject>> MapObjectLookup = [];
     public readonly SwMap Map;
     public readonly string Id;
     public readonly ErRect2I RectSectors;
@@ -31,15 +32,23 @@ public class SwRoom
             yield return item;
         }
     }
+    public void Update()
+    {
+        foreach (var item in MapObjects.Values)
+        {
+            item.Update();
+        }
+    }
     private void AddMapObject(SwMapObject mapObject)
     {
-        MapObjects.Add(mapObject.Id, mapObject);
-        if(!MapObjectLookup.TryGetValue(mapObject.Type, out var dict))
-        {
-            dict = [];
-            MapObjectLookup[mapObject.Type] = dict;
-        }
-        dict.Add(mapObject.Id, mapObject);
+        if(mapObject.IsGlobal) Map.AddGlobalObject(mapObject);
+        else MapObjects.Add(mapObject.Id, mapObject);
+        // if(!MapObjectLookup.TryGetValue(mapObject.Type, out var dict))
+        // {
+        //     dict = [];
+        //     MapObjectLookup[mapObject.Type] = dict;
+        // }
+        // dict.Add(mapObject.Id, mapObject);
     }
     private bool TryAddEntityLayer(PriNode layerData)
     {

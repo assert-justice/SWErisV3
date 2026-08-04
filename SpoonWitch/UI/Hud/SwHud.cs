@@ -34,7 +34,7 @@ public class SwHud
     }
     public void Update()
     {
-        foreach (var item in SwApp.CommandStore.GetCommands("hud_set"))
+        foreach (var item in SwApp.CommandStore.GetGlobalCommands("hud_set"))
         {
             TryHandleSet(item.Payload);
         }

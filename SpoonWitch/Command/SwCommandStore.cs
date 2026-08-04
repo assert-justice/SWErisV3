@@ -25,57 +25,44 @@ public class SwCommandStore
             while(Overflow.TryDequeue(out var command)) Commands.Add(command);
         }
     }
-    // private readonly List<SwCommand> Commands = [];
-    // private readonly Queue<SwCommand> Overflow = [];
-    // public IEnumerable<SwCommand> GetCommands()
-    // {
-    //     foreach (var item in Commands)
-    //     {
-    //         yield return item;
-    //     }
-    // }
-    // public void AddCommand(SwCommand command)
-    // {
-    //     Overflow.Enqueue(command);
-    // }
-    // public void Flush()
-    // {
-    //     Commands.Clear();
-    //     while(Overflow.TryDequeue(out var command)) Commands.Add(command);
-    // }
-
-    private readonly Dictionary<string, SwStore> GeneralStores = [];
-    // private readonly Dictionary<int,Dictionary<string, SwStore>> TargetedStores = [];
-    // private bool TryGetStoreLookup(int targetId, out Dictionary<string, SwStore> storeLookup)
-    // {
-    //     Dictionary<string, SwStore>? lookup = null;
-    //     storeLookup = default!;
-    //     if(targetId < 0) storeLookup = GeneralStores;
-    //     else if(!TargetedStores.TryGetValue(targetId, out lookup)) return false;
-    //     if(lookup is null) return false;
-    //     storeLookup = lookup;
-    //     return true;
-    // }
-    public IEnumerable<SwCommand> GetCommands(string verb)
+    private class SwQueue
     {
-        // if(!TryGetStoreLookup(targetId, out var storeLookup)) return [];
+        private readonly Queue<SwCommand> Commands = [];
+        private long LastUsed;
+        private void NoteUsed()
+        {
+            LastUsed = DateTime.UtcNow.Ticks;
+        }
+        public IEnumerable<SwCommand> GetCommands()
+        {
+            if(Commands.Count > 0) NoteUsed();
+            while(Commands.TryDequeue(out var command)) yield return command;
+        }
+        public bool CanEvict(long now, long ageGate)
+        {
+            if(Commands.Count > 0) return false;
+            return now - LastUsed > ageGate;
+        }
+        public void AddCommand(SwCommand command)
+        {
+            Commands.Enqueue(command);
+            NoteUsed();
+        }
+    }
+    private readonly Dictionary<string, SwStore> GeneralStores = [];
+    private readonly Dictionary<string,SwQueue> QueueLookup = [];
+    public IEnumerable<SwCommand> GetGlobalCommands(string verb)
+    {
         if(!GeneralStores.TryGetValue(verb, out var store)) return [];
         else return store.GetCommands();
     }
-    public void AddCommand(SwCommand command)
+    public IEnumerable<SwCommand> HandleCommands(string id)
     {
-        // Dictionary<string, SwStore> storeLookup;
-        // if(command.TargetId < 0) storeLookup = GeneralStores;
-        // else if(!TryGetStoreLookup(command.TargetId, out storeLookup))
-        // {
-        //     storeLookup = [];
-        //     TargetedStores.Add(command.TargetId, storeLookup);
-        // }
-        // if(!storeLookup.TryGetValue(command.Verb, out var store))
-        // {
-        //     store = new();
-        //     storeLookup.Add(command.Verb, store);
-        // }
+        if(!QueueLookup.TryGetValue(id, out var commands)) return [];
+        return commands.GetCommands();
+    }
+    public void AddGlobalCommand(SwCommand command)
+    {
         if(!GeneralStores.TryGetValue(command.Verb, out var store))
         {
             store = new();
@@ -83,18 +70,20 @@ public class SwCommandStore
         }
         store.AddCommand(command);
     }
+    public void AddCommand(string id, SwCommand command)
+    {
+        if(!QueueLookup.TryGetValue(id, out var queue))
+        {
+            queue = new();
+            QueueLookup.Add(id, queue); 
+        }
+        queue.AddCommand(command);
+    }
     public void Flush()
     {
         foreach (var item in GeneralStores.Values)
         {
             item.Flush();
         }
-        // foreach (var item in TargetedStores.Values)
-        // {
-        //     foreach (var store in item.Values)
-        //     {
-        //         store.Flush();
-        //     }
-        // }
     }
 }

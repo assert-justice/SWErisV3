@@ -37,7 +37,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         PriDict dict = new();
         dict.Data["key"] = new PriString(key);
         dict.Data["value"] = new PriNumber(value);
-        SwApp.CommandStore.AddCommand(new("hud_set", dict));
+        SwApp.CommandStore.AddGlobalCommand(new("hud_set", dict));
     }
     public override void Update()
     {
