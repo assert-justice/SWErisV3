@@ -40,7 +40,7 @@ public class SwApp : IErApp
     {
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
         Game = new();
-        SwGame.TryLoadMap("game_data/map/demo_map.ldtk");
+        SwGame.TryLoadMap("game_data/map/demo_map2.ldtk");
     }
     public void Update()
     {

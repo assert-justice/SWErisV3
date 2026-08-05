@@ -100,7 +100,7 @@ public class SwTileData
         if(!ErEngine.Renderer.TextureManager.TryGetSurface(texPath, out nint surface)) return ErEngine.LogWarning("source path invalid");
         if(!ErTexture.TryFromPath(texPath, out var texture)) return ErEngine.LogWarning("source path invalid2");
         if(!priNode.Get("is_solid").TryAs(out bool isSolid)) isSolid = false;
-        // ErEngine.Log("is solid: ", isSolid);
+        // ErEngine.Log("source: ", texPath);
         if(!priNode.Get("is_opaque").TryAs(out bool isOpaque)) isOpaque = false;
         if(!priNode.Get("move_speed_mul").TryAs(out double moveSpeedMul)) moveSpeedMul = 1;
         value = new(texture, isSolid, isOpaque, moveSpeedMul);
@@ -108,7 +108,7 @@ public class SwTileData
         ErVec2I texSizeTiles = (ErVec2I)value.Texture.Size / tileSize;
         for (int xi = 0; xi < texSizeTiles.X; xi++)
         {
-            for (int yi = 0; yi < texSizeTiles.Y; yi++)
+            for (int yi = 0; yi < 4; yi++)
             {
                 // check if empty
                 int x = xi * tileSize.X;

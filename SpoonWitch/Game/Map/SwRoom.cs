@@ -7,9 +7,8 @@ namespace SpoonWitch.Game.Map;
 
 public class SwRoom
 {
-    private readonly HashSet<ErVec2I> Sectors = [];
+    private readonly Dictionary<ErVec2I,SwSector> Sectors = [];
     private readonly Dictionary<string,SwMapObject> MapObjects = [];
-    // private readonly Dictionary<string,Dictionary<string,SwMapObject>> MapObjectLookup = [];
     public readonly SwMap Map;
     public readonly string Id;
     public readonly ErRect2I RectSectors;
@@ -25,9 +24,9 @@ public class SwRoom
         RectTiles = rectSectors * map.SectorSizeTiles;
         RectPx = (ErRect2)(RectTiles * map.TileSize);
     }
-    public IEnumerable<ErVec2I> GetSectors()
+    public IEnumerable<SwSector> GetSectors()
     {
-        foreach (var item in Sectors)
+        foreach (var item in Sectors.Values)
         {
             yield return item;
         }
@@ -43,20 +42,13 @@ public class SwRoom
     {
         if(mapObject.IsGlobal) Map.AddGlobalObject(mapObject);
         else MapObjects.Add(mapObject.Id, mapObject);
-        // if(!MapObjectLookup.TryGetValue(mapObject.Type, out var dict))
-        // {
-        //     dict = [];
-        //     MapObjectLookup[mapObject.Type] = dict;
-        // }
-        // dict.Add(mapObject.Id, mapObject);
     }
     private bool TryAddEntityLayer(PriNode layerData)
     {
         if(!layerData.Get("entityInstances").TryAs(out PriList entList)) return false;
         foreach (var entData in entList.Values)
         {
-            if(!SwMapObject.TryFromData(this, entData, out var mapObject)) return ErEngine.LogWarning("malformed map object");
-            // ErEngine.Log(mapObject.Type);
+            if(!SwMapObject.TryFromLdtkData(Map.TileSize, entData, out var mapObject)) return ErEngine.LogWarning("malformed map object");
             AddMapObject(mapObject);
         }
         return true;
@@ -72,15 +64,15 @@ public class SwRoom
             int tileId = ErMath.FloorToInt(srcX / 32);
             ErVec2I tilePos = RectTiles.Position + new ErVec2I(xPx, yPx) / Map.TileSize;
             ErVec2I sectorPos = tilePos / Map.SectorSizeTiles;
-            Sectors.Add(sectorPos);
+            if(!Sectors.TryGetValue(sectorPos, out var sector))
+            {
+                sector = new(Map, sectorPos);
+                Sectors[sectorPos] = sector;
+            }
+            // Sectors.Add(sectorPos);
+            sector.SetTile(layerIdx, tilePos, tileId);
             // Todo: defer this
-            Map.SetTile(layerIdx, tilePos, tileId);
-            // if(!Sectors.TryGetValue(sectorPos, out var sector))
-            // {
-            //     sector = new(Map, this, sectorPos);
-            //     Sectors.Add(sectorPos, sector);
-            // }
-            // if(!sector.TrySetTile(tilePos, layerIdx, tileId)) return false;
+            // Map.SetTile(layerIdx, tilePos, tileId);
         }
         return true;
     }
@@ -89,7 +81,13 @@ public class SwRoom
         if(!IsDirty) return;
         IsDirty = false;
     }
-    public void Load(){}
+    public void Load()
+    {
+        foreach (var item in Sectors.Values)
+        {
+            item.Load(Map);
+        }
+    }
     public void Unload(){}
     public void Draw(){}
     public static bool TryFromData(SwMap map, PriNode data, out SwRoom room)
@@ -112,11 +110,12 @@ public class SwRoom
             }
             else if(layerType == "Tiles")
             {
-                if(!room.TryAddTileLayer(layer, layerIdx)) return false;
+                if(!room.TryAddTileLayer(layer, map.NumTileLayers - 1 - layerIdx)) return false;
                 layerIdx++;
             }
             else return ErEngine.LogWarning("bad layer type '", layerType, "'.");
         }
+        // room.Load();
         return true;
     }
 }

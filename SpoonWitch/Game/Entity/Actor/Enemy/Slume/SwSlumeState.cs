@@ -44,7 +44,7 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
         public override void Update()
         {
             base.Update();
-            if(Slume.CanSeePlayer())StateMachine.Value.SetState("chasing");
+            // if(Slume.CanSeePlayer())StateMachine.Value.SetState("chasing");
         }
     }
     private class Chasing(SwSlume parent) : SwSlumeState(parent)

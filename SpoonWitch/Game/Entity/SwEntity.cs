@@ -48,6 +48,19 @@ public abstract class SwEntity
         Ready();
     }
     public virtual void Ready(){}
+    //     public void Init(SwEntProps entProps)
+    // {
+    //     _Id = entProps.Id;
+    //     EntProps = entProps;
+    //     // SwGame.EntProps.Add(_Id, entProps);
+    //     // Ready();
+    // }
+    // public virtual void Ready()
+    // {
+    //     _CurrentHeadIndex = -1;
+    //     _LastHeadIndex = -1;
+    // }
+
     public virtual void Read(SwByteStream byteStream)
     {
         // read type byte

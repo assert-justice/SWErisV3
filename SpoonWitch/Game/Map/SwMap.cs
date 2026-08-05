@@ -14,6 +14,7 @@ public class SwMap
     private readonly Dictionary<ErVec2I, SwRoom> SectorLookup = [];
     private readonly List<SwTileData> TileData = [];
     private readonly SwDisplayLayer[] DisplayLayers;
+    public readonly int NumTileLayers;
     public readonly SwCollisionLayer CollisionLayer;
     public readonly string Id;
     public readonly ErVec2I TileSize;
@@ -23,6 +24,7 @@ public class SwMap
     public SwMap(string id = "", int numTileLayers = 0, ErVec2I? tileSize = null, ErVec2I? sectorSizePx = null)
     {
         Id = id;
+        NumTileLayers = numTileLayers;
         DisplayLayers = new SwDisplayLayer[numTileLayers];
         for (int i = 0; i < DisplayLayers.Length; i++)
         {
@@ -39,6 +41,7 @@ public class SwMap
     }
     public SwTileData GetTileData(int tileId)
     {
+        // ErEngine.Log(tileId, " ", TileData.Count);
         return TileData[tileId];
     }
     public void SetTile(int layer, ErVec2I coord, int tileId)
@@ -52,7 +55,7 @@ public class SwMap
         room.Load();
         foreach (var sector in room.GetSectors())
         {
-            SectorLookup.Add(sector,room);
+            SectorLookup.Add(sector.PositionSectors,room);
         }
     }
     public void Update()
@@ -120,14 +123,10 @@ public class SwMap
             if(layerType == "Tiles") numTileLayers++;
         }
         map = new(id, numTileLayers, new(defaultGridSize,defaultGridSize), new(sectorWidthPx,sectorHeightPx));
-        foreach (var roomData in rooms.Values)
-        {
-            if(SwRoom.TryFromData(map, roomData, out var room)) map.AddRoom(room);
-            else return ErEngine.LogWarning("malformed room");
-        }
         foreach (var tileset in tilesetList.Values)
         {
             if(!tileset.Get("identifier").TryAs(out string ident)) continue;
+            // ErEngine.Log("fuck off ", ident);
             if(ident != "tile_pallet") continue;
             if(!tileset.Get("customData").TryAs(out PriList tiles)) return ErEngine.LogWarning("no custom data");
             foreach (var t in tiles.Values)
@@ -146,6 +145,11 @@ public class SwMap
                 }
             }
             break;
+        }
+        foreach (var roomData in rooms.Values)
+        {
+            if(SwRoom.TryFromData(map, roomData, out var room)) map.AddRoom(room);
+            else return ErEngine.LogWarning("malformed room");
         }
         return true;
     }

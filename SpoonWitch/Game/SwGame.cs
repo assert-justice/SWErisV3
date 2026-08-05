@@ -89,16 +89,16 @@ public class SwGame
     {
         return Map.CollisionLayer.GetRectIds(rect, mask);
     }
-    private bool TryReadEnt(SwByteStream bs, out SwEntity entity)
+    private bool TryReadEnt(SwByteStream bs, out SwEntity primary)
     {
-        entity = default!;
+        primary = default!;
         if(!bs.TryPeekByte(out byte typeId)) return false;
         if(!Prototypes.TryGetValue(typeId, out var pair))
         {
             return ErEngine.LogError("Unregistered type id '", typeId, "'.");
         }
-        entity = pair.Item1;
-        entity.Read(bs);
+        primary = pair.Item1;
+        primary.Read(bs);
         return true;
     }
     public void Update()
@@ -115,6 +115,23 @@ public class SwGame
             if(!entity.IsFreeQueued) entity.Write(NextStream);
             else EntProps.Remove(entity.Id);
         }
+        if(NewEntities.Head > 0)
+        {
+            NewEntities.Reset();
+            NextStream.Extend(NewEntities);
+            // while(TryReadEnt(NewEntities, out var entity))
+            // {
+                // ErEngine.Log("last head write: ", entity.LastHeadIndex);
+                // ErEngine.Log("current head write: ", entity.CurrentHeadIndex);
+                // int start = NextStream.Head;
+                // entity.Write(NextStream);
+                // NextStream.SetHead(start);
+                // entity.Read(NextStream);
+                // ErEngine.Log("last head read: ", entity.LastHeadIndex);
+                // entity.Write(NextStream);
+            // }
+            NewEntities.Clear();
+        }
         // Handle moves
         while(MoveQueue.TryDequeue(out var move))
         {
@@ -130,16 +147,6 @@ public class SwGame
             NextStream.WriteVec2(pos);
             NextStream.WriteVec2(vel);
         }
-        if(NewEntities.Head > 0)
-        {
-            NewEntities.Reset();
-            while(TryReadEnt(NewEntities, out var entity))
-            {
-                entity.Write(NextStream);
-            }
-            NewEntities.Clear();
-        }
-        // if(QueuedActions.Count > 0) ErEngine.Log("q count: ", QueuedActions.Count);
         while(QueuedActions.TryDequeue(out var action)) action();
         Hud.Update();
     }
@@ -181,6 +188,11 @@ public class SwGame
             nextEnt.Read(NextStream);
             if(nextEnt.LastHeadIndex < 0) continue;
             LastStream.SetHead(nextEnt.LastHeadIndex);
+            if(!LastStream.TryPeekByte(out _))
+            {
+                ErEngine.LogWarning("ent ", nextEnt.Id, " of type ", nextEnt.GetType(), " could not be read");
+                continue;
+            }
             lastEnt.Read(LastStream);
             lastEnt.Draw(nextEnt);
         }

@@ -29,7 +29,7 @@ public class SwSlume : SwEnemy, ISwEntity<SwSlume>
         if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load slume sprites");
         StateMachine = SwSlumeState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
-        StateMachine.SetState("wandering");
+        // StateMachine.SetState("wandering");
     }
     protected override void Die()
     {
