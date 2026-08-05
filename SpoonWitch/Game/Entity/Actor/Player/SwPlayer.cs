@@ -30,7 +30,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load player sprites");
         StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
-        Position = new(128,128);
+        // Position = new(128,128);
     }
     private static void SetHud(string key, double value)
     {
@@ -38,6 +38,11 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         dict.Data["key"] = new PriString(key);
         dict.Data["value"] = new PriNumber(value);
         SwApp.CommandStore.AddGlobalCommand(new("hud_set", dict));
+    }
+    public override void Ready()
+    {
+        base.Ready();
+        ErEngine.Log(Position);
     }
     public override void Update()
     {

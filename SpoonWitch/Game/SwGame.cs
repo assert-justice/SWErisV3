@@ -53,9 +53,10 @@ public class SwGame
     {
         if(!SwHud.TryLoad(ErVec2.Zero, out Hud)) throw new("bad hud");
         Camera.DrawFn = DrawScene;
-        AddEntity(SwPlayer.Primary);
-        SwSlume.Primary.Position = new(256,256);
-        AddEntity(SwSlume.Primary);
+        // AddEntity<SwPlayer>();
+        // AddEntity(SwPlayer.Primary);
+        // SwSlume.Primary.Position = new(256,256);
+        // AddEntity(SwSlume.Primary);
     }
     public static void EnqueueAction(Action action)
     {
@@ -93,10 +94,7 @@ public class SwGame
     {
         primary = default!;
         if(!bs.TryPeekByte(out byte typeId)) return false;
-        if(!Prototypes.TryGetValue(typeId, out var pair))
-        {
-            return ErEngine.LogError("Unregistered type id '", typeId, "'.");
-        }
+        if(!TryGetPrototype(typeId, out var pair)) return false;
         primary = pair.Item1;
         primary.Read(bs);
         return true;
@@ -104,6 +102,7 @@ public class SwGame
     public void Update()
     {
         HandleRooms();
+        HandleCommands();
         Camera.Update();
         Map.CollisionLayer.ClearColliders();
         (LastStream,NextStream) = (NextStream,LastStream);
@@ -119,17 +118,6 @@ public class SwGame
         {
             NewEntities.Reset();
             NextStream.Extend(NewEntities);
-            // while(TryReadEnt(NewEntities, out var entity))
-            // {
-                // ErEngine.Log("last head write: ", entity.LastHeadIndex);
-                // ErEngine.Log("current head write: ", entity.CurrentHeadIndex);
-                // int start = NextStream.Head;
-                // entity.Write(NextStream);
-                // NextStream.SetHead(start);
-                // entity.Read(NextStream);
-                // ErEngine.Log("last head read: ", entity.LastHeadIndex);
-                // entity.Write(NextStream);
-            // }
             NewEntities.Clear();
         }
         // Handle moves
@@ -155,6 +143,14 @@ public class SwGame
         Camera.Draw();
         Hud.Draw();
     }
+    private void HandleCommands()
+    {
+        foreach (var command in SwApp.CommandStore.GetGlobalCommands("spawn_player"))
+        {
+            // Todo: implement this properly
+            AddEntity<SwPlayer>(command.Payload);
+        }
+    }
     private void HandleRooms()
     {
         if (CurrentRoom is not null && CurrentRoom.RectPx.Contains(PlayerPos)){}
@@ -179,11 +175,12 @@ public class SwGame
         while(NextStream.BytesRemaining() > 0)
         {
             NextStream.TryPeekByte(out byte typeId);
-            if(!Prototypes.TryGetValue(typeId, out var pair))
-            {
-                ErEngine.LogError("Attempted to initalized entity with unregistered type id '", typeId, "'.");
-                continue;
-            }
+            if(!TryGetPrototype(typeId, out var pair)) continue;
+            // if(!Prototypes.TryGetValue(typeId, out var pair))
+            // {
+            //     ErEngine.LogError("Attempted to initalized entity with unregistered type id '", typeId, "'.");
+            //     continue;
+            // }
             var (lastEnt, nextEnt) = pair;
             nextEnt.Read(NextStream);
             if(nextEnt.LastHeadIndex < 0) continue;
@@ -197,17 +194,61 @@ public class SwGame
             lastEnt.Draw(nextEnt);
         }
     }
-    public void AddEntity<T>(T entity, SwEntProps? entProps = null) where T: SwEntity,ISwEntity<T>
+    private bool TryGetPrototype(byte typeId, out (SwEntity, SwEntity) pair)
     {
-        if(!Prototypes.TryGetValue(T.TypeId, out _))
+        if(!Prototypes.TryGetValue(typeId, out pair)) return ErEngine.LogError("Unregistered type id '", typeId, "'.");
+        return true;
+    }
+    private (T,T) GetPrototype<T>() where T: SwEntity, ISwEntity<T>
+    {
+        if(!Prototypes.TryGetValue(T.TypeId, out var pair))
         {
-            var pair = (T.Primary,T.Secondary);
+            pair = (T.Primary,T.Secondary);
             Prototypes.Add(T.TypeId, pair);
         }
-        entity.Init(entProps ?? new());
+        var (p,s) = pair;
+        if(p is not T primary) throw new("should be unreachable");
+        if(s is not T secondary) throw new("should be unreachable");
+        return (primary,secondary);
+    }
+    public void AddEntity<T>()where T: SwEntity, ISwEntity<T>
+    {
+        AddEntity<T>(new SwEntProps());
+    }
+    public void AddEntity<T>(PriNode entData) where T: SwEntity, ISwEntity<T>
+    {
+        SwEntProps props = new(entData);
+        AddEntity<T>(props);
+    }
+    public void AddEntity<T>(T entity, PriNode entData) where T: SwEntity, ISwEntity<T>
+    {
+        SwEntProps props = new(entData);
+        AddEntity(entity, props);
+    }
+    public void AddEntity<T>(SwEntProps entProps) where T: SwEntity, ISwEntity<T>
+    {
+        var (primary,_) = GetPrototype<T>();
+        AddEntity(primary, entProps);
+    }
+    public void AddEntity<T>(T entity, SwEntProps entProps) where T: SwEntity,ISwEntity<T>
+    {
+        GetPrototype<T>();
+        entity.Init(entProps);
         EntProps.Add(entity.Id, entity.EntProps);
         entity.Write(NewEntities);
     }
+    // private void AddEntityInternal<T>(T entity, SwEntProps entProps) where T: SwEntity,ISwEntity<T>
+    // {
+    //     GetPrototype<T>();
+    //     // if(!Prototypes.TryGetValue(T.TypeId, out _))
+    //     // {
+    //     //     var pair = (T.Primary,T.Secondary);
+    //     //     Prototypes.Add(T.TypeId, pair);
+    //     // }
+    //     entity.Init(entProps);
+    //     EntProps.Add(entity.Id, entity.EntProps);
+    //     entity.Write(NewEntities);
+    // }
     public static bool TryLoadMap(string filepath)
     {
         PriNode data;
@@ -223,6 +264,9 @@ public class SwGame
         }
         if(!SwMap.TryFromData(filepath, data, out var map)) return ErEngine.LogWarning("failed to load map '", filepath, "'.");
         Map = map;
+        map.LoadGlobals();
+        if(!map.TryGetDefaultCheckpoint(out var checkpoint)) return ErEngine.LogWarning("failed to find default checkpoint");
+        checkpoint.Trigger();
         return true;
     }
 }

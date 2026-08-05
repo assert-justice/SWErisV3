@@ -20,7 +20,7 @@ public class SwMap
     public readonly ErVec2I TileSize;
     public readonly ErVec2I SectorSizeTiles;
     public readonly ErVec2I SectorSizePx;
-    private readonly Dictionary<string,SwMapObject> GlobalMapObjects = [];
+    private readonly SwMapObjectLookup GlobalMapObjects = new();
     public SwMap(string id = "", int numTileLayers = 0, ErVec2I? tileSize = null, ErVec2I? sectorSizePx = null)
     {
         Id = id;
@@ -37,11 +37,10 @@ public class SwMap
     }
     public void AddGlobalObject(SwMapObject mapObject)
     {
-        GlobalMapObjects.Add(mapObject.Id, mapObject);
+        GlobalMapObjects.AddObject(mapObject);
     }
     public SwTileData GetTileData(int tileId)
     {
-        // ErEngine.Log(tileId, " ", TileData.Count);
         return TileData[tileId];
     }
     public void SetTile(int layer, ErVec2I coord, int tileId)
@@ -51,16 +50,15 @@ public class SwMap
     }
     private void AddRoom(SwRoom room)
     {
-        Rooms.Add(room.Id, room);
-        room.Load();
         foreach (var sector in room.GetSectors())
         {
             SectorLookup.Add(sector.PositionSectors,room);
         }
+        LoadRoom(room);
     }
     public void Update()
     {
-        foreach (var item in GlobalMapObjects.Values)
+        foreach (var item in GlobalMapObjects.GetObjects())
         {
             item.Update();
         }
@@ -84,18 +82,41 @@ public class SwMap
             CollisionLayer.DebugDraw();
         }
     }
+    public bool TryGetDefaultCheckpoint(out SwMapCheckpoint checkpoint)
+    {
+        checkpoint = null!;
+        foreach (var item in GlobalMapObjects.GetObjects<SwMapCheckpoint>())
+        {
+            if(!item.Fields.TryGet("default", out bool isDefault) || !isDefault) continue;
+            if(checkpoint is null) checkpoint = item;
+            else ErEngine.LogWarning("duplicate default checkpoints found");
+        }
+        return checkpoint is not null;
+    }
     public bool TryGetRoom(ErVec2 position, out SwRoom room)
     {
         ErVec2I sector = (position/(ErVec2)SectorSizePx).FloorToInt();
         return SectorLookup.TryGetValue(sector, out room!);
     }
-    // public bool TryLoadRoom(string roomId)
-    // {
-    //     if(!Rooms.TryGetValue(roomId, out var room)) return false;
-    //     LoadedRooms.Add(roomId, room);
-    //     room.Load();
-    //     return true;
-    // }
+    private void LoadRoom(SwRoom room)
+    {
+        Rooms.TryAdd(room.Id, room);
+        LoadedRooms.Add(room.Id, room);
+        room.Load();
+    }
+    public bool TryLoadRoom(string roomId)
+    {
+        if(!Rooms.TryGetValue(roomId, out var room)) return false;
+        LoadRoom(room);
+        return true;
+    }
+    public void LoadGlobals()
+    {
+        foreach (var item in GlobalMapObjects.GetObjects())
+        {
+            item.Load();
+        }
+    }
     // public void UnloadRoom(string roomId)
     // {
     //     if(!LoadedRooms.TryGetValue(roomId, out var room))
@@ -126,7 +147,6 @@ public class SwMap
         foreach (var tileset in tilesetList.Values)
         {
             if(!tileset.Get("identifier").TryAs(out string ident)) continue;
-            // ErEngine.Log("fuck off ", ident);
             if(ident != "tile_pallet") continue;
             if(!tileset.Get("customData").TryAs(out PriList tiles)) return ErEngine.LogWarning("no custom data");
             foreach (var t in tiles.Values)

@@ -47,7 +47,12 @@ public abstract class SwEntity
         _LastHeadIndex = -1;
         Ready();
     }
-    public virtual void Ready(){}
+    public virtual void Ready()
+    {
+        if(!EntProps.Props.TryGet("x_px", out double x)) x = 0;
+        if(!EntProps.Props.TryGet("y_px", out double y)) y = 0;
+        Position = new(x,y);
+    }
     //     public void Init(SwEntProps entProps)
     // {
     //     _Id = entProps.Id;

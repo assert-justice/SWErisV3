@@ -8,7 +8,7 @@ namespace SpoonWitch.Game.Map;
 public class SwRoom
 {
     private readonly Dictionary<ErVec2I,SwSector> Sectors = [];
-    private readonly Dictionary<string,SwMapObject> MapObjects = [];
+    private readonly SwMapObjectLookup MapObjects = new();
     public readonly SwMap Map;
     public readonly string Id;
     public readonly ErRect2I RectSectors;
@@ -33,7 +33,7 @@ public class SwRoom
     }
     public void Update()
     {
-        foreach (var item in MapObjects.Values)
+        foreach (var item in MapObjects.GetObjects())
         {
             item.Update();
         }
@@ -41,7 +41,7 @@ public class SwRoom
     private void AddMapObject(SwMapObject mapObject)
     {
         if(mapObject.IsGlobal) Map.AddGlobalObject(mapObject);
-        else MapObjects.Add(mapObject.Id, mapObject);
+        else MapObjects.AddObject(mapObject);
     }
     private bool TryAddEntityLayer(PriNode layerData)
     {
@@ -49,7 +49,8 @@ public class SwRoom
         foreach (var entData in entList.Values)
         {
             if(!SwMapObject.TryFromLdtkData(Map.TileSize, entData, out var mapObject)) return ErEngine.LogWarning("malformed map object");
-            AddMapObject(mapObject);
+            if(mapObject.IsGlobal) Map.AddGlobalObject(mapObject);
+            else AddMapObject(mapObject);
         }
         return true;
     }
@@ -69,10 +70,7 @@ public class SwRoom
                 sector = new(Map, sectorPos);
                 Sectors[sectorPos] = sector;
             }
-            // Sectors.Add(sectorPos);
             sector.SetTile(layerIdx, tilePos, tileId);
-            // Todo: defer this
-            // Map.SetTile(layerIdx, tilePos, tileId);
         }
         return true;
     }
@@ -86,6 +84,10 @@ public class SwRoom
         foreach (var item in Sectors.Values)
         {
             item.Load(Map);
+        }
+        foreach (var item in MapObjects.GetObjects())
+        {
+            item.Load();
         }
     }
     public void Unload(){}
@@ -115,7 +117,6 @@ public class SwRoom
             }
             else return ErEngine.LogWarning("bad layer type '", layerType, "'.");
         }
-        // room.Load();
         return true;
     }
 }

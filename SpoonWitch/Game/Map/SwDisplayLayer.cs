@@ -8,6 +8,7 @@ public class SwDisplayLayer
     public readonly SwMap Map;
     private readonly Dictionary<ErVec2I,(int,ErVec2I)> AtlasGrid = [];
     private readonly Dictionary<ErVec2I,int> TileGrid = [];
+    private const int DefaultTileId = -1;
     private readonly List<(ErVec2I,int)> NextTiles = [];
     private static readonly ErVec2I[] Neighbors = [ErVec2I.Zero, ErVec2I.Right, ErVec2I.Down, ErVec2I.One];
     public SwDisplayLayer(SwMap map)
@@ -21,12 +22,12 @@ public class SwDisplayLayer
     }
     public int GetTileId(ErVec2I tileCoord)
     {
-        if(!TileGrid.TryGetValue(tileCoord, out var val)) return -1;
+        if(!TileGrid.TryGetValue(tileCoord, out var val)) return DefaultTileId;
         return val;
     }
     private bool IsTileMatch(ErVec2I tileCoord, int tileId)
     {
-        if(!TileGrid.TryGetValue(tileCoord, out var val)) return tileId == -1;
+        if(!TileGrid.TryGetValue(tileCoord, out var val)) return tileId == DefaultTileId;
         return tileId == val;
     }
     private SwTileMask GetMask(ErVec2I displayCoord, int tileId)
