@@ -3,6 +3,7 @@ using Eris;
 using Eris.App;
 using Eris.Renderer;
 using ErisMath;
+using Prion.Db;
 using Prion.Node;
 using Prion.Parser;
 using SpoonWitch.Command;
@@ -20,12 +21,11 @@ public class SwApp : IErApp
     public static readonly ErVec2 CameraSize = new(INTERNAL_WIDTH, INTERNAL_HEIGHT - HUD_HEIGHT);
     private SwGame? Game;
     private SwMenuHolder? MenuHolder;
-    // private ErFont? Font;
     private static int NextId;
     private ErTexture RenderTexture;
     public static readonly SwCommandStore CommandStore = new();
-    public static PriNode Settings{get; private set;} = new PriDict();
-    public static PriNode SaveData{get; private set;} = new PriDict();
+    public static readonly PriDb Settings = new();
+    public static readonly PriDb SaveData = new();
     public static bool Debug{get; private set;} = false;
     public static int Main()
     {
@@ -42,6 +42,11 @@ public class SwApp : IErApp
     public void Init()
     {
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
+        if(!TryLoadPrion("game_data/settings/default_settings.json", out var settings)) ErEngine.Log("bad settings");
+        else Settings.TrySet("", settings);
+        // if(Settings.TryGet("gamepad", out PriNode node)) ErEngine.Log(node);
+        // Settings.TrySet("gamepad/auto_charge", PriBool.False);
+        // if(Settings.TryGet("", out node)) ErEngine.Log(node);
         // if(!ErFont.TryLoad("game_data/fonts/PixAntiqua.ttf", 16, out var font)) ErEngine.LogWarning("failed to load font");
         // else Font = font;
         MenuHolder = new()
@@ -68,7 +73,6 @@ public class SwApp : IErApp
         {
             MenuHolder.Draw();
         }
-        // Font?.DrawString("hello world!", ErColor.Green, ErVec2.Zero);
         ErEngine.Renderer.PopViewport();
         RenderTexture.DrawFullscreen();
     }

@@ -61,10 +61,10 @@ public class SwPlayerControls: SwComponent
         }
         bool isGamepad = ErEngine.Input.LastEventDevice == ErInput.ErisInputDeviceKind.Gamepad;
         IsCharging = Charge.Pressed;
-        if(!SwApp.Settings.TryGet("auto_charge", out bool auto_charge)) auto_charge = true;
-        if(!SwApp.Settings.TryGet("kb_aiming", out bool kb_aiming)) kb_aiming = true;
-        if(!SwApp.Settings.TryGet("reticle_always_visible_gp", out bool reticle_always_visible_gp)) reticle_always_visible_gp = false;
-        if(!SwApp.Settings.TryGet("reticle_always_visible_kb", out bool reticle_always_visible_kb)) reticle_always_visible_kb = true;
+        if(!SwApp.Settings.TryGet("gamepad/auto_charge", out bool auto_charge)) auto_charge = true;
+        if(!SwApp.Settings.TryGet("kbm/kb_aiming", out bool kb_aiming)) kb_aiming = true;
+        if(!SwApp.Settings.TryGet("gamepad/reticle_always_visible", out bool reticle_always_visible_gp)) reticle_always_visible_gp = false;
+        if(!SwApp.Settings.TryGet("kbm/reticle_always_visible", out bool reticle_always_visible_kb)) reticle_always_visible_kb = true;
         if (isGamepad)
         {
             if (Aim.IsNonzero())

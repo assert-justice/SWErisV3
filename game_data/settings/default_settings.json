@@ -6,7 +6,9 @@
         "voice": 1
     },
     "gameplay":{
-        
+        "damage_dealt": 1,
+        "damage_received": 1,
+        "game_speed": 1
     },
     "gamepad":{
         "auto_charge": true,
