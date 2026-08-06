@@ -4,7 +4,6 @@ using ErisMath;
 using Prion.Node;
 using Prion.Parser;
 using SpoonWitch.ByteStream;
-using SpoonWitch.Command;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.Sprite;
 
@@ -28,8 +27,6 @@ public abstract class SwEntity
     public virtual ErVec2 Size => new(32,32);
     public virtual uint Mask => 1;
     public bool IsFreeQueued{get; private set;}
-    // protected readonly SwCommandHandler CommandHandler = new(SwApp.CommandStore);
-    // private static readonly Dictionary<>
     protected SwComponent RegisterComponent(SwComponent component)
     {
         // Note: this method should only really be used from the entity's constructor
@@ -42,7 +39,6 @@ public abstract class SwEntity
     {
         _Id = entProps.Id;
         EntProps = entProps;
-        // SwGame.EntProps.Add(_Id, entProps);
         _CurrentHeadIndex = -1;
         _LastHeadIndex = -1;
         Ready();
@@ -53,19 +49,6 @@ public abstract class SwEntity
         if(!EntProps.Props.TryGet("y_px", out double y)) y = 0;
         Position = new(x,y);
     }
-    //     public void Init(SwEntProps entProps)
-    // {
-    //     _Id = entProps.Id;
-    //     EntProps = entProps;
-    //     // SwGame.EntProps.Add(_Id, entProps);
-    //     // Ready();
-    // }
-    // public virtual void Ready()
-    // {
-    //     _CurrentHeadIndex = -1;
-    //     _LastHeadIndex = -1;
-    // }
-
     public virtual void Read(SwByteStream byteStream)
     {
         // read type byte

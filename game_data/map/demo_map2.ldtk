@@ -11,7 +11,7 @@
 	"iid": "56816e60-fa90-11f0-b4ec-5b883517cfbd",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 50,
+	"nextUid": 51,
 	"identifierStyle": "Lowercase",
 	"toc": [],
 	"worldLayout": "GridVania",
@@ -367,13 +367,13 @@
 					"tilesetUid": null
 				},
 				{
-					"identifier": "single_use",
+					"identifier": "property_overrides",
 					"doc": null,
-					"__type": "Bool",
-					"uid": 10,
-					"type": "F_Bool",
+					"__type": "String",
+					"uid": 12,
+					"type": "F_Text",
 					"isArray": false,
-					"canBeNull": false,
+					"canBeNull": true,
 					"arrayMinLength": null,
 					"arrayMaxLength": null,
 					"editorDisplayMode": "Hidden",
@@ -404,11 +404,11 @@
 					"tilesetUid": null
 				},
 				{
-					"identifier": "property_overrides",
+					"identifier": "max_uses",
 					"doc": null,
-					"__type": "String",
-					"uid": 12,
-					"type": "F_Text",
+					"__type": "Int",
+					"uid": 50,
+					"type": "F_Int",
 					"isArray": false,
 					"canBeNull": true,
 					"arrayMinLength": null,
@@ -1130,16 +1130,19 @@
 							"defUid": 8,
 							"px": [448,160],
 							"fieldInstances": [
-								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "none", "__tile": null, "defUid": 49, "realEditorValues": [] },
+								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "slume", "__tile": null, "defUid": 49, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["slume"]
+								}] },
 								{ "__identifier": "trigger_on_load", "__type": "Bool", "__value": true, "__tile": null, "defUid": 9, "realEditorValues": [{
 									"id": "V_Bool",
 									"params": [ true ]
 								}] },
-								{ "__identifier": "single_use", "__type": "Bool", "__value": true, "__tile": null, "defUid": 10, "realEditorValues": [{
-									"id": "V_Bool",
-									"params": [ true ]
+								{ "__identifier": "property_overrides", "__type": "String", "__value": "{\n \"is_passive\": true\n}", "__tile": null, "defUid": 12, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["{\\n \"is_passive\": true\\n}"]
 								}] },
-								{ "__identifier": "property_overrides", "__type": "String", "__value": null, "__tile": null, "defUid": 12, "realEditorValues": [] }
+								{ "__identifier": "max_uses", "__type": "Int", "__value": null, "__tile": null, "defUid": 50, "realEditorValues": [] }
 							],
 							"__worldX": 448,
 							"__worldY": 160

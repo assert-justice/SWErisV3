@@ -12,7 +12,6 @@ public abstract class SwMapObject
     public readonly ErRect2 RectPx;
     public readonly PriNode Fields;
     public readonly PriNode Data;
-    // public virtual bool IsGlobal => false;
     public virtual bool IsGlobal => Fields.TryGet("is_global", out bool isGlobal) && isGlobal;
     public SwMapObject(PriNode data)
     {
@@ -53,6 +52,21 @@ public abstract class SwMapObject
     {
         ErEngine.Log("loaded ", Type, " with id ", Id);
     }
+    protected PriDict GetProps()
+    {
+        PriDict props = new();
+        var center = RectPx.Center;
+        props.Data["x_px"] = new PriNumber(center.X);
+        props.Data["y_px"] = new PriNumber(center.Y);
+        if(Fields.TryGet("property_overrides", out PriDict dict))
+        {
+            foreach (var (key,val) in dict.Data)
+            {
+                props.Data[key] = val;
+            }
+        }
+        return props;
+    }
     public virtual void Unload(){}
     private static bool TryLdtkToInternal(ErVec2I tileSize, PriNode ldtkData, out PriNode data)
     {
@@ -68,7 +82,14 @@ public abstract class SwMapObject
         foreach (var item in fieldList.Values)
         {
             if(!item.Get("__identifier").TryAs(out string key)) throw new("no field name");
-            var value = item.Get("__value");
+            PriNode value = item.Get("__value");
+            // Note: it's annoying to special case this but oh well
+            if(key == "property_overrides")
+            {
+                if(value is PriNull) continue;
+                if(!value.TryAs(out string src)) throw new("property overrides field must be a string");
+                if(!SwApp.TryParseJsonToPrion(src, out value)) throw new("failed to parse property overrides");
+            }
             fields.TrySet(key, value);
         }
         data.TrySet("id", new PriString(id));

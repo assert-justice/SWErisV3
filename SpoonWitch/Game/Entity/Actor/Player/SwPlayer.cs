@@ -1,8 +1,6 @@
 using Eris;
-using Eris.Utils;
 using Prion.Node;
 using SpoonWitch.Command;
-using SpoonWitch.Game.Entity.Component.Sprite;
 using SpoonWitch.Game.Entity.Component.State;
 
 namespace SpoonWitch.Game.Entity.Actor.Player;
@@ -18,19 +16,16 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     public override uint Mask => 3;
     public double ChargeTime = 1;
     public double ChargeSpeedMul = 0.5;
-    // private readonly ErWrapper<SwSprite> ReticleSprite;
     private readonly SwStateMachine StateMachine;
     private readonly SwPlayerControls Controls;
     public SwPlayer()
     {
         Controls = new SwPlayerControls(this);
-        // ReticleSprite = new(()=>GetComponent<SwSprite>("reticle")!);
         RegisterComponent(Controls);
         string path = "game_data/entities/actors/player/player_anim_data.json";
         if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load player sprites");
         StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
-        // Position = new(128,128);
     }
     private static void SetHud(string key, double value)
     {
@@ -42,7 +37,6 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     public override void Ready()
     {
         base.Ready();
-        ErEngine.Log(Position);
     }
     public override void Update()
     {
@@ -55,10 +49,6 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         if(value > 0)
         {
             SetHud("health", Health);
-            // PriDict dict = new();
-            // dict.Data["key"] = new PriString("health");
-            // dict.Data["value"] = new PriNumber(Health);
-            // SwApp.CommandStore.AddCommand(new("hud_set", dict));
         }
         return value;
     }

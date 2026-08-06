@@ -31,6 +31,11 @@ public class SwSlume : SwEnemy, ISwEntity<SwSlume>
         RegisterComponent(StateMachine);
         // StateMachine.SetState("wandering");
     }
+    public override void Ready()
+    {
+        base.Ready();
+        if(!IsPassive) StateMachine.SetState("wandering");
+    }
     protected override void Die()
     {
         base.Die();

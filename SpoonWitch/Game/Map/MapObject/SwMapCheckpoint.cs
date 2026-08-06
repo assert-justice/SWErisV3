@@ -15,18 +15,18 @@ public class SwMapCheckpoint : SwMapObject
     {
         base.Trigger();
         // Spawn player
-        ErEngine.Log("spawn player");
-        PriDict props = new();
-        var center = RectPx.Center;
-        props.Data["x_px"] = new PriNumber(center.X);
-        props.Data["y_px"] = new PriNumber(center.X);
-        if(Fields.TryGet("property_overrides", out PriDict dict))
-        {
-            foreach (var (key,val) in dict.Data)
-            {
-                props.Data[key] = val;
-            }
-        }
-        SwApp.CommandStore.AddGlobalCommand(new("spawn_player", props));
+        // ErEngine.Log("spawn player");
+        // PriDict props = new();
+        // var center = RectPx.Center;
+        // props.Data["x_px"] = new PriNumber(center.X);
+        // props.Data["y_px"] = new PriNumber(center.X);
+        // if(Fields.TryGet("property_overrides", out PriDict dict))
+        // {
+        //     foreach (var (key,val) in dict.Data)
+        //     {
+        //         props.Data[key] = val;
+        //     }
+        // }
+        SwApp.CommandStore.AddGlobalCommand(new("spawn_player", GetProps()));
     }
 }

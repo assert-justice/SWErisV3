@@ -58,6 +58,7 @@ public class SwGame
         // AddEntity(SwPlayer.Primary);
         // SwSlume.Primary.Position = new(256,256);
         // AddEntity(SwSlume.Primary);
+        // AddEntity<SwSlume>();
     }
     public static void EnqueueAction(Action action)
     {
@@ -77,7 +78,6 @@ public class SwGame
     }
     public static bool TryGetEntProps(int id, out SwEntPropsBase entProps)
     {
-        // return EntProps.TryGetValue(id, out entProps!);
         return PropsLookup.TryGet(id, out entProps);
     }
     public static void EnqueueMove(int id, uint mask, ErVec2 size, int head)
@@ -115,7 +115,6 @@ public class SwGame
             entity.Update();
             if(!entity.IsFreeQueued) entity.Write(NextStream);
             else PropsLookup.RemoveEntProps(entity);
-            // else EntProps.Remove(entity.Id);
         }
         if(NewEntities.Head > 0)
         {
@@ -152,6 +151,25 @@ public class SwGame
         {
             // Todo: implement this properly
             AddEntity<SwPlayer>(command.Payload);
+        }
+        foreach (var command in SwApp.CommandStore.GetGlobalCommands("spawn_entity"))
+        {
+            if(!command.Payload.TryGet("entity_type", out string entityType))
+            {
+                ErEngine.LogWarning("spawn entity command missing entity_type field");
+                continue;
+            }
+            switch (entityType)
+            {
+                case "none":
+                break;
+                case "slume":
+                    AddEntity<SwSlume>(command.Payload);
+                break;
+                default:
+                    ErEngine.LogWarning("tried to spawn unknown entity type '", entityType, "'");
+                break;
+            }
         }
     }
     private void HandleRooms()

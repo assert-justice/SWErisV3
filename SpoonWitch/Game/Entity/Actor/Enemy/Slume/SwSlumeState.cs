@@ -40,6 +40,7 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
         {
             base.BeginState(lastState);
             Sprite.Value.Play("idle_d");
+            Slume.Velocity = ErVec2.Zero;
         }
         public override void Update()
         {
@@ -159,7 +160,7 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
             double speed = Slume.Velocity.GetLength();
             if(speed > ErMath.EPSILON) Slume.Velocity = Slume.Velocity.Normalized() * speed * 0.95;
             if(Slume.IsKnockback) return;
-            if(Slume.IsAlive) StateMachine.Value.SetState("wandering");
+            if(Slume.IsAlive) StateMachine.Value.SetState(Slume.IsPassive ? "default" : "wandering");
             else StateMachine.Value.SetState("dead");
         }
     }
