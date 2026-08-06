@@ -20,6 +20,21 @@ public class PriDb
         }
         return p;
     }
+    public bool TryMerge(string path, PriNode node)
+    {
+        if(node is PriDict || node is PriList)
+        {
+            foreach (var (key,val) in node.GetEntries())
+            {
+                if(!TryMerge(path + '/' + key, val)) return false;
+            }
+            return true;
+        }
+        else
+        {
+            return TrySet(path, node);
+        }
+    }
     public bool TryGet<T>(string path, out T value)
     {
         return TryGet(SplitPath(path), out value);
@@ -84,5 +99,9 @@ public class PriDb
         if(lastNode is null || lastKey is null) Data = value;
         else lastNode.TrySet(lastKey, value);
         return true;
+    }
+    public override string ToString()
+    {
+        return Data.ToString() ?? string.Empty;
     }
 }

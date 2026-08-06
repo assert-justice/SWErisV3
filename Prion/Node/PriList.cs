@@ -47,6 +47,13 @@ public class PriList: PriNode
         if(index < 0 || index >= Values.Count) return false;
         return Values[index].TryAs(out value);
     }
+    public override IEnumerable<(string, PriNode)> GetEntries()
+    {
+        for (int idx = 0; idx < Values.Count; idx++)
+        {
+            yield return (idx.ToString(),Values[idx]);
+        }
+    }
     // public override PriNode Get(string key)
     // {
     //     if(!int.TryParse(key, out int idx)) return PriNull.Null;

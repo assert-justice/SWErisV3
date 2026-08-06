@@ -42,8 +42,10 @@ public class SwApp : IErApp
     public void Init()
     {
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
-        if(!TryLoadPrion("game_data/settings/default_settings.json", out var settings)) ErEngine.Log("bad settings");
-        else Settings.TrySet("", settings);
+        // if(!TryLoadPrion("game_data/settings/default_settings.json", out var settings)) ErEngine.Log("bad settings");
+        // else Settings.TrySet("", settings);
+        if(!TryLoadDb("game_data/settings/example_settings.json", "game_data/settings/default_settings.json", Settings)) ErEngine.Log("bad settings");
+        ErEngine.Log(Settings);
         // if(Settings.TryGet("gamepad", out PriNode node)) ErEngine.Log(node);
         // Settings.TrySet("gamepad/auto_charge", PriBool.False);
         // if(Settings.TryGet("", out node)) ErEngine.Log(node);
@@ -130,5 +132,20 @@ public class SwApp : IErApp
             FontLookup[size] = font; 
         }
         return true;
+    }
+    public static bool TryLoadDb(string path, string defaultPath, PriDb db)
+    {
+        if(!TryLoadPrion(defaultPath, out var defNode)) return ErEngine.LogWarning("bad db default path");
+        if(!db.TrySet("", defNode)) return ErEngine.LogWarning("failed to set");
+        if(TryLoadPrion(path, out var node))
+        {
+            // merge
+            if(!db.TryMerge("", node)) return ErEngine.LogWarning("failed to merge");
+        }
+        return true;
+    }
+    public static bool TrySaveDb(string path, PriDb db)
+    {
+        return false;
     }
 }

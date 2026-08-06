@@ -57,6 +57,10 @@ public abstract class PriNode
         if(TryGet(index, out PriNode value)) return value;
         return PriNull.Null;
     }
+    public virtual IEnumerable<(string,PriNode)> GetEntries()
+    {
+        yield break;
+    }
     public virtual bool TrySet(string key, PriNode node){return false;}
     public virtual bool TrySet(int index, PriNode node){return false;}
     public virtual bool TryAdd(string key, PriNode node){return false;}

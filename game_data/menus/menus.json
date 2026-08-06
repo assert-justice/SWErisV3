@@ -138,6 +138,9 @@
             "id": "audio_options",
             "flow_h": "centered",
             "flow_v": "centered",
+            "on_sleep_command": {
+                "verb": "save_settings"
+            },
             "children": [
                 {
                     "type": "text",
@@ -195,6 +198,9 @@
             "id": "game_options",
             "flow_h": "centered",
             "flow_v": "centered",
+            "on_sleep_command": {
+                "verb": "save_settings"
+            },
             "children": [
                 {
                     "type": "text",
