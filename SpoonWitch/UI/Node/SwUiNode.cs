@@ -1,5 +1,6 @@
 using Eris;
 using ErisMath;
+using Prion.Node;
 
 namespace SpoonWitch.UI.Node;
 
@@ -20,6 +21,7 @@ public abstract class SwUiNode
             if(_Visible != value) SetVisible(value);
         }
     }
+    public SwUiNode(PriNode node){}
     protected virtual void SetVisible(bool isVisible)
     {
         _Visible = isVisible;
@@ -82,5 +84,44 @@ public abstract class SwUiNode
     public void ClearChildren()
     {
         Children.Clear();
+    }
+    public static bool TryFromPrion<T>(PriNode priNode, out T uiNode) where T: SwUiNode
+    {
+        uiNode = default!;
+        if(!TryFromPrion(priNode, out var node)) return false;
+        if(node is not T val) return false;
+        uiNode = val;
+        return true;
+    }
+    public static bool TryFromPrion(PriNode priNode, out SwUiNode uiNode)
+    {
+        uiNode = default!;
+        if(!priNode.TryGet("type", out string type)) return ErEngine.LogWarning("no type provided");
+        try
+        {
+            switch (type)
+            {
+                case "menu_holder":
+                break;
+                case "menu":
+                break;
+                case "text":
+                break;
+                case "button":
+                break;
+                case "slider":
+                break;
+                case "toggle":
+                break;
+                default:
+                ErEngine.LogWarning("unexpected ui node type '", type, "'");
+                break;
+            }
+        }
+        catch(Exception e)
+        {
+            return ErEngine.LogWarning(e);
+        }
+        return true;
     }
 }

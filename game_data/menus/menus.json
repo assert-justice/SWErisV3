@@ -29,8 +29,8 @@
                     "font_size": 16,
                     "font_color": "white",
                     "on_click_command":{
-                        "verb": "set_menu",
-                        "payload": "options"
+                        "verb": "menu_set",
+                        "payload": "settings"
                     }
                 },
                 {
@@ -39,7 +39,7 @@
                     "font_size": 16,
                     "font_color": "white",
                     "on_click_command":{
-                        "verb": "set_menu",
+                        "verb": "menu_set",
                         "payload": "credits"
                     }
                 },
@@ -84,14 +84,14 @@
                     "font_size": 16,
                     "font_color": "white",
                     "on_click_command":{
-                        "verb": "back"
+                        "verb": "menu_back"
                     }
                 }
             ]
         },
         {
             "type": "menu",
-            "id": "options",
+            "id": "settings",
             "flow_h": "centered",
             "flow_v": "centered",
             "children": [
@@ -108,8 +108,8 @@
                     "font_size": 16,
                     "font_color": "white",
                     "on_click_command":{
-                        "verb": "set_menu",
-                        "payload": "audio_options"
+                        "verb": "menu_set",
+                        "payload": "audio_settings"
                     }
                 },
                 {
@@ -118,8 +118,8 @@
                     "font_size": 16,
                     "font_color": "white",
                     "on_click_command":{
-                        "verb": "set_menu",
-                        "payload": "game_options"
+                        "verb": "menu_set",
+                        "payload": "game_settings"
                     }
                 },
                 {
@@ -128,14 +128,14 @@
                     "font_size": 16,
                     "font_color": "white",
                     "on_click_command":{
-                        "verb": "back"
+                        "verb": "menu_back"
                     }
                 }
             ]
         },
         {
             "type": "menu",
-            "id": "audio_options",
+            "id": "audio_settings",
             "flow_h": "centered",
             "flow_v": "centered",
             "on_sleep_command": {
@@ -188,14 +188,14 @@
                     "font_size": 16,
                     "font_color": "white",
                     "on_click_command":{
-                        "verb": "back"
+                        "verb": "menu_back"
                     }
                 }
             ]
         },
         {
             "type": "menu",
-            "id": "game_options",
+            "id": "game_settings",
             "flow_h": "centered",
             "flow_v": "centered",
             "on_sleep_command": {
@@ -262,7 +262,7 @@
                     "font_size": 16,
                     "font_color": "white",
                     "on_click_command":{
-                        "verb": "back"
+                        "verb": "menu_back"
                     }
                 }
             ]

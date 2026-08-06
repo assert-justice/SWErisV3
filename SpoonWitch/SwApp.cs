@@ -9,6 +9,7 @@ using Prion.Parser;
 using SpoonWitch.Command;
 using SpoonWitch.Game;
 using SpoonWitch.UI.Menu;
+using SpoonWitch.UI.Node;
 
 namespace SpoonWitch;
 
@@ -42,19 +43,16 @@ public class SwApp : IErApp
     public void Init()
     {
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
-        // if(!TryLoadPrion("game_data/settings/default_settings.json", out var settings)) ErEngine.Log("bad settings");
-        // else Settings.TrySet("", settings);
         if(!TryLoadDb("game_data/settings/example_settings.json", "game_data/settings/default_settings.json", Settings)) ErEngine.Log("bad settings");
-        ErEngine.Log(Settings);
-        // if(Settings.TryGet("gamepad", out PriNode node)) ErEngine.Log(node);
-        // Settings.TrySet("gamepad/auto_charge", PriBool.False);
-        // if(Settings.TryGet("", out node)) ErEngine.Log(node);
-        // if(!ErFont.TryLoad("game_data/fonts/PixAntiqua.ttf", 16, out var font)) ErEngine.LogWarning("failed to load font");
-        // else Font = font;
-        MenuHolder = new()
-        {
-            Visible = true,
-        };
+        TryInitMenu();
+        Launch();
+    }
+    private bool TryInitMenu()
+    {
+        if(!TryLoadPrion("game_data/menus/menus.json", out var node)) return false;
+        if(!SwUiNode.TryFromPrion(node, out SwMenuHolder menuHolder)) return false;
+        MenuHolder = menuHolder;
+        return true;
     }
     private void Launch()
     {

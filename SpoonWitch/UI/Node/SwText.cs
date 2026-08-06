@@ -1,5 +1,6 @@
 using Eris;
 using Eris.Renderer;
+using Prion.Node;
 
 namespace SpoonWitch.UI.Node;
 
@@ -19,6 +20,11 @@ public class SwText: SwUiNode
         }
     }
     private ErFont? _Font;
+
+    public SwText(PriNode node) : base(node)
+    {
+    }
+
     private ErFont? Font
     {
         get
