@@ -13,6 +13,15 @@ public class ErTexture
         SDL.GetTextureSize(Handle, out float w, out float h);
         Size = new(w, h);
     }
+    public static bool TryGetUnmanagedTexture(nint surfaceHandle, out ErTexture texture)
+    {
+        texture = default!;
+        if(surfaceHandle == 0) return false;
+        nint textureHandle = SDL.CreateTextureFromSurface(ErEngine.Renderer.Handle, surfaceHandle);
+        if(textureHandle == 0) return false;
+        texture = new(textureHandle);
+        return true;
+    }
     public static ErTexture GetRenderTexture(int width, int height)
     {
         if(ErEngine.Renderer is null) throw new Exception("Renderer not initialized");
@@ -62,6 +71,10 @@ public class ErTexture
         if(!ErEngine.Renderer.TextureManager.TryGetTextureWithPallet(filepath, palletHandle, out nint handle)) return false;
         texture = new(handle);
         return true;
+    }
+    public void Cleanup()
+    {
+        SDL.DestroyTexture(Handle);
     }
     public void Draw(ErVec2 position,
         ErVec2? size = null,

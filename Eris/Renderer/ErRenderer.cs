@@ -6,6 +6,7 @@ namespace Eris.Renderer;
 public class ErRenderer
 {
     public ErTextureManager TextureManager{get; private set;} = null!;
+    public readonly ErFontManager FontManager = new();
     private nint Window;
     private ErColor ClearColor = ErColor.Black;
     public string WindowName{get; private set;} = "Eris Engine";
@@ -15,11 +16,6 @@ public class ErRenderer
     public nint Handle{get; private set;}
     public ErRect2 ViewportTransform{get; private set;}
     private readonly Stack<(ErRect2,nint)> ViewportStack = [];
-    // public void PushViewport(ErRect2 rect, ErTexture? target = null)
-    // {
-    //     ViewportStack.Push((rect,target?.Handle??0));
-    //     UseViewport();
-    // }
     public void PushViewport(ErVec2 position, ErTexture target)
     {
         ViewportStack.Push((new(position,target.Size),target.Handle));
@@ -43,11 +39,6 @@ public class ErRenderer
             SDL.SetRenderTarget(Handle, 0);
         }
     }
-    // public void SetViewport(ErRect2 rect, ErTexture? target = null)
-    // {
-    //     ViewportTransform = rect;
-    //     SDL.SetRenderTarget(Handle, target?.Handle ?? 0);
-    // }
     private void ResetViewport()
     {
         ViewportTransform = new(ErVec2.Zero, ErVec2.One);
@@ -76,6 +67,7 @@ public class ErRenderer
             return;
         }
         CleanupStack.Push(TTF.Quit);
+        CleanupStack.Push(FontManager.Cleanup);
         Handle = renderer;
         SDL.SetRenderVSync(Handle, 1);
         SDL.SetDefaultTextureScaleMode(Handle, SDL.ScaleMode.Nearest);
@@ -111,10 +103,6 @@ public class ErRenderer
         SDL.SetRenderDrawColor(Handle, ClearColor.R, ClearColor.G, ClearColor.B, ClearColor.A);
         SDL.RenderClear(Handle);
     }
-    // public void SetTarget(ErTexture? texture = null)
-    // {
-    //     SDL.SetRenderTarget(Handle, texture?.Handle ?? 0);
-    // }
     public void SetClearColor(ErColor color)
     {
         ClearColor = color;
