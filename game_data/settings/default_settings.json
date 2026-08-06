@@ -5,8 +5,15 @@
         "sfx": 1,
         "voice": 1
     },
-    "auto_charge": true,
-    "kb_aiming": false,
-    "reticle_always_visible_gp": false,
-    "reticle_always_visible_kb": true
+    "gameplay":{
+        
+    },
+    "gamepad":{
+        "auto_charge": true,
+        "reticle_force_visible": false
+    },
+    "kbm":{
+        "kb_aiming": false,
+        "reticle_force_visible": true
+    }
 }
