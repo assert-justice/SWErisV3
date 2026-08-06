@@ -7,6 +7,7 @@ using Prion.Node;
 using Prion.Parser;
 using SpoonWitch.Command;
 using SpoonWitch.Game;
+using SpoonWitch.UI.Menu;
 
 namespace SpoonWitch;
 
@@ -18,7 +19,8 @@ public class SwApp : IErApp
     public static readonly ErVec2 ScreenSize = new(INTERNAL_WIDTH, INTERNAL_HEIGHT);
     public static readonly ErVec2 CameraSize = new(INTERNAL_WIDTH, INTERNAL_HEIGHT - HUD_HEIGHT);
     private SwGame? Game;
-    private ErFont? Font;
+    private SwMenuHolder? MenuHolder;
+    // private ErFont? Font;
     private static int NextId;
     private ErTexture RenderTexture;
     public static readonly SwCommandStore CommandStore = new();
@@ -40,10 +42,17 @@ public class SwApp : IErApp
     public void Init()
     {
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
-        if(!ErFont.TryLoad("game_data/fonts/PixAntiqua.ttf", 16, out var font)) ErEngine.LogWarning("failed to load font");
-        else Font = font;
+        // if(!ErFont.TryLoad("game_data/fonts/PixAntiqua.ttf", 16, out var font)) ErEngine.LogWarning("failed to load font");
+        // else Font = font;
+        MenuHolder = new()
+        {
+            Visible = true,
+        };
+    }
+    private void Launch()
+    {
         Game = new();
-        SwGame.TryLoadMap("game_data/map/demo_map2.ldtk");
+        Game.TryLoadMap("game_data/map/demo_map2.ldtk");
     }
     public void Update()
     {
@@ -55,7 +64,11 @@ public class SwApp : IErApp
         ErEngine.Renderer.PushViewport(ErVec2.Zero, RenderTexture);
         ErEngine.Renderer.Clear();
         Game?.Draw();
-        Font?.DrawString("hello world!", ErColor.Green, ErVec2.Zero);
+        if(MenuHolder is not null && MenuHolder.Visible)
+        {
+            MenuHolder.Draw();
+        }
+        // Font?.DrawString("hello world!", ErColor.Green, ErVec2.Zero);
         ErEngine.Renderer.PopViewport();
         RenderTexture.DrawFullscreen();
     }
@@ -100,6 +113,17 @@ public class SwApp : IErApp
         catch(Exception e)
         {
             return ErEngine.LogWarning(e);
+        }
+        return true;
+    }
+    private static readonly string FontPath = "game_data/fonts/PixAntiqua.ttf";
+    private static readonly Dictionary<float,ErFont> FontLookup = [];
+    public static bool TryGetFont(float size, out ErFont font)
+    {
+        if(!FontLookup.TryGetValue(size, out font!))
+        {
+            if(!ErFont.TryLoad(FontPath, size, out font)) return false;
+            FontLookup[size] = font; 
         }
         return true;
     }

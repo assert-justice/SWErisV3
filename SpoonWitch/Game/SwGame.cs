@@ -21,7 +21,6 @@ public class SwGame
     public static double FrameProgress{get => ErEngine.FrameTimeRemaining / DeltaTimeRaw;}
     public static double GameSpeed{get; private set;} = 1;
     public static double AnimSpeed{get; private set;} = 1;
-    // private static readonly Dictionary<int,SwEntProps> EntProps = [];
     private static readonly SwEntPropsLookup PropsLookup = new();
     private static SwMap Map = new();
     private static readonly Queue<SwMove> MoveQueue = [];
@@ -54,11 +53,6 @@ public class SwGame
     {
         if(!SwHud.TryLoad(ErVec2.Zero, out Hud)) throw new("bad hud");
         Camera.DrawFn = DrawScene;
-        // AddEntity<SwPlayer>();
-        // AddEntity(SwPlayer.Primary);
-        // SwSlume.Primary.Position = new(256,256);
-        // AddEntity(SwSlume.Primary);
-        // AddEntity<SwSlume>();
     }
     public static void EnqueueAction(Action action)
     {
@@ -241,7 +235,7 @@ public class SwGame
         PropsLookup.AddEntProps(entProps);
         entProps.Init(NewEntities);
     }
-    public static bool TryLoadMap(string filepath)
+    public bool TryLoadMap(string filepath)
     {
         PriNode data;
         try
