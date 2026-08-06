@@ -21,7 +21,8 @@ public class SwGame
     public static double FrameProgress{get => ErEngine.FrameTimeRemaining / DeltaTimeRaw;}
     public static double GameSpeed{get; private set;} = 1;
     public static double AnimSpeed{get; private set;} = 1;
-    private static readonly Dictionary<int,SwEntProps> EntProps = [];
+    // private static readonly Dictionary<int,SwEntProps> EntProps = [];
+    private static readonly SwEntPropsLookup PropsLookup = new();
     private static SwMap Map = new();
     private static readonly Queue<SwMove> MoveQueue = [];
     private readonly Dictionary<byte, (SwEntity,SwEntity)> Prototypes = [];
@@ -74,9 +75,10 @@ public class SwGame
         }
         QueuedActions.Enqueue(fn);
     }
-    public static bool TryGetEntProps(int id, out SwEntProps entProps)
+    public static bool TryGetEntProps(int id, out SwEntPropsBase entProps)
     {
-        return EntProps.TryGetValue(id, out entProps!);
+        // return EntProps.TryGetValue(id, out entProps!);
+        return PropsLookup.TryGet(id, out entProps);
     }
     public static void EnqueueMove(int id, uint mask, ErVec2 size, int head)
     {
@@ -112,7 +114,8 @@ public class SwGame
         {
             entity.Update();
             if(!entity.IsFreeQueued) entity.Write(NextStream);
-            else EntProps.Remove(entity.Id);
+            else PropsLookup.RemoveEntProps(entity);
+            // else EntProps.Remove(entity.Id);
         }
         if(NewEntities.Head > 0)
         {
@@ -176,11 +179,6 @@ public class SwGame
         {
             NextStream.TryPeekByte(out byte typeId);
             if(!TryGetPrototype(typeId, out var pair)) continue;
-            // if(!Prototypes.TryGetValue(typeId, out var pair))
-            // {
-            //     ErEngine.LogError("Attempted to initalized entity with unregistered type id '", typeId, "'.");
-            //     continue;
-            // }
             var (lastEnt, nextEnt) = pair;
             nextEnt.Read(NextStream);
             if(nextEnt.LastHeadIndex < 0) continue;
@@ -213,42 +211,18 @@ public class SwGame
     }
     public void AddEntity<T>()where T: SwEntity, ISwEntity<T>
     {
-        AddEntity<T>(new SwEntProps());
+        AddEntityInternal<T>(new());
     }
     public void AddEntity<T>(PriNode entData) where T: SwEntity, ISwEntity<T>
     {
-        SwEntProps props = new(entData);
-        AddEntity<T>(props);
+        AddEntityInternal<T>(new(entData));
     }
-    public void AddEntity<T>(T entity, PriNode entData) where T: SwEntity, ISwEntity<T>
-    {
-        SwEntProps props = new(entData);
-        AddEntity(entity, props);
-    }
-    public void AddEntity<T>(SwEntProps entProps) where T: SwEntity, ISwEntity<T>
-    {
-        var (primary,_) = GetPrototype<T>();
-        AddEntity(primary, entProps);
-    }
-    public void AddEntity<T>(T entity, SwEntProps entProps) where T: SwEntity,ISwEntity<T>
+    private void AddEntityInternal<T>(SwEntProps<T> entProps) where T: SwEntity, ISwEntity<T>
     {
         GetPrototype<T>();
-        entity.Init(entProps);
-        EntProps.Add(entity.Id, entity.EntProps);
-        entity.Write(NewEntities);
+        PropsLookup.AddEntProps(entProps);
+        entProps.Init(NewEntities);
     }
-    // private void AddEntityInternal<T>(T entity, SwEntProps entProps) where T: SwEntity,ISwEntity<T>
-    // {
-    //     GetPrototype<T>();
-    //     // if(!Prototypes.TryGetValue(T.TypeId, out _))
-    //     // {
-    //     //     var pair = (T.Primary,T.Secondary);
-    //     //     Prototypes.Add(T.TypeId, pair);
-    //     // }
-    //     entity.Init(entProps);
-    //     EntProps.Add(entity.Id, entity.EntProps);
-    //     entity.Write(NewEntities);
-    // }
     public static bool TryLoadMap(string filepath)
     {
         PriNode data;

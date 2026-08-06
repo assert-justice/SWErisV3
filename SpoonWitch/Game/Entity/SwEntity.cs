@@ -14,7 +14,7 @@ public abstract class SwEntity
 {
     private readonly Dictionary<(Type,string), SwComponent> ComponentLookup = [];
     private readonly List<SwComponent> Components = [];
-    public SwEntProps EntProps{get; private set;} = null!;
+    public SwEntPropsBase EntProps{get; private set;} = null!;
     abstract protected byte GetTypeId{get;}
     private int _Id;
     public int Id => _Id;
@@ -38,7 +38,7 @@ public abstract class SwEntity
         else ErEngine.LogError("Failed to register component of name '", component.Name, "' and type '", component.GetType(), "'.");
         return component;
     }
-    public void Init(SwEntProps entProps)
+    public void Init(SwEntPropsBase entProps)
     {
         _Id = entProps.Id;
         EntProps = entProps;
