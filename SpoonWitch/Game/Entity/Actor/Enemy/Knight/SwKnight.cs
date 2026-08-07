@@ -1,4 +1,5 @@
 using Eris;
+using SpoonWitch.ByteStream;
 using SpoonWitch.Command;
 using SpoonWitch.Game.Entity.Component.State;
 
@@ -14,6 +15,8 @@ public class SwKnight : SwEnemy, ISwEntity<SwKnight>
     public static SwKnight Secondary => _Secondary ??= new();
     protected override byte GetTypeId => TypeId;
     private readonly SwStateMachine StateMachine;
+    public double WanderSpeedMul = 0.25;
+    public double TimeoutClock;
     public SwKnight()
     {
         string path = "game_data/entities/actors/knight/knight_anim_data.json";
@@ -25,6 +28,16 @@ public class SwKnight : SwEnemy, ISwEntity<SwKnight>
     {
         base.Ready();
         if(!IsPassive) StateMachine.SetState("wandering");
+    }
+    public override void Read(SwByteStream byteStream)
+    {
+        base.Read(byteStream);
+        byteStream.TryReadF64(out TimeoutClock);
+    }
+    public override void Write(SwByteStream byteStream)
+    {
+        base.Write(byteStream);
+        byteStream.WriteF64(TimeoutClock);
     }
     protected override void Die()
     {

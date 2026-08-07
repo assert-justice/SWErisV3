@@ -17,3 +17,4 @@ Medium term todos:
 - Fix camera snap on start
 - Boss fight
 - Z sorting
+- Pathfinding

@@ -283,8 +283,8 @@
 			"maxCount": 0,
 			"limitScope": "PerLevel",
 			"limitBehavior": "MoveLastOne",
-			"pivotX": 0.5,
-			"pivotY": 0.5,
+			"pivotX": 0,
+			"pivotY": 0,
 			"fieldDefs": [
 				{
 					"identifier": "entity_type",
@@ -1124,7 +1124,7 @@
 						{
 							"__identifier": "spawner",
 							"__grid": [14,5],
-							"__pivot": [0.5,0.5],
+							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#FF0044",
@@ -1142,9 +1142,9 @@
 									"id": "V_Bool",
 									"params": [ true ]
 								}] },
-								{ "__identifier": "property_overrides", "__type": "String", "__value": "{\n \"is_passive\": true\n}", "__tile": null, "defUid": 12, "realEditorValues": [{
+								{ "__identifier": "property_overrides", "__type": "String", "__value": "{\n \"is_passive\": false\n}", "__tile": null, "defUid": 12, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["{\\n \"is_passive\": true\\n}"]
+									"params": ["{\\n \"is_passive\": false\\n}"]
 								}] },
 								{ "__identifier": "max_uses", "__type": "Int", "__value": null, "__tile": null, "defUid": 50, "realEditorValues": [] }
 							],
@@ -1370,6 +1370,7 @@
 						{ "px": [608,64], "src": [32,0], "f": 0, "t": 1, "d": [59], "a": 1 },
 						{ "px": [0,96], "src": [32,0], "f": 0, "t": 1, "d": [60], "a": 1 },
 						{ "px": [0,128], "src": [32,0], "f": 0, "t": 1, "d": [80], "a": 1 },
+						{ "px": [448,128], "src": [32,0], "f": 0, "t": 1, "d": [94], "a": 1 },
 						{ "px": [0,160], "src": [32,0], "f": 0, "t": 1, "d": [100], "a": 1 },
 						{ "px": [0,192], "src": [32,0], "f": 0, "t": 1, "d": [120], "a": 1 },
 						{ "px": [0,224], "src": [32,0], "f": 0, "t": 1, "d": [140], "a": 1 },

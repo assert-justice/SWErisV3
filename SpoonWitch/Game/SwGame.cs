@@ -6,6 +6,7 @@ using Prion.Parser;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Command;
 using SpoonWitch.Game.Entity;
+using SpoonWitch.Game.Entity.Actor;
 using SpoonWitch.Game.Entity.Actor.Enemy.Knight;
 using SpoonWitch.Game.Entity.Actor.Enemy.Slume;
 using SpoonWitch.Game.Entity.Actor.Player;
@@ -34,6 +35,7 @@ public class SwGame
     public static readonly SwCamera Camera = new();
     public static ErVec2 PlayerPos{get; private set;} = new(32,32);
     private static readonly Queue<Action> QueuedActions = [];
+    private static readonly Queue<(uint,ErRect2,SwCommand)> QueuedCommandRect = [];
     public static void SetPlayerPos(ErVec2 position)
     {
         PlayerPos = position;
@@ -61,15 +63,7 @@ public class SwGame
     }
     public static void EnqueueCommandRect(uint mask, ErRect2 rect, SwCommand command)
     {
-        void fn()
-        {
-            foreach (int id in Map.CollisionLayer.GetRectIds(rect, mask))
-            {
-                if(!TryGetEntProps(id, out var entProps)) continue;
-                entProps.AddCommand(command);
-            }
-        }
-        QueuedActions.Enqueue(fn);
+        QueuedCommandRect.Enqueue((mask,rect,command));
     }
     public static bool TryGetEntProps(int id, out SwEntPropsBase entProps)
     {
@@ -133,6 +127,14 @@ public class SwGame
             NextStream.WriteVec2(vel);
         }
         while(QueuedActions.TryDequeue(out var action)) action();
+        while(QueuedCommandRect.TryDequeue(out var result))
+        {
+            var (mask,rect,command) = result;
+            foreach (var id in Map.CollisionLayer.GetRectIds(rect, mask))
+            {
+                if(TryGetEntProps(id, out var props)) props.AddCommand(command);
+            }
+        }
         Hud.Update();
     }
     public void Draw()

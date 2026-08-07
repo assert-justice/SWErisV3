@@ -45,7 +45,6 @@
                     "first_frame": 0,
                     "last_frame": 9,
                     "fps": 8,
-                    "v_flip": true,
                     "loops": true
                 },
                 "move_1h_d":{
@@ -75,7 +74,6 @@
                     "first_frame": 10,
                     "last_frame": 19,
                     "fps": 8,
-                    "v_flip": true,
                     "loops": true
                 },
                 "move_0h_d":{
@@ -105,7 +103,6 @@
                     "first_frame": 20,
                     "last_frame": 29,
                     "fps": 8,
-                    "v_flip": true,
                     "loops": true
                 },
                 "death":{
