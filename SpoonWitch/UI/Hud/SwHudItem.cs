@@ -37,16 +37,12 @@ public class SwHudItem
         OnesOff = new(ox, oy);
         if(!icon.TryGet("digit_width", out double digit_width)) digit_width = 32;
         if(!icon.TryGet("digit_height", out double digit_height)) digit_height = 32;
-        if(!icon.TryGet("frame_filename", out string filename)) throw new("bad frame file");
+        if(!icon.TryGet("frame_filepath", out string filename)) throw new("bad frame file");
         if(!ErTexture.TryFromPath(Path.Join(dirpath,filename), out Frame)) throw new("bad frame");
-        if(!icon.TryGet("icons_filename", out filename)) throw new("bad icon file");
+        if(!icon.TryGet("icons_filepath", out filename)) throw new("bad icon file");
         if(!ErTexture.TryFromPath(Path.Join(dirpath,filename), out var tex)) throw new("bad icon");
         if(!SwSpriteAnimation.TryFromTexture(tex, new(icon_width,icon_height), out Icons)) throw new("poo");
-        foreach (var item in Icons.Frames)
-        {
-            ErEngine.Log(item.SourceRect);
-        }
-        if(!icon.Get("digits_filename").TryAs(out filename)) throw new("bad digits file");
+        if(!icon.Get("digits_filepath").TryAs(out filename)) throw new("bad digits file");
         if(!ErTexture.TryFromPath(Path.Join(dirpath,filename), out tex)) throw new("bad digits");
         if(!SwSpriteAnimation.TryFromTexture(tex, new(digit_width,digit_height), out Digits)) throw new("poo2");
     }

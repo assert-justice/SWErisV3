@@ -18,3 +18,4 @@ Medium term todos:
 - Boss fight
 - Z sorting
 - Pathfinding
+- Move file system stuff into its on class

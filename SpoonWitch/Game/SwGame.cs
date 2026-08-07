@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using Eris;
+using Eris.Renderer;
 using ErisMath;
 using Prion.Node;
 using Prion.Parser;
@@ -30,6 +31,7 @@ public class SwGame
     private SwByteStream LastStream = new();
     private SwByteStream NextStream = new();
     private readonly SwByteStream NewEntities = new();
+    private readonly ErTexture HudBg = ErTexture.GetColoredTexture(SwApp.INTERNAL_WIDTH,SwApp.HUD_HEIGHT, new(38, 3, 72));
     private SwRoom? CurrentRoom;
     private readonly SwHud Hud;
     public static readonly SwCamera Camera = new();
@@ -54,7 +56,11 @@ public class SwGame
     }
     public SwGame()
     {
-        if(!SwHud.TryLoad(ErVec2.Zero, out Hud)) throw new("bad hud");
+        if(!SwHud.TryLoad(ErVec2.Zero, out Hud))
+        {
+            ErEngine.LogError("bad hud");
+            return;
+        }
         Camera.DrawFn = DrawScene;
     }
     public static void EnqueueAction(Action action)
@@ -140,6 +146,7 @@ public class SwGame
     public void Draw()
     {
         Camera.Draw();
+        HudBg.Draw(ErVec2.Zero);
         Hud.Draw();
     }
     private void HandleCommands()

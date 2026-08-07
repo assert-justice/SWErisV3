@@ -14,12 +14,15 @@ public class SwHudSprite
     private double Clock;
     private readonly ErVec2 Offset;
     public int FrameIdx;
-    public SwHudSprite(ErVec2 offset, string filepath)
+    private SwHudSprite(ErVec2 offset, string dirpath, PriNode node)
     {
         Offset = offset;
-        // string filepath = "game_data/hud/vitality_root_slot.png";
+        if(!node.TryGet("texture_filepath", out string filepath)) throw new("bad filepath");
+        filepath = Path.Join(dirpath, filepath);
         if(!ErTexture.TryFromPath(filepath, out ErTexture tex)) throw new("bad tex");
-        if(!SwSpriteAnimation.TryFromTexture(tex, new(tex.Size.X / 3, tex.Size.Y), out Animation)) throw new("bad anim");
+        double width = node.TryGet("width", out double d) ? d : tex.Size.X;
+        double height = node.TryGet("height", out d) ? d : tex.Size.Y;
+        if(!SwSpriteAnimation.TryFromTexture(tex, new(width, height), out Animation)) throw new("bad anim");
     }
     public void Update()
     {
@@ -36,17 +39,29 @@ public class SwHudSprite
     {
         Animation.Draw(Offset, FrameIdx);
     }
-    public static bool TryLoad(ErVec2 offset, string filepath, out SwHudSprite hudSprite)
+    public static bool TryLoad(ErVec2 offset, string dirpath, PriNode node, out SwHudSprite hudSprite)
     {
         hudSprite = default!;
         try
         {
-            hudSprite = new(offset, filepath);
+            hudSprite = new(offset, dirpath, node);
             return true;
         }
         catch(Exception e)
         {
             return ErEngine.LogWarning(e);
         }
+    }
+    public static bool TryLoadList(string dirpath, PriNode node, in List<SwHudSprite> sprites)
+    {
+        if(!node.TryGet("slots", out PriList list)) return ErEngine.LogWarning("no slots found");
+        foreach (var item in list.Values)
+        {
+            double x = item.TryGet("x", out double d) ? d : 0;
+            double y = item.TryGet("y", out d) ? d : 0;
+            if(!TryLoad(new(x,y), dirpath, node, out var sprite)) return false;
+            sprites.Add(sprite);
+        }
+        return true;
     }
 }
