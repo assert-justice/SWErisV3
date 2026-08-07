@@ -8,10 +8,10 @@
         "x": 0,
         "y": 2,
         "frame_filename": "item_slot.png",
-        "icons_filename": "icons.png",
+        "icons_filename": "inventory_icon_sheet.png",
         "digits_filename": "digits_sheet.png",
-        "icon_x": 2,
-        "icon_y": 2,
+        "icon_x": 4,
+        "icon_y": 4,
         "tens_digit_x": 24,
         "tens_digit_y": 27,
         "ones_digit_x": 29,
@@ -48,5 +48,23 @@
             "x": 52,
             "y": 27
         }
-    }
+    },
+    "root_slots":[
+        {"x": 154, "y": 0},
+        {"x": 162, "y": 14},
+        {"x": 170, "y": 0},
+        {"x": 178, "y": 14}
+    ],
+    "ammo_slots":[
+        {"x": 188, "y": 8},
+        {"x": 188, "y": 22},
+        {"x": 202, "y": 8},
+        {"x": 202, "y": 22},
+        {"x": 216, "y": 8},
+        {"x": 216, "y": 22},
+        {"x": 230, "y": 8},
+        {"x": 230, "y": 22},
+        {"x": 244, "y": 8},
+        {"x": 244, "y": 22}
+    ]
 }

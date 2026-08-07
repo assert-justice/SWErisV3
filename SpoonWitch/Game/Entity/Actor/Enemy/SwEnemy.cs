@@ -14,7 +14,6 @@ public abstract class SwEnemy: SwActor
     {
         base.Ready();
         IsPassive = EntProps.Props.TryGet("is_passive", out bool isPassive) && isPassive;
-        ErEngine.Log("is passive ", IsPassive);
     }
     public bool CanSeeTarget()
     {

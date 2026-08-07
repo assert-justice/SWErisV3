@@ -37,7 +37,11 @@ public class SwHudItem
         if(!ErTexture.TryFromPath(Path.Join(dirpath,filename), out Frame)) throw new("bad frame");
         if(!icon.Get("icons_filename").TryAs(out filename)) throw new("bad icon file");
         if(!ErTexture.TryFromPath(Path.Join(dirpath,filename), out var tex)) throw new("bad icon");
-        if(!SwSpriteAnimation.TryFromTexture(tex, new(32,32), out Icons)) throw new("poo");
+        if(!SwSpriteAnimation.TryFromTexture(tex, new(26,27), out Icons)) throw new("poo");
+        foreach (var item in Icons.Frames)
+        {
+            ErEngine.Log(item.SourceRect);
+        }
         if(!icon.Get("digits_filename").TryAs(out filename)) throw new("bad digits file");
         if(!ErTexture.TryFromPath(Path.Join(dirpath,filename), out tex)) throw new("bad digits");
         if(!SwSpriteAnimation.TryFromTexture(tex, new(4,7), out Digits)) throw new("poo2");
