@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using Eris;
 using Eris.Renderer;
+using ErisMath;
 using Prion.Db;
 using Prion.Node;
 using Prion.Parser;
@@ -75,6 +76,35 @@ public static class SwData
     {
         return false;
     }
+    public static bool TryReadVector(PriNode node, string xName, string yName, out ErVec2 value)
+    {
+        value = default;
+        if(!node.TryGet(xName, out double x)) return false;
+        if(!node.TryGet(yName, out double y)) return false;
+        value = new(x,y);
+        return true;
+    }
+    public static bool TryReadVector(PriNode node, string xName, string yName, out ErVec2I value)
+    {
+        value = default;
+        if(!node.TryGet(xName, out int x)) return false;
+        if(!node.TryGet(yName, out int y)) return false;
+        value = new(x,y);
+        return true;
+    }
+    public static ErVec2 ReadVector(PriNode node, string xName, string yName, double defaultX = 0, double defaultY = 0)
+    {
+        if(!node.TryGet(xName, out double x)) x = defaultX;
+        if(!node.TryGet(yName, out double y)) y = defaultY;
+        return new(x,y);
+    }
+    public static ErVec2I ReadVector(PriNode node, string xName, string yName, int defaultX = 0, int defaultY = 0)
+    {
+        if(!node.TryGet(xName, out int x)) x = defaultX;
+        if(!node.TryGet(yName, out int y)) y = defaultY;
+        return new(x,y);
+    }
+    // public static ErVec2I TryWriteVector(PriNode node, )
     public static bool TryGetManPath(string dbPath, out string filepath)
     {
         filepath = string.Empty;
