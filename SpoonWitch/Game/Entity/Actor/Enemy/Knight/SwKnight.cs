@@ -1,4 +1,5 @@
 using Eris;
+using SpoonWitch.Command;
 using SpoonWitch.Game.Entity.Component.State;
 
 namespace SpoonWitch.Game.Entity.Actor.Enemy.Knight;
@@ -19,5 +20,21 @@ public class SwKnight : SwEnemy, ISwEntity<SwKnight>
         if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load knight sprites");
         StateMachine = SwKnightState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
+    }
+    public override void Ready()
+    {
+        base.Ready();
+        if(!IsPassive) StateMachine.SetState("wandering");
+    }
+    protected override void Die()
+    {
+        base.Die();
+        StateMachine.SetState("dead");
+    }
+    protected override double Damage(SwCommand command)
+    {
+        double value = base.Damage(command);
+        if(value > 0) StateMachine.SetState("knockback");
+        return value;
     }
 }
