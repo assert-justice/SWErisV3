@@ -1,7 +1,5 @@
 {
-    "gameplay":{
-        "damage_dealt": 2,
-        "damage_received": 0.5,
-        "game_speed": 1
+    "debug":{
+        "debug": false
     }
 }

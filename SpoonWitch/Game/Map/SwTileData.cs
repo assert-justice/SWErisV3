@@ -125,6 +125,9 @@ public class SwTileData
             }
             Frames[frameIdx] = frame;
         }
+        CollisionMask = 0;
+        if(is_solid) CollisionMask |= 1;
+        if(is_opaque) CollisionMask |= 2;
     }
     public bool TryDraw(ErVec2 position, SwTileMask mask, ushort seed)
     {

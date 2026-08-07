@@ -16,3 +16,4 @@ Medium term todos:
 - Fix cursor lag
 - Fix camera snap on start
 - Boss fight
+- Z sorting

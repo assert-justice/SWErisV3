@@ -27,7 +27,8 @@ public class SwApp : IErApp
     public static readonly SwCommandStore CommandStore = new();
     public static readonly PriDb Settings = new();
     public static readonly PriDb SaveData = new();
-    public static bool Debug{get; private set;} = false;
+    // public static bool Debug{get; private set;} = ;
+    public static bool Debug => Settings.TryGet("debug/debug", out bool debug) && debug;
     public static int Main()
     {
         SwApp app = new();

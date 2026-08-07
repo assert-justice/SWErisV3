@@ -15,7 +15,10 @@
         "reticle_force_visible": false
     },
     "kbm":{
-        "kb_aiming": false,
+        "kb_aiming": true,
         "reticle_force_visible": true
+    },
+    "debug":{
+        "debug": false
     }
 }
