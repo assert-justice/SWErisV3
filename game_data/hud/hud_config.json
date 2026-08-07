@@ -12,10 +12,14 @@
         "digits_filename": "digits_sheet.png",
         "icon_x": 4,
         "icon_y": 4,
+        "icon_width": 26,
+        "icon_height": 27,
         "tens_digit_x": 24,
         "tens_digit_y": 27,
         "ones_digit_x": 29,
-        "ones_digit_y": 27
+        "ones_digit_y": 27,
+        "digit_width": 4,
+        "digit_height": 7
     },
     "bar_common":{
         "fill_x": 0,
