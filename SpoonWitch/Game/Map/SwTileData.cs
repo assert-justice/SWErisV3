@@ -95,6 +95,7 @@ public class SwTileData
         ErVec2I texSizeTiles = (ErVec2I)Texture.Size / tileSize;
         int numVariants = texSizeTiles.X / ATLAS_WIDTH;
         int numFrames = texSizeTiles.Y / ATLAS_HEIGHT;
+        // ErEngine.Log("num frames: ", numFrames);
         Frames = new ErRect2[numFrames][][];
         List<ErRect2> variants = new(numVariants);
         for (int frameIdx = 0; frameIdx < numFrames; frameIdx++)
