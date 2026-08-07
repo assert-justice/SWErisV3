@@ -6,6 +6,7 @@ using Prion.Parser;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Command;
 using SpoonWitch.Game.Entity;
+using SpoonWitch.Game.Entity.Actor.Enemy.Knight;
 using SpoonWitch.Game.Entity.Actor.Enemy.Slume;
 using SpoonWitch.Game.Entity.Actor.Player;
 using SpoonWitch.Game.Map;
@@ -156,13 +157,16 @@ public class SwGame
             switch (entityType)
             {
                 case "none":
-                break;
+                    break;
                 case "slume":
                     AddEntity<SwSlume>(command.Payload);
-                break;
+                    break;
+                case "knight":
+                    AddEntity<SwKnight>(command.Payload);
+                    break;
                 default:
                     ErEngine.LogWarning("tried to spawn unknown entity type '", entityType, "'");
-                break;
+                    break;
             }
         }
     }

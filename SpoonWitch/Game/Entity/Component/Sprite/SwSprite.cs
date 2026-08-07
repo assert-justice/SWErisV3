@@ -129,14 +129,14 @@ public class SwSprite : SwComponent
         if(!spriteData.Get("width").TryAs(out int width)) width = 64;
         if(!spriteData.Get("height").TryAs(out int height)) height = 64;
         sprite.Size = new(width, height);
-        if(!spriteData.Get("animations").TryAs(out PriDict animations)) return false;
+        if(!spriteData.Get("animations").TryAs(out PriDict animations)) return ErEngine.LogWarning("no animations");
         foreach (var (animName, animData) in animations.Data)
         {
-            if(!animData.Get("texture").TryAs(out string texturePath)) return false;
+            if(!animData.Get("texture").TryAs(out string texturePath)) return ErEngine.LogWarning("no texture path");
             texturePath = Path.Join(dirpath, texturePath);
             if(!ErTexture.TryFromPath(texturePath, out var texture)) return ErEngine.LogError("Invaid texture path '", texturePath, "'.");
-            if(!animData.Get("first_frame").TryAs(out int firstFrame)) return false;
-            if(!animData.Get("last_frame").TryAs(out int lastFrame)) return false;
+            if(!animData.Get("first_frame").TryAs(out int firstFrame)) return ErEngine.LogWarning("no first frame");
+            if(!animData.Get("last_frame").TryAs(out int lastFrame)) return ErEngine.LogWarning("no last frame");;
             if(!animData.Get("fps").TryAs(out double fps)) fps = 8;
             if(!animData.Get("h_flip").TryAs(out bool hFlip)) hFlip = false;       
             if(!animData.Get("v_flip").TryAs(out bool vFlip)) vFlip = false;

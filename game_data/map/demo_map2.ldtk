@@ -987,7 +987,7 @@
 				},
 				{
 					"tileId": 1,
-					"data": "{\n  \"source\": \"tilesets/sea_tileset.png\",\n  \"is_solid\": true,\n  \"move_speed_mul\": 0\n}"
+					"data": "{\n  \"source\": \"tilesets/sea_tileset.png\",\n  \"is_solid\": true,\n  \"move_speed_mul\": 0,\n  \"animated\": true,\n  \"fps\": 4\n}"
 				},
 				{ "tileId": 2, "data": "{\n  \"source\": \"tilesets/beach_tileset.png\",\n  \"move_speed_mul\": 0.5\n}" },
 				{ "tileId": 3, "data": "{\n  \"source\": \"tilesets/demo_dirt_tiles.png\"\n}" },
@@ -1025,7 +1025,11 @@
 		}
 	], "enums": [
 		{ "identifier": "script_type", "uid": 46, "values": [ { "id": "js", "tileRect": null, "color": 12470831 }, { "id": "json", "tileRect": null, "color": 14120515 } ], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] },
-		{ "identifier": "entity_type", "uid": 48, "values": [ { "id": "none", "tileRect": null, "color": 14120515 }, { "id": "slume", "tileRect": null, "color": 12470831 } ], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }
+		{ "identifier": "entity_type", "uid": 48, "values": [
+			{ "id": "none", "tileRect": null, "color": 14120515 },
+			{ "id": "slume", "tileRect": null, "color": 12470831 },
+			{ "id": "knight", "tileRect": null, "color": 15389866 }
+		], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }
 	], "externalEnums": [], "levelFields": [] },
 	"levels": [
 		{
@@ -1130,9 +1134,9 @@
 							"defUid": 8,
 							"px": [448,160],
 							"fieldInstances": [
-								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "slume", "__tile": null, "defUid": 49, "realEditorValues": [{
+								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "knight", "__tile": null, "defUid": 49, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["slume"]
+									"params": ["knight"]
 								}] },
 								{ "__identifier": "trigger_on_load", "__type": "Bool", "__value": true, "__tile": null, "defUid": 9, "realEditorValues": [{
 									"id": "V_Bool",
