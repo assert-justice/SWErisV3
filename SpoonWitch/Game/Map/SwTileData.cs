@@ -22,30 +22,47 @@ public class SwTileData
     public readonly bool IsOpaque;
     public readonly double MoveSpeedMul;
     public readonly uint CollisionMask;
-    private readonly Dictionary<SwTileMask,List<ErVec2I>> CoordLookup = [];
-    private static readonly Dictionary<(int,int), SwTileMask> MaskLookup = [];
-    private static bool TryGetMask(ErVec2I tileCoords, out SwTileMask mask)
+    public readonly bool IsAnimated;
+    public const int ATLAS_WIDTH = 4;
+    public const int ATLAS_HEIGHT = 4;
+    public double Fps = 4;
+    private readonly ErRect2[][][] Frames;
+    private static readonly SwTileMask[] TileMasks;
+    private static readonly ErVec2I[] CoordLookup;
+    static SwTileData()
     {
-        // Todo: make less stupid
-        if(MaskLookup.Count == 0)
-        {
-            MaskLookup.Add((2,1), SwTileMask.TopLeft | SwTileMask.TopRight | SwTileMask.BottomLeft | SwTileMask.BottomRight); // All corners
-            MaskLookup.Add((1,3), SwTileMask.BottomRight); // Outer bottom-right corner
-            MaskLookup.Add((0,0), SwTileMask.BottomLeft); // Outer bottom-left corner
-            MaskLookup.Add((0,2), SwTileMask.TopRight); // Outer top-right corner
-            MaskLookup.Add((3,3), SwTileMask.TopLeft); // Outer top-left corner
-            MaskLookup.Add((1,0), SwTileMask.TopRight | SwTileMask.BottomRight); // Right edge
-            MaskLookup.Add((3,2), SwTileMask.TopLeft | SwTileMask.BottomLeft); // Left edge
-            MaskLookup.Add((3,0), SwTileMask.BottomLeft | SwTileMask.BottomRight); // Bottom edge
-            MaskLookup.Add((1,2), SwTileMask.TopLeft | SwTileMask.TopRight); // Top edge
-            MaskLookup.Add((1,1), SwTileMask.TopRight | SwTileMask.BottomLeft | SwTileMask.BottomRight); // Inner bottom-right corner
-            MaskLookup.Add((2,0), SwTileMask.TopLeft | SwTileMask.BottomLeft | SwTileMask.BottomRight); // Inner top-left corner
-            MaskLookup.Add((2,2), SwTileMask.TopLeft | SwTileMask.TopRight | SwTileMask.BottomRight); // Inner top-right corner
-            MaskLookup.Add((3,1), SwTileMask.TopLeft | SwTileMask.TopRight | SwTileMask.BottomLeft); // Inner top-left corner
-            MaskLookup.Add((2,3), SwTileMask.TopRight | SwTileMask.BottomLeft); // Bottom-left top-right corners
-            MaskLookup.Add((0,1), SwTileMask.TopLeft | SwTileMask.BottomRight); // Top-left down-right corners
-        }
-        return MaskLookup.TryGetValue((tileCoords.X%4,tileCoords.Y%4), out mask);
+        CoordLookup = new ErVec2I[ATLAS_WIDTH * ATLAS_HEIGHT];
+        Array.Fill(CoordLookup, ErVec2I.Neg);
+        TileMasks = new SwTileMask[ATLAS_WIDTH * ATLAS_HEIGHT];
+        AddTilemask(2,1, SwTileMask.TopLeft | SwTileMask.TopRight | SwTileMask.BottomLeft | SwTileMask.BottomRight); // All corners
+        AddTilemask(1,3, SwTileMask.BottomRight); // Outer bottom-right corner
+        AddTilemask(0,0, SwTileMask.BottomLeft); // Outer bottom-left corner
+        AddTilemask(0,2, SwTileMask.TopRight); // Outer top-right corner
+        AddTilemask(3,3, SwTileMask.TopLeft); // Outer top-left corner
+        AddTilemask(1,0, SwTileMask.TopRight | SwTileMask.BottomRight); // Right edge
+        AddTilemask(3,2, SwTileMask.TopLeft | SwTileMask.BottomLeft); // Left edge
+        AddTilemask(3,0, SwTileMask.BottomLeft | SwTileMask.BottomRight); // Bottom edge
+        AddTilemask(1,2, SwTileMask.TopLeft | SwTileMask.TopRight); // Top edge
+        AddTilemask(1,1, SwTileMask.TopRight | SwTileMask.BottomLeft | SwTileMask.BottomRight); // Inner bottom-right corner
+        AddTilemask(2,0, SwTileMask.TopLeft | SwTileMask.BottomLeft | SwTileMask.BottomRight); // Inner top-left corner
+        AddTilemask(2,2, SwTileMask.TopLeft | SwTileMask.TopRight | SwTileMask.BottomRight); // Inner top-right corner
+        AddTilemask(3,1, SwTileMask.TopLeft | SwTileMask.TopRight | SwTileMask.BottomLeft); // Inner top-left corner
+        AddTilemask(2,3, SwTileMask.TopRight | SwTileMask.BottomLeft); // Bottom-left top-right corners
+        AddTilemask(0,1, SwTileMask.TopLeft | SwTileMask.BottomRight); // Top-left down-right corners
+    }
+    private static int GetMaskIdx(int x, int y)
+    {
+        return y * ATLAS_WIDTH + x;
+    }
+    private static void AddTilemask(int x, int y, SwTileMask mask)
+    {
+        CoordLookup[(int)mask] = new(x,y);
+        TileMasks[GetMaskIdx(x,y)] = mask;
+    }
+    private static bool TryGetMask(int x, int y, out SwTileMask mask)
+    {
+        mask = TileMasks[GetMaskIdx(x%ATLAS_WIDTH, y%ATLAS_HEIGHT)];
+        return mask != SwTileMask.None;
     }
     private static bool IsSurfaceRectEmpty(nint surface, ErRect2I rect)
     {
@@ -59,69 +76,84 @@ public class SwTileData
         }
         return true;
     }
-    private SwTileData(ErTexture texture, bool isSolid, bool isOpaque, double moveSpeedMul)
+    private SwTileData(string filepath, PriNode priNode, ErVec2I tileSize)
     {
-        Texture = texture;
-        IsSolid = isSolid;
-        IsOpaque = isOpaque;
-        MoveSpeedMul = moveSpeedMul;
-        CollisionMask = 0;
-        if(isSolid) CollisionMask |= 1;
-        if(isOpaque) CollisionMask |= 2;
-    }
-    private void AddTile(ErVec2I tileCoords)
-    {
-        if(!TryGetMask(tileCoords, out var mask))
+        // TileSize = tileSize;
+        if(!priNode.Get("source").TryAs(out string texPath)) throw new("no source field provided");
+        string? dirpath = Path.GetDirectoryName(filepath);
+        texPath = Path.Join(dirpath, texPath);
+        if(!ErEngine.Renderer.TextureManager.TryGetSurface(texPath, out nint surface)) throw new("source path invalid");
+        if(!ErTexture.TryFromPath(texPath, out Texture)) throw new("source path invalid2");
+        IsSolid = priNode.TryGet("is_solid", out bool is_solid) && is_solid;
+        IsOpaque = priNode.TryGet("is_opaque", out bool is_opaque) && is_opaque;
+        MoveSpeedMul = priNode.TryGet("move_speed_mul", out double mul) ? mul : 1;
+        IsAnimated = priNode.TryGet("is_animated", out bool is_animated) && is_animated;
+        if (IsAnimated)
         {
-            ErEngine.LogWarning("invalid tile coords: ", tileCoords);
-            return;    
+            if(priNode.TryGet("fps", out double fps)) Fps = fps;
         }
-        if(!CoordLookup.TryGetValue(mask, out var coords))
+        ErVec2I texSizeTiles = (ErVec2I)Texture.Size / tileSize;
+        int numVariants = texSizeTiles.X / ATLAS_WIDTH;
+        int numFrames = texSizeTiles.Y / ATLAS_HEIGHT;
+        Frames = new ErRect2[numFrames][][];
+        List<ErRect2> variants = new(numVariants);
+        for (int frameIdx = 0; frameIdx < numFrames; frameIdx++)
         {
-            coords = [];
-            CoordLookup[mask] = coords;
+            var frame = new ErRect2[ATLAS_WIDTH * ATLAS_HEIGHT][];
+            int yf = frameIdx * ATLAS_HEIGHT;
+            for (int xi = 0; xi < ATLAS_WIDTH; xi++)
+            {
+                for (int yi = 0; yi < ATLAS_HEIGHT; yi++)
+                {
+                    variants.Clear();
+                    if(!TryGetMask(xi, yi, out var mask)) continue;
+                    for (int varIdx = 0; varIdx < numVariants; varIdx++)
+                    {
+                        int x = (xi + varIdx * ATLAS_WIDTH) * tileSize.X;
+                        int y = (yi + yf) * tileSize.Y;
+                        ErRect2I rect = new(x, y, tileSize.X, tileSize.Y);
+                        if(IsSurfaceRectEmpty(surface, rect)) continue;
+                        variants.Add((ErRect2)rect);
+                    }
+                    frame[(int)mask] = [..variants];
+                }
+            }
+            for (int i = 0; i < frame.Length; i++)
+            {
+                if(frame[i] is null) frame[i] = [];
+            }
+            Frames[frameIdx] = frame;
         }
-        coords.Add(tileCoords);
     }
-    public bool TryGetAtlasCoord(SwTileMask mask, out ErVec2I coord)
+    public bool TryDraw(ErVec2 position, SwTileMask mask, ushort seed)
     {
-        coord = new(2,1);
-        if(!CoordLookup.TryGetValue(mask, out var options)) return ErEngine.LogWarning("bad mask: ", mask);
-        int idx =  ErMath.FloorToInt(Random.Shared.NextSingle() * options.Count);
-        coord = options[idx];
+        return TryDraw(position, mask, seed, 0);
+    }
+    public bool TryDraw(ErVec2 position, SwTileMask mask, ushort seed, double time)
+    {
+        return TryDraw(position, mask, seed, ErMath.FloorToInt(time * Fps) % Frames.Length);
+    }
+    private bool TryDraw(ErVec2 position, SwTileMask mask, ushort seed, int frameIdx)
+    {
+        var frame = Frames[frameIdx];
+        if(frame.Length == 0) return false;
+        var variants = frame[(int)mask];
+        if(variants.Length == 0) return false;
+        var rect = variants[seed % variants.Length];
+        Texture.Draw(position, rect.Size, rect);
         return true;
     }
     public static bool TryFromData(string filepath, PriNode priNode, ErVec2I tileSize, out SwTileData value)
     {
         value = default!;
-        if(!priNode.Get("source").TryAs(out string texPath)) return ErEngine.LogWarning("no source field provided");
-        string? dirpath = Path.GetDirectoryName(filepath);
-        texPath = Path.Join(dirpath, texPath);
-        if(!ErEngine.Renderer.TextureManager.TryGetSurface(texPath, out nint surface)) return ErEngine.LogWarning("source path invalid");
-        if(!ErTexture.TryFromPath(texPath, out var texture)) return ErEngine.LogWarning("source path invalid2");
-        if(!priNode.Get("is_solid").TryAs(out bool isSolid)) isSolid = false;
-        // ErEngine.Log("source: ", texPath);
-        if(!priNode.Get("is_opaque").TryAs(out bool isOpaque)) isOpaque = false;
-        if(!priNode.Get("move_speed_mul").TryAs(out double moveSpeedMul)) moveSpeedMul = 1;
-        value = new(texture, isSolid, isOpaque, moveSpeedMul);
-        // init coord lookup
-        ErVec2I texSizeTiles = (ErVec2I)value.Texture.Size / tileSize;
-        for (int xi = 0; xi < texSizeTiles.X; xi++)
+        try
         {
-            for (int yi = 0; yi < 4; yi++)
-            {
-                // check if empty
-                int x = xi * tileSize.X;
-                int y = yi * tileSize.Y;
-                ErRect2I rect = new()
-                {
-                    Position = new(x,y),
-                    Size = tileSize,
-                };
-                if(IsSurfaceRectEmpty(surface, rect)) continue;
-                value.AddTile(new(xi, yi));
-            }
+            value = new(filepath, priNode, tileSize);
+            return true;
         }
-        return true;
+        catch(Exception e)
+        {
+            return ErEngine.LogWarning(e);
+        }
     }
 }

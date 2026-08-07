@@ -6,7 +6,14 @@ namespace SpoonWitch.Game.Map;
 public class SwDisplayLayer
 {
     public readonly SwMap Map;
-    private readonly Dictionary<ErVec2I,(int,ErVec2I)> AtlasGrid = [];
+    private struct SwTileDisplay
+    {
+        public int TileId;
+        public SwTileMask Mask;
+        public readonly ushort Seed{get; init;}
+    }
+    // private readonly Dictionary<ErVec2I,(int,ErVec2I)> AtlasGrid = [];
+    private readonly Dictionary<ErVec2I,SwTileDisplay> AtlasGrid2 = [];
     private readonly Dictionary<ErVec2I,int> TileGrid = [];
     private const int DefaultTileId = -1;
     private readonly List<(ErVec2I,int)> NextTiles = [];
@@ -46,11 +53,17 @@ public class SwDisplayLayer
     private void UpdateDisplayTile(ErVec2I displayCoord, int tileId)
     {
         var mask = GetMask(displayCoord, tileId);
-        if(!Map.GetTileData(tileId).TryGetAtlasCoord(mask, out var atlasCoord))
+        if(!AtlasGrid2.TryGetValue(displayCoord, out var tile))
         {
-            return;
+            tile = new()
+            {
+                Seed = (ushort)displayCoord.GetHashCode(),
+            };
+            // ErEngine.Log(mask);
         }
-        AtlasGrid[displayCoord] = (tileId, atlasCoord);
+        tile.Mask = mask;
+        tile.TileId = tileId;
+        AtlasGrid2[displayCoord] = tile;
     }
     private void HandlePending()
     {
@@ -69,13 +82,19 @@ public class SwDisplayLayer
         HandlePending();
         var tileSize = (ErVec2)Map.TileSize;
         var half = tileSize / 2;
-        foreach (var (tilePos,val) in AtlasGrid)
+        foreach (var (tilePos, tile) in AtlasGrid2)
         {
-            var (tileId,tileCoord) = val;
-            var tileData = Map.GetTileData(tileId);
+            var tileData = Map.GetTileData(tile.TileId);
             var pos = (ErVec2)tilePos * tileSize - half;
-            var coord = (ErVec2)tileCoord * tileSize;
-            tileData.Texture.Draw(pos, tileSize, new ErRect2 (coord, tileSize));
+            if(!tileData.TryDraw(pos, tile.Mask, tile.Seed)) continue;// ErEngine.LogError("bad tile, coord: ", tilePos, " tile id: ", tile.TileId, " mask: ", tile.Mask, " seed: ", tile.Seed);
         }
+        // foreach (var (tilePos,val) in AtlasGrid)
+        // {
+        //     var (tileId,tileCoord) = val;
+        //     var tileData = Map.GetTileData(tileId);
+        //     var pos = (ErVec2)tilePos * tileSize - half;
+        //     var coord = (ErVec2)tileCoord * tileSize;
+        //     tileData.Texture.Draw(pos, tileSize, new ErRect2 (coord, tileSize));
+        // }
     }
 }
