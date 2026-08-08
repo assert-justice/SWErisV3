@@ -129,12 +129,28 @@ public abstract class SwKnightState(SwKnight parent) : SwState(parent)
     private class Chasing(SwKnight parent) : SwKnightState(parent)
     {
         public override string Name => "chasing";
+        private void StateChange()
+        {
+            if (!Knight.CanSeePlayer())
+            {
+                StateMachine.Value.SetState("seeking");
+                return;
+            }
+            double attackRange = 64;
+            Knight.TargetPosition = SwGame.PlayerPos;
+            if(Knight.DistanceToTarget() < attackRange) StateMachine.Value.SetState("attacking");
+            Knight.MoveToTarget(Knight.BaseSpeed);
+        }
         public override void Update()
         {
             base.Update();
-            if(!Knight.CanSeePlayer())StateMachine.Value.SetState("seeking");
-            else Knight.TargetPosition = SwGame.PlayerPos;
+            if (!Knight.CanSeePlayer())
+            {
+                StateMachine.Value.SetState("seeking");
+                return;
+            }
             double attackRange = 64;
+            Knight.TargetPosition = SwGame.PlayerPos;
             if(Knight.DistanceToTarget() < attackRange) StateMachine.Value.SetState("attacking");
             Knight.MoveToTarget(Knight.BaseSpeed);
             PlayBodyAnim();

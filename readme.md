@@ -6,7 +6,6 @@ Short term todos:
 
 - Update cursor animation
 - Implement dodge
-- Fix knight ai
 - Sfx/music
 - (Basic) menus/text rendering
 - Test controller support
@@ -25,3 +24,4 @@ Medium term todos:
 
 Done
 - Add knight enemy
+- Fix knight ai
