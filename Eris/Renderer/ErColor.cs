@@ -64,30 +64,40 @@ public readonly struct ErColor: IPriSchema<ErColor>
     {
         return ToString().GetHashCode();
     }
-
     public static bool TryFromPrion(PriNode priNode, out ErColor value)
     {
         value = default;
-        // PriValidData dict = new("ErColor", priNode);
-        if(priNode is not PriDict dict) return false;
-        if(!dict.TryGet("r", out byte r)) return false;
-        if(!dict.TryGet("g", out byte g)) return false;
-        if(!dict.TryGet("b", out byte b)) return false;
-        if(!dict.TryGet("a", out byte a)) return false;
-        // dict.TryGet("g", out byte g);
-        // dict.TryGet("b", out byte b);
-        // dict.TryGet("a", out byte a);
-        // if(dict.HasError) return dict.GetError(out error);
-        // ErEngine.Logger.BeginLog("Unable to parse eris color, ");
-        // if(priNode is not PriDict dict) return ErEngine.Logger.CommitError("not a dictionary");
-        // if(!dict.TryGet("r", out byte r)) return ErEngine.Logger.CommitError("missing r field");
-        // if(!dict.TryGet("g", out byte g)) return ErEngine.Logger.CommitError("missing g field");
-        // if(!dict.TryGet("b", out byte b)) return ErEngine.Logger.CommitError("missing b field");
-        // if(!dict.TryGet("a?", out byte a)) a = 255;
+        if(!priNode.TryGet("r", out byte r)) return false;
+        if(!priNode.TryGet("g", out byte g)) return false;
+        if(!priNode.TryGet("b", out byte b)) return false;
+        if(!priNode.TryGet("a", out byte a)) return false;
         value = new(r,g,b,a);
         return true;
     }
-
+    public static bool TryParse(string src, out ErColor value)
+    {
+        value = default;
+        src = src.Trim();
+        if(src.StartsWith('#')) src = src[1..];
+        else if(src.StartsWith("0x")) src = src[2..];
+        if(src.Length != 6 && src.Length != 8) return false;
+        if(!uint.TryParse(src, System.Globalization.NumberStyles.HexNumber | System.Globalization.NumberStyles.AllowHexSpecifier, null, out uint n)) return false;
+        byte a;
+        // if string has an alpha value read it
+        if(src.Length == 8)
+        {
+            a = (byte)(n & 255);
+            n <<= 8;
+        }
+        else a = 255;
+        byte b = (byte)(n & 255);
+        n <<= 8;
+        byte g = (byte)(n & 255);
+        n <<= 8;
+        byte r = (byte)(n & 255);
+        value = new(r,g,b,a);
+        return true;
+    }
     public PriNode ToPrion()
     {
         PriDict dict = new();
@@ -97,18 +107,15 @@ public readonly struct ErColor: IPriSchema<ErColor>
         dict.TrySet("a?", new PriNumber(A));
         return dict;
     }
-
     public static ErColor Black{get => new(0, 0, 0);}
     public static ErColor White{get => new(255, 255, 255);}
     public static ErColor Red{get => new(255, 0, 0);}
     public static ErColor Green{get => new(0, 255, 0);}
     public static ErColor Blue{get => new(0, 0, 255);}
-
     public static bool operator ==(ErColor left, ErColor right)
     {
         return left.Equals(right);
     }
-
     public static bool operator !=(ErColor left, ErColor right)
     {
         return !(left == right);

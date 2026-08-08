@@ -4,11 +4,14 @@ A cool video game for cool people
 
 Short term todos:
 
-- Add knight enemy
+- Update cursor animation
+- Implement dodge
+- Fix knight ai
 - Sfx/music
 - (Basic) menus/text rendering
 - Test controller support
 - Animate hud
+- Coop lol
 
 Medium term todos:
 - Room loading and and saving
@@ -19,3 +22,6 @@ Medium term todos:
 - Z sorting
 - Pathfinding
 - Move file system stuff into its on class
+
+Done
+- Add knight enemy

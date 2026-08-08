@@ -11,7 +11,7 @@
 	"iid": "56816e60-fa90-11f0-b4ec-5b883517cfbd",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 61,
+	"nextUid": 63,
 	"identifierStyle": "Lowercase",
 	"toc": [],
 	"worldLayout": "GridVania",
@@ -963,6 +963,41 @@
 					"tilesetUid": null
 				}
 			]
+		},
+		{
+			"identifier": "prop",
+			"uid": 61,
+			"tags": [],
+			"exportToToc": false,
+			"allowOutOfBounds": false,
+			"doc": null,
+			"width": 32,
+			"height": 32,
+			"resizableX": true,
+			"resizableY": true,
+			"minWidth": 32,
+			"maxWidth": null,
+			"minHeight": 32,
+			"maxHeight": null,
+			"keepAspectRatio": false,
+			"tileOpacity": 1,
+			"fillOpacity": 1,
+			"lineOpacity": 1,
+			"hollow": false,
+			"color": "#D77643",
+			"renderMode": "Rectangle",
+			"showName": true,
+			"tilesetId": null,
+			"tileRenderMode": "FitInside",
+			"tileRect": null,
+			"uiTileRect": null,
+			"nineSliceBorders": [],
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0,
+			"pivotY": 0,
+			"fieldDefs": []
 		}
 	], "tilesets": [
 		{
@@ -1029,7 +1064,8 @@
 			{ "id": "none", "tileRect": null, "color": 14120515 },
 			{ "id": "slume", "tileRect": null, "color": 12470831 },
 			{ "id": "knight", "tileRect": null, "color": 15389866 }
-		], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }
+		], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] },
+		{ "identifier": "prop_type", "uid": 62, "values": [], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }
 	], "externalEnums": [], "levelFields": [] },
 	"levels": [
 		{

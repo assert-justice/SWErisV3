@@ -1,4 +1,5 @@
 {
+    "background_color": "8320b9",
     "base":{
         "base_filepath": "hsm_bars_base.png",
         "x": 36,
@@ -58,9 +59,9 @@
         "width": 10,
         "height": 24,
         "slots":[
-            {"x": 154, "y": 0},
+            {"x": 156, "y": 0},
             {"x": 162, "y": 14},
-            {"x": 170, "y": 0},
+            {"x": 172, "y": 0},
             {"x": 178, "y": 14}
         ]
     },

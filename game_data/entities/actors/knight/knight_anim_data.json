@@ -28,14 +28,14 @@
                 "move_2h_dr":{
                     "texture": "images/knight_walk_dr.png",
                     "first_frame": 0,
-                    "last_frame": 5,
+                    "last_frame": 9,
                     "fps": 8,
                     "loops": true
                 },
                 "move_2h_dl":{
                     "texture": "images/knight_walk_dr.png",
                     "first_frame": 0,
-                    "last_frame": 5,
+                    "last_frame": 9,
                     "fps": 8,
                     "h_flip": true,
                     "loops": true
@@ -56,15 +56,15 @@
                 },
                 "move_1h_dr":{
                     "texture": "images/knight_walk_dr.png",
-                    "first_frame": 6,
-                    "last_frame": 11,
+                    "first_frame": 10,
+                    "last_frame": 19,
                     "fps": 8,
                     "loops": true
                 },
                 "move_1h_dl":{
                     "texture": "images/knight_walk_dr.png",
-                    "first_frame": 6,
-                    "last_frame": 11,
+                    "first_frame": 10,
+                    "last_frame": 19,
                     "fps": 8,
                     "h_flip": true,
                     "loops": true
@@ -85,15 +85,15 @@
                 },
                 "move_0h_dr":{
                     "texture": "images/knight_walk_dr.png",
-                    "first_frame": 12,
-                    "last_frame": 17,
+                    "first_frame": 20,
+                    "last_frame": 29,
                     "fps": 8,
                     "loops": true
                 },
                 "move_0h_dl":{
                     "texture": "images/knight_walk_dr.png",
-                    "first_frame": 12,
-                    "last_frame": 17,
+                    "first_frame": 20,
+                    "last_frame": 29,
                     "fps": 8,
                     "h_flip": true,
                     "loops": true
