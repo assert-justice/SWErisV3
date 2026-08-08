@@ -4,8 +4,9 @@ A cool video game for cool people
 
 Short term todos:
 
-- Update cursor animation
 - Implement dodge
+- Optimize recurring collisions
+- Implement shooting
 - Sfx/music
 - (Basic) menus/text rendering
 - Test controller support
@@ -13,6 +14,7 @@ Short term todos:
 - Coop lol
 
 Medium term todos:
+- Particle effects
 - Room loading and and saving
 - Save game Loading and saving
 - Fix cursor lag
@@ -23,5 +25,6 @@ Medium term todos:
 - Move file system stuff into its on class
 
 Done
+- Update cursor animation
 - Add knight enemy
 - Fix knight ai

@@ -1,5 +1,6 @@
 using Eris;
 using Prion.Node;
+using SpoonWitch.ByteStream;
 using SpoonWitch.Command;
 using SpoonWitch.Game.Entity.Component.State;
 
@@ -14,8 +15,9 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     public static byte TypeId => 0;
     protected override byte GetTypeId => TypeId;
     public override uint Mask => 3;
-    public double ChargeTime = 1;
-    public double ChargeSpeedMul = 0.5;
+    public double ChargeTime => 1;
+    public double ChargeSpeedMul => 0.5;
+    public double Clock0;
     private readonly SwStateMachine StateMachine;
     private readonly SwPlayerControls Controls;
     public SwPlayer()
@@ -51,5 +53,15 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
             SetHud("health", Health);
         }
         return value;
+    }
+    public override void Read(SwByteStream byteStream)
+    {
+        base.Read(byteStream);
+        if(!byteStream.TryReadF64(out Clock0)) ErEngine.LogWarning("bad clock");
+    }
+    public override void Write(SwByteStream byteStream)
+    {
+        base.Write(byteStream);
+        byteStream.WriteF64(Clock0);
     }
 }

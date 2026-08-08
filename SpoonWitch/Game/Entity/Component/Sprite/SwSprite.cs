@@ -21,8 +21,22 @@ public class SwSprite : SwComponent
     }
     public bool HFlip = false;
     public bool VFlip = false;
-    public int Frame{get => CurrentAnim?.Frame ?? 0;}
-    public double FrameProgress{get => CurrentAnim?.FrameProgress ?? 0;}
+    public int Frame
+    {
+        get => CurrentAnim?.Frame ?? 0;
+        set
+        {
+            CurrentAnim?.Frame = value;
+        }
+    }
+    public double FrameProgress
+    {
+        get => CurrentAnim?.FrameProgress ?? 0;
+        set
+        {
+            CurrentAnim?.FrameProgress = value;
+        }
+    }
     public bool IsPlaying{get => CurrentAnim?.IsPlaying ?? false;}
     public bool IsPaused{get => CurrentAnim?.IsPaused ?? false;}
     public bool Visible = true;
@@ -54,7 +68,11 @@ public class SwSprite : SwComponent
     }
     public void Play(string name)
     {
-        if(CurrentAnim is not null && CurrentAnim.Name == name) CurrentAnim.Play();
+        if(CurrentAnim is not null && CurrentAnim.Name == name)
+        {
+            CurrentAnim.Play();
+            return;
+        }
         if(!AnimationLookup.TryGetValue(name, out var anim))
         {
             ErEngine.LogError("Unknown animation name '", name, "'.");

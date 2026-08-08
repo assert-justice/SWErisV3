@@ -1,8 +1,6 @@
 using Eris;
 using Eris.Utils;
 using ErisMath;
-using Prion.Node;
-using SpoonWitch.ByteStream;
 using SpoonWitch.Game.Entity.Component.Sprite;
 using SpoonWitch.Game.Entity.Component.State;
 
@@ -17,9 +15,7 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
     protected ErWrapper<SwSprite> ReticleSprite = new(() => parent.GetComponent<SwSprite>("reticle")!);
     protected ErWrapper<SwStateMachine> StateMachine = new(() => parent.GetComponent<SwStateMachine>("state_machine")!);
     protected ErWrapper<SwPlayerControls> Controls = new(() => parent.GetComponent<SwPlayerControls>("controls")!);
-    // private static readonly string[] Dirs = ["dr", "d", "dl", "u"];
     // name, hands, facing
-    // Todo: make this less dumb. Or not, I dgaf
     private static readonly string[][][] BodyAnims = [
         [
             [
@@ -62,20 +58,16 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             ],
         ],
     ];
+    private static readonly string[] ReticleAnims = [
+        "charge_0",
+        "charge_1",
+        "charge_2",
+        "charge_3",
+    ];
     public override void Update()
     {
         base.Update();
         ReticleSprite.Value.Visible = Controls.Value.ReticleVisible;
-        switch (StateMachine.Value.CurrentState.Name)
-        {
-            case "charging":
-            case "charged":
-            ReticleSprite.Value.Play("aiming");
-            break;
-            default:
-            ReticleSprite.Value.Play("still");
-            break;
-        }
         ReticleSprite.Value.Offset = Controls.Value.ReticlePosition;
     }
     public class Default(SwPlayer parent) : SwPlayerState(parent)
@@ -102,10 +94,7 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             SpoonSprite.Value.Play();
             BodySprite.Value.Play(BodyAnims[0][0][Controls.Value.LastFacingIdx]);
             Player.Velocity = ErVec2.Zero;
-            // SwGame.EnqueueAction(DoDamage);
             SwDamage damage = new(10, Player.Position);
-            // SwGame.EnqueueCommandRect(2, ErRect2.Centered(Position, HurtboxSize), new("damage", damage.ToPri()));
-
             SwGame.EnqueueCommandRect(4, GetHurtbox(), new("damage", damage.ToPri()));
         }
         public override void Update()
@@ -126,27 +115,17 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             var pos = Parent.Position + dir * dis;
             return ErRect2.Centered(pos, size);
         }
-        // private void DoDamage()
-        // {
-        //     foreach (int id in SwGame.GetRectIds(GetHurtbox(), 4))
-        //     {
-        //         // ErEngine.Log("hit ent ", id);
-        //         if(!SwGame.TryGetEntProps(id, out var entProps)) continue;
-        //         entProps.AddCommand(new("damage", new PriNumber(10)));
-        //     }
-        // }
     }
     public class Charging(SwPlayer parent) : SwPlayerState(parent)
     {
-        private double ChargeTime;
-
         public override string Name => "charging";
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
             SlingSprite.Value.Visible = true;
             SlingSprite.Value.Play("charging");
-            ChargeTime = 1;
+            ReticleSprite.Value.Play(ReticleAnims[0]);
+            Player.Clock0 = 0;
         }
         public override void Update()
         {
@@ -158,21 +137,20 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             {
                 SlingSprite.Value.Visible = false;
                 SlingSprite.Value.Stop();
+                ReticleSprite.Value.Play("still");
                 StateMachine.Value.SetState("default");
                 return;
             }
-            if(ChargeTime > 0) ChargeTime -= SwGame.DeltaTime;
-            else StateMachine.Value.SetState("charged");
-        }
-        public override void Read(SwByteStream byteStream)
-        {
-            base.Read(byteStream);
-            if(!byteStream.TryReadF64(out ChargeTime)) throw new("bad charge time");
-        }
-        public override void Write(SwByteStream byteStream)
-        {
-            base.Write(byteStream);
-            byteStream.WriteF64(ChargeTime);
+            int lastThresh = ErMath.FloorToInt(Player.Clock0 * 3 / Player.ChargeTime);
+            Player.Clock0 += SwGame.DeltaTime;
+            int nextThresh = ErMath.FloorToInt(Player.Clock0 * 3 / Player.ChargeTime);
+            if(lastThresh == nextThresh) return;
+            int frame = ReticleSprite.Value.Frame;
+            double progress = ReticleSprite.Value.FrameProgress;
+            ReticleSprite.Value.Play(ReticleAnims[nextThresh]);
+            ReticleSprite.Value.Frame = frame;
+            ReticleSprite.Value.FrameProgress = progress;
+            if(nextThresh == 3) StateMachine.Value.SetState("charged");
         }
     }
     public class Charged(SwPlayer parent) : SwPlayerState(parent)
@@ -189,12 +167,14 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             int animIdx = Player.Velocity.IsNonzero() ? 1 : 0;
             BodySprite.Value.Play(BodyAnims[animIdx][1][Controls.Value.LastFacingIdx]);
             Player.Velocity = Controls.Value.Move * Player.BaseSpeed * Player.ChargeSpeedMul;
-            if (!Controls.Value.IsCharging)
-            {
-                SlingSprite.Value.Visible = false;
-                SlingSprite.Value.Stop();
-                StateMachine.Value.SetState("default");
-            }
+            if (!Controls.Value.IsCharging) StateMachine.Value.SetState("default");
+        }
+        public override void EndState(string nextState)
+        {
+            base.EndState(nextState);
+            SlingSprite.Value.Visible = false;
+            SlingSprite.Value.Stop();
+            ReticleSprite.Value.Play("still");
         }
     }
     public static SwStateMachine GetStateMachine(SwPlayer parent, string name)
