@@ -59,7 +59,7 @@ public readonly struct SwFrame(ErTexture texture, ErRect2 sourceRect)
         SwTiles tiles = new(texture, frameSize, tileOffset, tilePadding);
         return tiles.GetAllFrames();
     }
-    public static IEnumerable<SwFrame> GetFrames(ErTexture texture, ErVec2 frameSize, int[] frameIds, ErVec2? tileOffset = null, ErVec2? tilePadding = null)
+    public static IEnumerable<SwFrame> GetFrames(ErTexture texture, ErVec2 frameSize, IEnumerable<int> frameIds, ErVec2? tileOffset = null, ErVec2? tilePadding = null)
     {
         SwTiles tiles = new(texture, frameSize, tileOffset, tilePadding);
         foreach (var idx in frameIds)
@@ -76,7 +76,19 @@ public readonly struct SwFrame(ErTexture texture, ErRect2 sourceRect)
         {
             for (int idx = 0; idx < numFrames; idx++)
             {
-                if(!tiles.TryGetFrame(out var frame, idx))
+                if(!tiles.TryGetFrame(out var frame, firstFrame + idx))
+                {
+                    ErEngine.LogWarning("bad frame idx ", idx);
+                    yield break;
+                }
+                yield return frame;
+            }
+        }
+        else
+        {
+            for (int idx = 0; idx < numFrames; idx++)
+            {
+                if(!tiles.TryGetFrame(out var frame, lastFrame - 1 - idx))
                 {
                     ErEngine.LogWarning("bad frame idx ", idx);
                     yield break;

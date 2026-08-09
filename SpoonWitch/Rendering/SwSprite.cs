@@ -121,17 +121,13 @@ public class SwSprite(string name)
         if(Animations.Count == 0) return;
         AnimationState.Copy(ref NextAnimationState);
         SwAnimationState.Advance(ref NextAnimationState, SwGame.FrameDuration, CurrentAnimation.NumFrames);
-        if(!CurrentAnimation.TryGetFrame(out var frame, FrameIdx))
+        if(!CurrentAnimation.TryGetFrame(out var frame, NextAnimationState.FrameIdx))
         {
-            ErEngine.LogWarning("bad frame idx ", FrameIdx, " for anim ", CurrentAnimation.Name);
+            ErEngine.LogWarning("bad frame idx ", NextAnimationState.FrameIdx, " for anim ", CurrentAnimation.Name);
             return;
         }
-        // if(Name == "reticle")
-        // {
-        //     ErEngine.Log(CurrentAnimation.Name, " ", Visible);
-        // }
         ErVec2 origin = Centered ? frame.SourceRect.Size * 0.5 : ErVec2.Zero;
-        frame.Draw(position + Offset, origin, Angle, hFlip:AnimationState.HFlip, vFlip:AnimationState.VFlip);
+        frame.Draw(position + Offset, origin, Angle, NextAnimationState.HFlip, NextAnimationState.VFlip);
     }
     public bool TryRead(SwByteStream byteStream)
     {
