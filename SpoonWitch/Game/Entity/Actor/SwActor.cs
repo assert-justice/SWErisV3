@@ -11,19 +11,20 @@ public abstract class SwActor: SwEntity
     public virtual double BaseSpeed => 150;
     public virtual double MaxHealth => 100;
     public virtual double InvulnTime => 0.5;
-    private double InvulnClock = 0;
+    public double InvulnClock{get => Clocks[base.NumClocks+0]; set{Clocks[base.NumClocks+0] = value;}}
     public virtual bool IsInvuln => InvulnClock > 0;
     public virtual double KnockbackFactor => 10;
     public virtual double KnockbackTime => 0.5;
-    private double KnockbackClock = 0;
+    public double KnockbackClock{get => Clocks[base.NumClocks+1]; set{Clocks[base.NumClocks+1] = value;}}
     public virtual bool IsKnockback => KnockbackClock > 0;
     public virtual double FlickerTime => 0.5;
-    private double FlickerClock = 0;
+    private double FlickerClock{get => Clocks[base.NumClocks+2]; set{Clocks[base.NumClocks+2] = value;}}
     public virtual double FlickerLen => 1.0/8;
-    private double FlickerCycle = 0;
+    private double FlickerCycle{get => Clocks[base.NumClocks+3]; set{Clocks[base.NumClocks+3] = value;}}
     public double Health;
     private bool _IsAlive = true;
     public bool IsAlive => _IsAlive;
+    protected override int NumClocks => base.NumClocks + 4;
     public override void Ready()
     {
         base.Ready();
@@ -33,15 +34,13 @@ public abstract class SwActor: SwEntity
     public override void Read(SwByteStream byteStream)
     {
         base.Read(byteStream);
-        if(!byteStream.TryReadF64(out Health)) throw new("no health");
-        if(!byteStream.TryReadF64(out InvulnClock)) throw new("no invuln clock");
+        if(!byteStream.TryReadF64(out Health)) throw new($"no health for {GetType()}");
         if(!byteStream.TryReadBool(out _IsAlive))  throw new("no is alive clock");
     }
     public override void Write(SwByteStream byteStream)
     {
         base.Write(byteStream);
         byteStream.WriteF64(Health);
-        byteStream.WriteF64(InvulnClock);
         byteStream.WriteBool(_IsAlive);
     }
     private void HandleFlicker()

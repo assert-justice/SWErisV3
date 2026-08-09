@@ -27,6 +27,12 @@ public abstract class SwEntity
     public virtual ErVec2 Size => new(32,32);
     public virtual uint Mask => 1;
     public bool IsFreeQueued{get; private set;}
+    protected virtual int NumClocks => 0;
+    protected readonly double[] Clocks;
+    public SwEntity()
+    {
+        Clocks = new double[NumClocks];
+    }
     protected SwComponent RegisterComponent(SwComponent component)
     {
         // Note: this method should only really be used from the entity's constructor
@@ -41,6 +47,7 @@ public abstract class SwEntity
         EntProps = entProps;
         _CurrentHeadIndex = -1;
         _LastHeadIndex = -1;
+        Array.Fill(Clocks, 0);
         Ready();
     }
     public virtual void Ready()
@@ -52,13 +59,15 @@ public abstract class SwEntity
     public virtual void Read(SwByteStream byteStream)
     {
         // read type byte
-        if(!byteStream.TryReadByte(out _)) throw new Exception("no type id");
-        if(!byteStream.TryReadI32(out _Id)) throw new Exception("jerkbag");
-        if(!byteStream.TryReadI32(out _CurrentHeadIndex)) throw new Exception("oops2");
-        if(!byteStream.TryReadI32(out _LastHeadIndex)) throw new Exception("oops3");
-        if(!byteStream.TryReadVec2(out Position)) throw new Exception("oops4");
-        if(!byteStream.TryReadVec2(out Velocity)) throw new Exception("oops5");
-        if(!byteStream.TryReadBool(out Visible)) throw new Exception("oops6");
+        if(!byteStream.TryReadByte(out _)) throw new("no type id");
+        if(!byteStream.TryReadI32(out _Id)) throw new("jerkbag");
+        if(!byteStream.TryReadI32(out _CurrentHeadIndex)) throw new("oops2");
+        if(!byteStream.TryReadI32(out _LastHeadIndex)) throw new("oops3");
+        if(!byteStream.TryReadVec2(out Position)) throw new("oops4");
+        if(!byteStream.TryReadVec2(out Velocity)) throw new("oops5");
+        if(!byteStream.TryReadBool(out Visible)) throw new("oops6");
+        // read clocks
+        if(!byteStream.TryReadF64s(in Clocks)) throw new("bad clocks");
         // read components
         foreach (var item in Components)
         {
@@ -92,6 +101,8 @@ public abstract class SwEntity
         byteStream.WriteVec2(Position);
         byteStream.WriteVec2(Velocity);
         byteStream.WriteBool(Visible);
+        // clocks
+        byteStream.WriteF64s(in Clocks);
         // write components
         foreach (var item in Components)
         {
@@ -136,34 +147,43 @@ public abstract class SwEntity
     }
     protected bool TryLoadSprites(string filepath)
     {
-        // Todo: cache filepaths?
-        PriNode data;
-        try
+        if(!SwApp.TryLoadPrion(filepath, out var priNode)) return false;
+        string dirpath = Path.GetDirectoryName(filepath)!;
+        if(!priNode.TryGet("sprites", out PriDict dict)) return false;
+        foreach (var (name, node) in dict.Data)
         {
-            string text = File.ReadAllText(filepath);
-            var json = JsonNode.Parse(text);
-            data = PriParser.Parser.JsonToPrion(json);
-        }
-        catch
-        {
-            return false;
-        }
-        if(!data.Get("sprites").TryAs(out PriDict sprites))
-        {
-            return ErEngine.LogError("not a dictionary");
-        }
-        foreach (var (name, spriteData) in sprites.Data)
-        {
-            if(!spriteData.TryAs(out PriDict spriteDict))
-            {
-                return ErEngine.LogError("bad sprite data");
-            }
-            if(!SwSprite.TryFromData(filepath, spriteDict, this, name, out var sprite))
-            {
-                return ErEngine.LogError("failed to create sprite");
-            }
-            RegisterComponent(sprite);
+            if(!SwSprite.TryFromData(out var sprite, this, name, dirpath, node)) ErEngine.LogWarning("failed to parse sprite '", name, "'");
+            else RegisterComponent(sprite);
         }
         return true;
+        // Todo: cache filepaths?
+        // PriNode data;
+        // try
+        // {
+        //     string text = File.ReadAllText(filepath);
+        //     var json = JsonNode.Parse(text);
+        //     data = PriParser.Parser.JsonToPrion(json);
+        // }
+        // catch
+        // {
+        //     return false;
+        // }
+        // if(!data.Get("sprites").TryAs(out PriDict sprites))
+        // {
+        //     return ErEngine.LogError("not a dictionary");
+        // }
+        // foreach (var (name, spriteData) in sprites.Data)
+        // {
+        //     if(!spriteData.TryAs(out PriDict spriteDict))
+        //     {
+        //         return ErEngine.LogError("bad sprite data");
+        //     }
+        //     if(!SwSprite.TryFromData(filepath, spriteDict, this, name, out var sprite))
+        //     {
+        //         return ErEngine.LogError("failed to create sprite");
+        //     }
+        //     RegisterComponent(sprite);
+        // }
+        // return true;
     }
 }

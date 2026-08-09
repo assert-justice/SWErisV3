@@ -58,12 +58,29 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             ],
         ],
     ];
+    public string[] DodgeAnims = [
+        "dodge_dr",
+        "dodge_d",
+        "dodge_dl",
+        "dodge_u",
+    ];
     private static readonly string[] ReticleAnims = [
         "charge_0",
         "charge_1",
         "charge_2",
         "charge_3",
     ];
+    private bool CanDodge()
+    {
+        if(Player.DodgeCooldownClock > 0) return false;
+        if(!Controls.Value.Move.IsNonzero()) return false;
+        return true;
+    }
+    // public override void BeginState(string lastState)
+    // {
+    //     base.BeginState(lastState);
+    //     ErEngine.Log(Name);
+    // }
     public override void Update()
     {
         base.Update();
@@ -81,6 +98,7 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             Player.Velocity = Controls.Value.Move * Player.BaseSpeed;
             if(Controls.Value.AttackJustPressed) StateMachine.Value.SetState("attack");
             else if(Controls.Value.IsCharging) StateMachine.Value.SetState("charging");
+            else if(Controls.Value.DodgeJustPressed && CanDodge()) StateMachine.Value.SetState("dodging");
         }
     }
     public class Attack(SwPlayer parent) : SwPlayerState(parent)
@@ -145,10 +163,10 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             Player.Clock0 += SwGame.DeltaTime;
             int nextThresh = ErMath.FloorToInt(Player.Clock0 * 3 / Player.ChargeTime);
             if(lastThresh == nextThresh) return;
-            int frame = ReticleSprite.Value.Frame;
+            int frame = ReticleSprite.Value.FrameIdx;
             double progress = ReticleSprite.Value.FrameProgress;
             ReticleSprite.Value.Play(ReticleAnims[nextThresh]);
-            ReticleSprite.Value.Frame = frame;
+            ReticleSprite.Value.FrameIdx = frame;
             ReticleSprite.Value.FrameProgress = progress;
             if(nextThresh == 3) StateMachine.Value.SetState("charged");
         }
@@ -177,6 +195,34 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             ReticleSprite.Value.Play("still");
         }
     }
+    public class Dodging(SwPlayer parent) : SwPlayerState(parent)
+    {
+        public override string Name => "dodging";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            BodySprite.Value.Stop();
+            BodySprite.Value.Play(DodgeAnims[Controls.Value.LastFacingIdx]);
+            Player.Clock0 = 0;
+            // set and lock in velocity
+            Player.Velocity = Controls.Value.Move * Player.BaseSpeed * Player.DodgeSpeedMul;
+            // ErEngine.Log("start dodge");
+        }
+        public override void Update()
+        {
+            base.Update();
+            double elapsed = Player.Clock0;
+            Player.Clock0 += SwGame.DeltaTime;
+            if(Player.Clock0 > Player.DodgeDuration) StateMachine.Value.SetState("default");
+            // Note: edge detection. fires when the clock is now past invuln delay
+            else if(Player.Clock0 >= Player.DodgeInvulnDelay && elapsed < Player.DodgeInvulnDelay) Player.InvulnClock = Player.DodgeInvulnWindow;
+        }
+        public override void EndState(string nextState)
+        {
+            base.EndState(nextState);
+            Player.DodgeCooldownClock = Player.DodgeCooldown;
+        }
+    }
     public static SwStateMachine GetStateMachine(SwPlayer parent, string name)
     {
         return new(parent, name, [
@@ -184,6 +230,7 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             new Attack(parent),
             new Charging(parent),
             new Charged(parent),
+            new Dodging(parent),
         ]);
     }
 }

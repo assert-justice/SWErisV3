@@ -5,6 +5,7 @@ A cool video game for cool people
 Short term todos:
 
 - Implement dodge
+- Implement player death
 - Optimize recurring collisions
 - Implement shooting
 - Sfx/music
@@ -23,6 +24,7 @@ Medium term todos:
 - Z sorting
 - Pathfinding
 - Move file system stuff into its on class
+- test game speed
 
 Done
 - Update cursor animation

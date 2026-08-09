@@ -34,6 +34,10 @@ public readonly struct ErVec2: IPriSchema<ErVec2>
         double x = Math.Cos(angle);
         return new(x,y);
     }
+    public double GetArea()
+    {
+        return Math.Abs(X * Y);
+    }
     public double GetLengthSquared()
     {
         return X * X + Y * Y;
@@ -41,6 +45,10 @@ public readonly struct ErVec2: IPriSchema<ErVec2>
     public double GetLength()
     {
         return Math.Sqrt(GetLengthSquared());
+    }
+    public double GetManhattan()
+    {
+        return Math.Abs(X) + Math.Abs(Y);
     }
     public double GetAngle()
     {
@@ -87,18 +95,22 @@ public readonly struct ErVec2: IPriSchema<ErVec2>
 
     public static bool TryFromPrion(PriNode priNode, out ErVec2 value)
     {
+        return TryFromPrion(out value, priNode);
+    }
+    public static bool TryFromPrion(out ErVec2 value, PriNode priNode, string xName = "x", string yName = "y")
+    {
         value = default;
-        if(priNode is not PriDict dict) return false;
-
-        // PriValidData dict = new("Vec2", priNode);
-        // dict.TryGet("x", out double x);
-        // dict.TryGet("y", out double y);
-        // if(dict.HasError) return dict.GetError(out error);
-        // if(priNode is not PriDict dict) return ErisEngine.LogError("not a dict");
-        if(!dict.TryGet("x", out double x)) return false;// ErisEngine.LogError("x missing");
-        if(!dict.TryGet("y", out double y)) return false;// ErisEngine.LogError("y missing");
+        if(!priNode.TryGet(xName, out double x)) return false;
+        if(!priNode.TryGet(yName, out double y)) return false;
         value = new(x,y);
         return true;
+    }
+    public static ErVec2 FromPrion(PriNode priNode, string xName = "x", string yName = "y", ErVec2? defaultVec = null)
+    {
+        var def = defaultVec ?? Zero;
+        if(!priNode.TryGet(xName, out double x)) x = def.X;
+        if(!priNode.TryGet(yName, out double y)) y = def.Y;
+        return new(x,y);
     }
 
     public PriNode ToPrion()

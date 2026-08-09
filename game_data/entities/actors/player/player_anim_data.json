@@ -193,29 +193,29 @@
                 "dodge_d": {
                     "texture": "images/bella_dodge_d.png",
                     "first_frame": 0,
-                    "last_frame": 7,
+                    "last_frame": 8,
                     "fps": 12,
                     "loops": false
                 },
                 "dodge_dr": {
                     "texture": "images/bella_dodge_d.png",
                     "first_frame": 0,
-                    "last_frame": 7,
+                    "last_frame": 8,
                     "fps": 12,
                     "loops": false
                 },
                 "dodge_dl": {
                     "texture": "images/bella_dodge_d.png",
                     "first_frame": 0,
-                    "last_frame": 7,
+                    "last_frame": 8,
                     "fps": 12,
                     "loops": false
                 },
                 "dodge_u": {
-                    "texture": "images/bella_dodge_d.png",
+                    "texture": "images/bella_dodge_u.png",
                     "first_frame": 0,
-                    "last_frame": 7,
-                    "fps": 16,
+                    "last_frame": 8,
+                    "fps": 12,
                     "loops": false
                 }
             }

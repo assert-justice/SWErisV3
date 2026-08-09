@@ -4,12 +4,14 @@ using ErisMath;
 using Prion.Node;
 using SpoonWitch.Game;
 using SpoonWitch.Game.Entity.Component.Sprite;
+using SpoonWitch.Rendering;
 
 namespace SpoonWitch.UI.Hud;
 
 public class SwHudSprite
 {
-    private readonly SwSpriteAnimation Animation;
+    // private readonly SwSpriteAnimation Animation;
+    private readonly SwFrame[] Frames;
     private readonly Queue<(double,int)> FrameQueue = [];
     private double Clock;
     private readonly ErVec2 Offset;
@@ -22,7 +24,8 @@ public class SwHudSprite
         if(!ErTexture.TryFromPath(filepath, out ErTexture tex)) throw new("bad tex");
         double width = node.TryGet("width", out double d) ? d : tex.Size.X;
         double height = node.TryGet("height", out d) ? d : tex.Size.Y;
-        if(!SwSpriteAnimation.TryFromTexture(tex, new(width, height), out Animation)) throw new("bad anim");
+        Frames = [..SwFrame.GetAllFrames(tex, new(width, height))];
+        // if(!SwSpriteAnimation.TryFromTexture(tex, new(width, height), out Animation)) throw new("bad anim");
     }
     public void Update()
     {
@@ -37,7 +40,8 @@ public class SwHudSprite
     }
     public void Draw()
     {
-        Animation.Draw(Offset, FrameIdx);
+        // Animation.Draw(Offset, FrameIdx);
+        Frames[FrameIdx].Draw(Offset);
     }
     public static bool TryLoad(ErVec2 offset, string dirpath, PriNode node, out SwHudSprite hudSprite)
     {

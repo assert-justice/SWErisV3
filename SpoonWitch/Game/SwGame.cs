@@ -7,7 +7,6 @@ using Prion.Parser;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Command;
 using SpoonWitch.Game.Entity;
-using SpoonWitch.Game.Entity.Actor;
 using SpoonWitch.Game.Entity.Actor.Enemy.Knight;
 using SpoonWitch.Game.Entity.Actor.Enemy.Slume;
 using SpoonWitch.Game.Entity.Actor.Player;
@@ -18,12 +17,11 @@ namespace SpoonWitch.Game;
 
 public class SwGame
 {
-    public static double DeltaTimeRaw{get => ErEngine.DeltaTime * GameSpeed;}
-    public static double DeltaTime{get => Camera.IsInBounds() ? DeltaTimeRaw : 0;}
-    public static double FrameTime{get => ErEngine.FrameDuration * AnimSpeed;}
-    public static double FrameProgress{get => ErEngine.FrameTimeRemaining / DeltaTimeRaw;}
-    public static double GameSpeed{get; private set;} = 1;
-    public static double AnimSpeed{get; private set;} = 1;
+    public static double DeltaTime => ErEngine.DeltaTime * GameSpeed;
+    public static double FrameDuration => ErEngine.FrameDuration * GameSpeed;
+    // The factor to blend between the last state and the next state with
+    public static double FrameWeight{get; private set;}
+    public static double GameSpeed => 1;
     private static readonly SwEntPropsLookup PropsLookup = new();
     private static SwMap Map = new();
     private static readonly Queue<SwMove> MoveQueue = [];
@@ -143,8 +141,14 @@ public class SwGame
         }
         Hud.Update();
     }
+    private static void CalculateFrameWeight()
+    {
+        if(DeltaTime > 0) FrameWeight += FrameDuration / DeltaTime;
+        while(FrameWeight > 1) FrameWeight -= 1;
+    }
     public void Draw()
     {
+        CalculateFrameWeight();
         Camera.Draw();
         HudBg.Draw(ErVec2.Zero);
         Hud.Draw();

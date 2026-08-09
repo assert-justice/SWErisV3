@@ -18,6 +18,11 @@ public readonly struct ErRect2I
         Position = position;
         Size = size;
     }
+    public ErRect2I(int x, int y, ErVec2I size)
+    {
+        Position = new(x,y);
+        Size = size;
+    }
     public static ErRect2I operator +(ErRect2I left, ErRect2I right)=>new(left.Position + right.Position, left.Size + right.Size);
     public static ErRect2I operator -(ErRect2I left, ErRect2I right)=>new(left.Position - right.Position, left.Size - right.Size);
     public static ErRect2I operator *(ErRect2I left, ErRect2I right)=>new(left.Position * right.Position, left.Size * right.Size);

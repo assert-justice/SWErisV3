@@ -3,180 +3,173 @@ using Eris.Renderer;
 using ErisMath;
 using Prion.Node;
 using SpoonWitch.ByteStream;
+using SpoonWitch.Rendering;
 
 namespace SpoonWitch.Game.Entity.Component.Sprite;
 
-public class SwSprite : SwComponent
+public class SwSprite(SwEntity parent, string name) : SwComponent(parent, name)
 {
-    private readonly List<SwSpriteAnimation> Animations = [];
-    private readonly Dictionary<string, int> AnimationLookup = [];
-    private int CurrentAnimIdx;
-    public SwSpriteAnimation? CurrentAnim
+    private enum SwSpriteFlags: byte
     {
-        get
-        {
-            if(CurrentAnimIdx >= Animations.Count) return null;
-            return Animations[CurrentAnimIdx];
-        }
+        None = 0,
+        IsPaused = 1,
+        IsVisible = 2,
+        IsCentered = 4,
     }
-    public bool HFlip = false;
-    public bool VFlip = false;
-    public int Frame
+    private readonly List<SwAnimation> Animations = [];
+    private readonly Dictionary<string, int> AnimationLookup = [];
+    private SwAnimationState NextAnimationState;
+    // These need to be serialized
+    private SwAnimationState AnimationState;
+    private int CurrentAnimIdx;
+    public double Angle = 0;
+    public ErVec2 Offset = ErVec2.Zero;
+    private SwSpriteFlags Flags = SwSpriteFlags.None;
+    // These are derived from the above fields
+    public bool IsPaused
     {
-        get => CurrentAnim?.Frame ?? 0;
-        set
-        {
-            CurrentAnim?.Frame = value;
-        }
+        get => HasFlags(SwSpriteFlags.IsPaused);
+        private set => SetFlags(SwSpriteFlags.IsPaused, value);
+    }
+    public bool Visible
+    {
+        get => HasFlags(SwSpriteFlags.IsVisible);
+        set => SetFlags(SwSpriteFlags.IsVisible, value);
+    }
+    public bool Centered
+    {
+        get => HasFlags(SwSpriteFlags.IsCentered);
+        set => SetFlags(SwSpriteFlags.IsCentered, value);
+    }
+    public SwAnimation CurrentAnimation => Animations[CurrentAnimIdx];
+    public bool IsPlaying
+    {
+        get => !IsPaused && AnimationState.IsPlaying;
+        // set => SwAnimationState.Set(ref AnimationState, isPlaying:value);
+    }
+    public int FrameIdx
+    {
+        get => AnimationState.FrameIdx;
+        set => SwAnimationState.Set(ref AnimationState, frameIdx: value);
     }
     public double FrameProgress
     {
-        get => CurrentAnim?.FrameProgress ?? 0;
-        set
-        {
-            CurrentAnim?.FrameProgress = value;
-        }
+        get => AnimationState.FrameProgress;
+        set => SwAnimationState.Set(ref AnimationState, frameProgress:value);
     }
-    public bool IsPlaying{get => CurrentAnim?.IsPlaying ?? false;}
-    public bool IsPaused{get => CurrentAnim?.IsPaused ?? false;}
-    public bool Visible = true;
-    public bool Centered = true;
-    public double Angle = 0;
-    public ErVec2 Offset = ErVec2.Zero;
-    public ErVec2 Size{get; private set;} = new(64,64);
-    public SwSprite(SwEntity parent, string name) : base(parent, name)
+    public bool IsLooping => AnimationState.IsLooping;
+    public void AddAnimation(SwAnimation animation)
     {
+        if(!AnimationLookup.TryAdd(animation.Name, Animations.Count))
+        {
+            ErEngine.LogWarning("sprite already has an animation named '", animation.Name, "'");
+            return;
+        }
+        Animations.Add(animation);
+        if(Animations.Count == 1) SetAnimation(animation.Name);
     }
-    public void AddAnimation(SwSpriteAnimation animation)
+    private void SetAnimation(string animName)
     {
-        // Note: We're not using the add method here animations can be replaced
-        if(AnimationLookup.TryGetValue(animation.Name, out int idx))
+        if(!AnimationLookup.TryGetValue(animName, out int animIdx))
         {
-            Animations[idx] = animation;
+            ErEngine.LogWarning("sprite has no animation named '", animName, "'");
+            return;
         }
-        else
-        {
-            idx = Animations.Count;
-            Animations.Add(animation);
-            AnimationLookup[animation.Name] = idx;
-        }
-        if(animation.IsPlaying) CurrentAnimIdx = idx;
+        CurrentAnimIdx = animIdx;
+        AnimationState = CurrentAnimation.DefaultState;
     }
     public void Play()
     {
-        CurrentAnim?.Play();
+        if(IsPaused) IsPaused = false;
+        if(!IsPlaying) SwAnimationState.Set(ref AnimationState, isPlaying:true, frameIdx:0, frameProgress:0);
     }
-    public void Play(string name)
+    public void Play(string animName)
     {
-        if(CurrentAnim is not null && CurrentAnim.Name == name)
-        {
-            CurrentAnim.Play();
-            return;
-        }
-        if(!AnimationLookup.TryGetValue(name, out var anim))
-        {
-            ErEngine.LogError("Unknown animation name '", name, "'.");
-            return;
-        }
-        CurrentAnimIdx = anim;
-        CurrentAnim?.Play();
+        if(animName != CurrentAnimation.Name) SetAnimation(animName);
+        Play();
     }
     public void Pause()
     {
-        CurrentAnim?.Pause();
+        SetFlags(SwSpriteFlags.IsPaused, true);
     }
     public void Stop()
     {
-        CurrentAnim?.Stop();
+        SwAnimationState.Set(ref AnimationState, isPlaying:false);
     }
-    public override void Read(SwByteStream byteStream)
+    private bool HasFlags(SwSpriteFlags flags)
     {
-        byteStream.TryReadI32(out CurrentAnimIdx);
-        byteStream.TryReadBool(out HFlip);
-        byteStream.TryReadBool(out VFlip);
-        byteStream.TryReadF64(out Angle);
-        byteStream.TryReadI32(out int frame);
-        byteStream.TryReadF64(out double frameProgress);
-        byteStream.TryReadBool(out bool isPlaying);
-        byteStream.TryReadBool(out bool isPaused);
-        byteStream.TryReadBool(out bool frameDir);
-        if(CurrentAnim is not null)
-        {
-            CurrentAnim.Frame = frame;
-            CurrentAnim.FrameProgress = frameProgress;
-            CurrentAnim.FrameDir = frameDir ? 1 : -1;
-            CurrentAnim.IsPlaying = isPlaying;
-            CurrentAnim.IsPaused = isPaused;
-        }
+        return (Flags & flags) == flags;
     }
-    public override void Write(SwByteStream byteStream)
+    private void SetFlags(SwSpriteFlags mask, bool value)
     {
-        byteStream.WriteI32(CurrentAnimIdx);
-        byteStream.WriteBool(HFlip);
-        byteStream.WriteBool(VFlip);
-        byteStream.WriteF64(Angle);
-        byteStream.WriteI32(Frame);
-        byteStream.WriteF64(FrameProgress);
-        byteStream.WriteBool(IsPlaying);
-        byteStream.WriteBool(IsPaused);
-        byteStream.WriteBool(CurrentAnim?.FrameDir > 0);
+        // clear masked flags
+        Flags &= ~mask;
+        Flags |= value ? (SwSpriteFlags)255&mask : 0;
     }
     public override void Update()
     {
         base.Update();
-        CurrentAnim?.Update(SwGame.FrameTime);
+        if(Animations.Count == 0) return;
+        if(CurrentAnimIdx < 0 || CurrentAnimIdx >= Animations.Count)
+        {
+            ErEngine.LogWarning("bad anim idx: ", CurrentAnimIdx);
+            return;
+        }
+        SwAnimationState.Advance(ref AnimationState, SwGame.DeltaTime, CurrentAnimation.NumFrames);
     }
     public override void Draw(SwComponent nextState)
     {
+        base.Draw(nextState);
         if(!Visible) return;
-        ErVec2 pos = ErMath.Lerp(Parent.Position, nextState.Parent.Position, SwGame.FrameProgress);
-        CurrentAnim?.Draw(this, pos, SwGame.FrameTime);
-    }
-    public static bool TryFromData(string filepath, PriDict spriteData, SwEntity parent, string name, out SwSprite sprite)
-    {
-        sprite = new(parent, name);
-        List<SwFrame> frames = [];
-        string dirpath = Path.GetDirectoryName(filepath) ?? "./";
-        if(!spriteData.Get("visible").TryAs(out bool visible)) visible = true;
-        sprite.Visible = visible;
-        if(!spriteData.Get("centered").TryAs(out bool centered)) centered = true;
-        sprite.Centered = centered;
-        if(!spriteData.Get("offset_x").TryAs(out int offsetX)) offsetX = 0;
-        if(!spriteData.Get("offset_y").TryAs(out int offsetY)) offsetY = 0;
-        sprite.Offset = new(offsetX, offsetY);
-        if(!spriteData.Get("width").TryAs(out int width)) width = 64;
-        if(!spriteData.Get("height").TryAs(out int height)) height = 64;
-        sprite.Size = new(width, height);
-        if(!spriteData.Get("animations").TryAs(out PriDict animations)) return ErEngine.LogWarning("no animations");
-        foreach (var (animName, animData) in animations.Data)
+        if(Animations.Count == 0) return;
+        AnimationState.Copy(ref NextAnimationState);
+        SwAnimationState.Advance(ref NextAnimationState, SwGame.FrameDuration, CurrentAnimation.NumFrames);
+        var pos = ErMath.Lerp(Parent.Position, nextState.Parent.Position, SwGame.FrameWeight) + Offset;
+        if(!CurrentAnimation.TryGetFrame(out var frame, FrameIdx))
         {
-            if(!animData.Get("texture").TryAs(out string texturePath)) return ErEngine.LogWarning("no texture path");
-            texturePath = Path.Join(dirpath, texturePath);
-            if(!ErTexture.TryFromPath(texturePath, out var texture)) return ErEngine.LogError("Invaid texture path '", texturePath, "'.");
-            if(!animData.Get("first_frame").TryAs(out int firstFrame)) return ErEngine.LogWarning("no first frame");
-            if(!animData.Get("last_frame").TryAs(out int lastFrame)) return ErEngine.LogWarning("no last frame");;
-            if(!animData.Get("fps").TryAs(out double fps)) fps = 8;
-            if(!animData.Get("h_flip").TryAs(out bool hFlip)) hFlip = false;       
-            if(!animData.Get("v_flip").TryAs(out bool vFlip)) vFlip = false;
-            if(!animData.Get("autoplay").TryAs(out bool autoplay)) autoplay = false;
-            if(!animData.Get("loops").TryAs(out bool loops)) loops = false;
-            if(!animData.Get("bounce").TryAs(out bool bounce)) bounce = false;
-            if(!animData.Get("reversed").TryAs(out bool reversed)) reversed = false;
-            frames.Clear();
-            foreach (var frameIdx in ErMath.Range(firstFrame, lastFrame))
-            {
-                if(SwSpriteAnimation.TryGetFrame(out var frame, texture, frameIdx, sprite.Size)) frames.Add(frame);
-                else return ErEngine.LogError("Invalid frame index '", frameIdx, "' for texture '", texturePath, "'.");
-            }
-            SwSpriteAnimation anim = new(animName, frames, hFlip, vFlip)
-            {
-                Fps = fps,
-                IsLooping = loops,
-                IsBouncing = bounce,
-                IsReversed = reversed,
-            };
-            if(autoplay)anim.Play();
-            sprite.AddAnimation(anim);
+            ErEngine.LogWarning("bad frame idx ", FrameIdx, " for anim ", CurrentAnimation.Name);
+            return;
+        }
+        ErVec2 origin = Centered ? frame.SourceRect.Size * 0.5 : ErVec2.Zero;
+        frame.Draw(pos, origin:origin, angle: Angle, hFlip:AnimationState.HFlip, vFlip:AnimationState.VFlip);
+    }
+    public override void Read(SwByteStream byteStream)
+    {
+        base.Read(byteStream);
+        if(!SwAnimationState.TryRead(byteStream, ref AnimationState)) throw new("bad anim state");
+        if(!byteStream.TryReadI32(out CurrentAnimIdx)) throw new("bad current anim idx");
+        if(!byteStream.TryReadF64(out Angle)) throw new("bad angle");
+        if(!byteStream.TryReadVec2(out Offset)) throw new("bad offset");
+        if(!byteStream.TryReadByte(out byte b)) throw new("bad sprite flags");
+        Flags = (SwSpriteFlags)b;
+    }
+    public override void Write(SwByteStream byteStream)
+    {
+        base.Write(byteStream);
+        AnimationState.Write(byteStream);
+        byteStream.WriteI32(CurrentAnimIdx);
+        byteStream.WriteF64(Angle);
+        byteStream.WriteVec2(Offset);
+        byteStream.WriteByte((byte)Flags);
+    }
+    public static bool TryFromData(out SwSprite sprite, SwEntity parent, string name, string dirpath, PriNode priNode)
+    {
+        sprite = default!;
+        if(!priNode.TryGet("animations", out PriDict dict)) return ErEngine.LogWarning("no animations");
+        if(!priNode.TryGet("visible", out bool visible)) visible = true;
+        var size = ErVec2.FromPrion(priNode, "width", "height", new(64,64));
+        var offset = ErVec2.FromPrion(priNode, "offset_x", "offset_y");
+        if(!priNode.TryGet("centered", out bool centered)) centered = true;
+        sprite = new(parent, name)
+        {
+            Visible = visible,
+            Offset = offset,
+            Centered = centered,
+        };
+        foreach (var (animName,node) in dict.Data)
+        {
+            if(!SwAnimation.TryFromPri(out var animation, animName, dirpath, size, node)) ErEngine.LogWarning("bad animation '", animName, "'");
+            else sprite.AddAnimation(animation);
         }
         return true;
     }

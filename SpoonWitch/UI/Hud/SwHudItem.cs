@@ -3,6 +3,7 @@ using Eris.Renderer;
 using ErisMath;
 using Prion.Node;
 using SpoonWitch.Game.Entity.Component.Sprite;
+using SpoonWitch.Rendering;
 
 namespace SpoonWitch.UI.Hud;
 
@@ -10,9 +11,11 @@ public class SwHudItem
 {
     private readonly ErVec2 Offset;
     private readonly ErTexture Frame;
-    private readonly SwSpriteAnimation Icons;
+    private readonly SwFrame[] Icons;
+    // private readonly SwSpriteAnimation Icons;
     private readonly ErVec2 IconOff;
-    private readonly SwSpriteAnimation Digits;
+    // private readonly SwSpriteAnimation Digits;
+    private readonly SwFrame[] Digits;
     private readonly ErVec2 TensOff;
     private readonly ErVec2 OnesOff;
     public int ItemIdx = 2;
@@ -41,17 +44,21 @@ public class SwHudItem
         if(!ErTexture.TryFromPath(Path.Join(dirpath,filename), out Frame)) throw new("bad frame");
         if(!icon.TryGet("icons_filepath", out filename)) throw new("bad icon file");
         if(!ErTexture.TryFromPath(Path.Join(dirpath,filename), out var tex)) throw new("bad icon");
-        if(!SwSpriteAnimation.TryFromTexture(tex, new(icon_width,icon_height), out Icons)) throw new("poo");
+        Icons = [..SwFrame.GetAllFrames(tex, new(icon_width, icon_height))];
+        // if(!SwSpriteAnimation.TryFromTexture(tex, new(icon_width,icon_height), out Icons)) throw new("poo");
         if(!icon.Get("digits_filepath").TryAs(out filename)) throw new("bad digits file");
         if(!ErTexture.TryFromPath(Path.Join(dirpath,filename), out tex)) throw new("bad digits");
-        if(!SwSpriteAnimation.TryFromTexture(tex, new(digit_width,digit_height), out Digits)) throw new("poo2");
+        Digits = [..SwFrame.GetAllFrames(tex, new(digit_width,digit_height))];
     }
     public void Draw()
     {
-        Icons.Draw(Offset+IconOff, ItemIdx);
+        Icons[ItemIdx].Draw(Offset+IconOff);
+        // Icons.Draw(Offset+IconOff, ItemIdx);
         Frame.Draw(Offset);
-        if(Quantity > 9) Digits.Draw(Offset + TensOff, Quantity / 10);
-        Digits.Draw(Offset + OnesOff, Quantity % 10);
+        if(Quantity > 9) Digits[Quantity / 10].Draw(Offset+TensOff);
+        Digits[Quantity % 10].Draw(Offset+OnesOff);
+        // if(Quantity > 9) Digits.Draw(Offset + TensOff, Quantity / 10);
+        // Digits.Draw(Offset + OnesOff, Quantity % 10);
     }
     public static bool TryLoad(ErVec2 offset, string dirpath, PriNode node, out SwHudItem hudItem)
     {

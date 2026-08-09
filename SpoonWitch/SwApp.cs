@@ -28,6 +28,9 @@ public class SwApp : IErApp
     public static readonly PriDb Settings = new();
     public static readonly PriDb SaveData = new();
     public static readonly PriDb Manifest = new();
+    // public static double GameSpeed => IsPaused ? GameSpeedMul : 0;
+    // public static double GameSpeedMul => 1;
+    // public static bool IsPaused{get; private set;} = false;
     public const string GAME_DATA_PATH = "game_data";
     // public static bool Debug{get; private set;} = ;
     public static bool Debug => Settings.TryGet("debug/debug", out bool debug) && debug;
@@ -187,7 +190,6 @@ public class SwApp : IErApp
     {
         texture = default!;
         if(!priNode.TryGet(key, out string filepath)) return false;
-        // ErEngine.Log(filepath);
         return ErTexture.TryFromPath(filepath, out texture);
     }
     public static bool TryGetTex(PriNode priNode, string key, string dirpath, out ErTexture texture)

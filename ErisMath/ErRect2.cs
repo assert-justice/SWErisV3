@@ -21,6 +21,11 @@ public readonly struct ErRect2
         Position = position;
         Size = size;
     }
+    public ErRect2(double x, double y, ErVec2 size)
+    {
+        Position = new(x,y);
+        Size = size;
+    }
     public static explicit operator ErRect2I(ErRect2 value) => new((ErVec2I)value.Position, (ErVec2I)value.Size);
     public bool Contains(ErVec2 point)
     {

@@ -59,13 +59,13 @@ public class SwCamera
         }
         var diff = TargetPos - CurrentPos;
         // Note, if diff has length 0 normalizing it doesn't work, so we check the length first
-        double speed = Speed * SwGame.DeltaTimeRaw;
+        double speed = Speed * SwGame.DeltaTime;
         if(diff.GetLengthSquared() < speed){NextPos = TargetPos;}
         else NextPos = CurrentPos + diff.Normalized() * speed;
     }
     public void Draw()
     {
-        var pos = ErMath.Lerp(CurrentPos,NextPos,SwGame.FrameProgress);
+        var pos = ErMath.Lerp(CurrentPos,NextPos,SwGame.FrameWeight);
         ErEngine.Renderer.PushViewport(pos-Half, Texture);
         ErEngine.Renderer.SetClearColor(CamColor);
         ErEngine.Renderer.Clear();

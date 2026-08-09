@@ -17,7 +17,15 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     public override uint Mask => 3;
     public double ChargeTime => 1;
     public double ChargeSpeedMul => 0.5;
-    public double Clock0;
+    // Note: dodge animations run at 12 fps, so 3/12 is 0.25 seconds
+    public double DodgeInvulnDelay => 3.0 / 12;
+    public double DodgeInvulnWindow => 4.0 / 12;
+    public double DodgeDuration => 9.0 / 12;
+    public double DodgeCooldown => 0.15;
+    public double DodgeSpeedMul => 1.5;
+    protected override int NumClocks => base.NumClocks + 2;
+    public double Clock0{get => Clocks[base.NumClocks+0]; set {Clocks[base.NumClocks+0] = value;}}
+    public double DodgeCooldownClock{get => Clocks[base.NumClocks+1]; set {Clocks[base.NumClocks+1] = value;}}
     private readonly SwStateMachine StateMachine;
     private readonly SwPlayerControls Controls;
     public SwPlayer()
@@ -43,6 +51,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     public override void Update()
     {
         base.Update();
+        if(DodgeCooldownClock > 0) DodgeCooldownClock -= SwGame.DeltaTime;
         SwGame.SetPlayerPos(Position);
     }
     protected override double Damage(SwCommand command)
@@ -53,15 +62,5 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
             SetHud("health", Health);
         }
         return value;
-    }
-    public override void Read(SwByteStream byteStream)
-    {
-        base.Read(byteStream);
-        if(!byteStream.TryReadF64(out Clock0)) ErEngine.LogWarning("bad clock");
-    }
-    public override void Write(SwByteStream byteStream)
-    {
-        base.Write(byteStream);
-        byteStream.WriteF64(Clock0);
     }
 }
