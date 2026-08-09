@@ -1,17 +1,21 @@
 using Eris;
 using Eris.Utils;
 using ErisMath;
-using SpoonWitch.Game.Entity.Component.Sprite;
+using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
+using SpoonWitch.Rendering;
 
 namespace SpoonWitch.Game.Entity.Actor.Enemy.Knight;
 
 public abstract class SwKnightState(SwKnight parent) : SwState(parent)
 {
     protected readonly SwKnight Knight = parent;
-    protected ErWrapper<SwSprite> BodySprite = new(() => parent.GetComponent<SwSprite>("body")!);
-    protected ErWrapper<SwSprite> SwordSprite = new(() => parent.GetComponent<SwSprite>("sword")!);
-    protected ErWrapper<SwStateMachine> StateMachine = new(() => parent.GetComponent<SwStateMachine>("state_machine")!);
+    protected ErWrapper<SwSpriteComponent> _BodySprite = new(() => parent.GetComponent<SwSpriteComponent>("body")!);
+    private SwSprite BodySprite => _BodySprite.Value.Sprite;
+    protected ErWrapper<SwSpriteComponent> _SwordSprite = new(() => parent.GetComponent<SwSpriteComponent>("sword")!);
+    private SwSprite SwordSprite => _SwordSprite.Value.Sprite;
+    protected ErWrapper<SwStateMachine> _StateMachine = new(() => parent.GetComponent<SwStateMachine>("state_machine")!);
+    private SwStateMachine StateMachine => _StateMachine.Value;
     private static readonly string[][] BodyAnims = [
         [
             "move_0h_dr",
@@ -35,7 +39,7 @@ public abstract class SwKnightState(SwKnight parent) : SwState(parent)
     const double CLOSE_ENOUGH = 5;
     private void PlayBodyAnim(int hands, byte facing)
     {
-        BodySprite.Value.Play(BodyAnims[hands][facing]);
+        BodySprite.Play(BodyAnims[hands][facing]);
     }
     private void PlayBodyAnim(int hands = 2)
     {
@@ -64,7 +68,7 @@ public abstract class SwKnightState(SwKnight parent) : SwState(parent)
         public override void Update()
         {
             base.Update();
-            BodySprite.Value.Play("move_2h_d");
+            BodySprite.Play("move_2h_d");
         }
     }
     private class Wandering(SwKnight parent) : SwKnightState(parent)
@@ -100,7 +104,7 @@ public abstract class SwKnightState(SwKnight parent) : SwState(parent)
         public override void Update()
         {
             base.Update();
-            if(Knight.CanSeePlayer())StateMachine.Value.SetState("chasing");
+            if(Knight.CanSeePlayer())StateMachine.SetState("chasing");
             else if(NeedsNewTarget()) SetNewWander();
             else Knight.TimeoutClock -= SwGame.DeltaTime;
             Knight.MoveToTarget(Knight.BaseSpeed * Knight.WanderSpeedMul);
@@ -113,8 +117,8 @@ public abstract class SwKnightState(SwKnight parent) : SwState(parent)
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
-            BodySprite.Value.Play("death");
-            BodySprite.Value.Stop();
+            BodySprite.Play("death");
+            BodySprite.Stop();
         }
         public override void Update()
         {
@@ -122,8 +126,8 @@ public abstract class SwKnightState(SwKnight parent) : SwState(parent)
             double speed = Knight.Velocity.GetLength();
             if(speed > ErMath.EPSILON) Knight.Velocity = Knight.Velocity.Normalized() * speed * 0.95;
             if(Knight.IsKnockback) return;
-            if(Knight.IsAlive) StateMachine.Value.SetState(Knight.IsPassive ? "default" : "wandering");
-            else StateMachine.Value.SetState("dead");
+            if(Knight.IsAlive) StateMachine.SetState(Knight.IsPassive ? "default" : "wandering");
+            else StateMachine.SetState("dead");
         }
     }
     private class Chasing(SwKnight parent) : SwKnightState(parent)
@@ -133,12 +137,12 @@ public abstract class SwKnightState(SwKnight parent) : SwState(parent)
         {
             if (!Knight.CanSeePlayer())
             {
-                StateMachine.Value.SetState("seeking");
+                StateMachine.SetState("seeking");
                 return;
             }
             double attackRange = 64;
             Knight.TargetPosition = SwGame.PlayerPos;
-            if(Knight.DistanceToTarget() < attackRange) StateMachine.Value.SetState("attacking");
+            if(Knight.DistanceToTarget() < attackRange) StateMachine.SetState("attacking");
             Knight.MoveToTarget(Knight.BaseSpeed);
         }
         public override void Update()
@@ -146,12 +150,12 @@ public abstract class SwKnightState(SwKnight parent) : SwState(parent)
             base.Update();
             if (!Knight.CanSeePlayer())
             {
-                StateMachine.Value.SetState("seeking");
+                StateMachine.SetState("seeking");
                 return;
             }
             double attackRange = 64;
             Knight.TargetPosition = SwGame.PlayerPos;
-            if(Knight.DistanceToTarget() < attackRange) StateMachine.Value.SetState("attacking");
+            if(Knight.DistanceToTarget() < attackRange) StateMachine.SetState("attacking");
             Knight.MoveToTarget(Knight.BaseSpeed);
             PlayBodyAnim();
         }
@@ -167,7 +171,7 @@ public abstract class SwKnightState(SwKnight parent) : SwState(parent)
         public override void Update()
         {
             base.Update();
-            if(NeedsNewTarget()) StateMachine.Value.SetState("wandering");
+            if(NeedsNewTarget()) StateMachine.SetState("wandering");
             else Knight.MoveToTarget(Knight.BaseSpeed);
             PlayBodyAnim();
         }
@@ -187,11 +191,11 @@ public abstract class SwKnightState(SwKnight parent) : SwState(parent)
         {
             double attackDuration = 0.125 * 7;
             Knight.TimeoutClock = attackDuration;
-            SwordSprite.Value.Visible = true;
+            SwordSprite.Visible = true;
             // Note: this resets the frame to 0
-            SwordSprite.Value.Stop();
-            SwordSprite.Value.Play();
-            SwordSprite.Value.Angle = (Knight.FacingIdx - 1) * ErMath.HALF_PI;
+            SwordSprite.Stop();
+            SwordSprite.Play();
+            SwordSprite.Angle = (Knight.FacingIdx - 1) * ErMath.HALF_PI;
             // do damage
             SwDamage damage = new(10, Knight.Position);
             SwGame.EnqueueCommandRect(2, GetHurtbox(), new("damage", damage.ToPri()));
@@ -205,15 +209,15 @@ public abstract class SwKnightState(SwKnight parent) : SwState(parent)
         public override void Update()
         {
             base.Update();
-            if(!SwordSprite.Value.IsPlaying) SwordSprite.Value.Visible = false;
-            if(Knight.TimeoutClock <= 0) StateMachine.Value.SetState("chasing");
+            if(!SwordSprite.IsPlaying) SwordSprite.Visible = false;
+            if(Knight.TimeoutClock <= 0) StateMachine.SetState("chasing");
             else Knight.TimeoutClock -= SwGame.DeltaTime;
             PlayBodyAnim();
         }
         public override void EndState(string nextState)
         {
             base.EndState(nextState);
-            SwordSprite.Value.Visible = false;
+            SwordSprite.Visible = false;
         }
     }
     private class Dead(SwKnight parent) : SwKnightState(parent)
@@ -223,7 +227,7 @@ public abstract class SwKnightState(SwKnight parent) : SwState(parent)
         {
             base.BeginState(lastState);
             Knight.Velocity = ErVec2.Zero;
-            BodySprite.Value.Play("death");
+            BodySprite.Play("death");
         }
         public override void Update()
         {

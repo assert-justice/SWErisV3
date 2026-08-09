@@ -247,7 +247,8 @@
                 "still": {
                     "texture": "images/bella_cursor.png",
                     "first_frame": 0,
-                    "last_frame": 0
+                    "last_frame": 0,
+                    "loops": true
                 },
                 "charge_0":{
                     "texture": "images/bella_cursor.png",

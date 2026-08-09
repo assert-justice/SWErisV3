@@ -50,9 +50,9 @@ public readonly struct SwFrame(ErTexture texture, ErRect2 sourceRect)
             }
         }
     }
-    public void Draw(ErVec2 position, ErVec2? size = null, ErVec2? origin = null, double angle = 0, bool hFlip = false, bool vFlip = false)
+    public void Draw(ErVec2 position, ErVec2? origin = null, double angle = 0, bool hFlip = false, bool vFlip = false)
     {
-        Texture.Draw(position, size ?? SourceRect.Size, SourceRect, origin, angle, hFlip, vFlip);
+        Texture.Draw(position, SourceRect.Size, SourceRect, origin, angle, hFlip, vFlip);
     }
     public static IEnumerable<SwFrame> GetAllFrames(ErTexture texture, ErVec2 frameSize, ErVec2? tileOffset = null, ErVec2? tilePadding = null)
     {

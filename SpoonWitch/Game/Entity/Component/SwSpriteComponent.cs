@@ -1,0 +1,202 @@
+using Eris;
+using ErisMath;
+using Prion.Node;
+using SpoonWitch.ByteStream;
+using SpoonWitch.Rendering;
+
+namespace SpoonWitch.Game.Entity.Component;
+
+public class SwSpriteComponent(SwEntity parent, SwSprite sprite) : SwComponent(parent, sprite.Name)
+{
+    public readonly SwSprite Sprite = sprite;
+    public override void Update()
+    {
+        base.Update();
+        Sprite.Update();
+    }
+    public override void Draw(SwComponent nextState)
+    {
+        base.Draw(nextState);
+        var pos = ErMath.Lerp(Parent.Position, nextState.Parent.Position, SwGame.FrameWeight);
+        Sprite.Draw(pos);
+    }
+    public override void Read(SwByteStream byteStream)
+    {
+        base.Read(byteStream);
+    }
+    public override void Write(SwByteStream byteStream)
+    {
+        base.Write(byteStream);
+    }
+}
+
+// public class SwSpriteComponent(SwEntity parent, string name) : SwComponent(parent, name)
+// {
+//     private enum SwSpriteFlags: byte
+//     {
+//         None = 0,
+//         IsPaused = 1,
+//         IsVisible = 2,
+//         IsCentered = 4,
+//     }
+//     private readonly List<SwAnimation> Animations = [];
+//     private readonly Dictionary<string, int> AnimationLookup = [];
+//     private SwAnimationState NextAnimationState;
+//     // These need to be serialized
+//     private SwAnimationState AnimationState;
+//     private int CurrentAnimIdx;
+//     public double Angle = 0;
+//     public ErVec2 Offset = ErVec2.Zero;
+//     private SwSpriteFlags Flags = SwSpriteFlags.None;
+//     // These are derived from the above fields
+//     public bool IsPaused
+//     {
+//         get => HasFlags(SwSpriteFlags.IsPaused);
+//         private set => SetFlags(SwSpriteFlags.IsPaused, value);
+//     }
+//     public bool Visible
+//     {
+//         get => HasFlags(SwSpriteFlags.IsVisible);
+//         set => SetFlags(SwSpriteFlags.IsVisible, value);
+//     }
+//     public bool Centered
+//     {
+//         get => HasFlags(SwSpriteFlags.IsCentered);
+//         set => SetFlags(SwSpriteFlags.IsCentered, value);
+//     }
+//     public SwAnimation CurrentAnimation => Animations[CurrentAnimIdx];
+//     public bool IsPlaying
+//     {
+//         get => !IsPaused && AnimationState.IsPlaying;
+//     }
+//     public int FrameIdx
+//     {
+//         get => AnimationState.FrameIdx;
+//         set => SwAnimationState.Set(ref AnimationState, frameIdx: value);
+//     }
+//     public double FrameProgress
+//     {
+//         get => AnimationState.FrameProgress;
+//         set => SwAnimationState.Set(ref AnimationState, frameProgress:value);
+//     }
+//     public bool IsLooping => AnimationState.IsLooping;
+//     public void AddAnimation(SwAnimation animation)
+//     {
+//         if(!AnimationLookup.TryAdd(animation.Name, Animations.Count))
+//         {
+//             ErEngine.LogWarning("sprite already has an animation named '", animation.Name, "'");
+//             return;
+//         }
+//         Animations.Add(animation);
+//         if(Animations.Count == 1) SetAnimation(animation.Name);
+//     }
+//     private void SetAnimation(string animName)
+//     {
+//         if(!AnimationLookup.TryGetValue(animName, out int animIdx))
+//         {
+//             ErEngine.LogWarning("sprite has no animation named '", animName, "'");
+//             return;
+//         }
+//         CurrentAnimIdx = animIdx;
+//         AnimationState = CurrentAnimation.DefaultState;
+//     }
+//     public void Play()
+//     {
+//         if(IsPaused) IsPaused = false;
+//         if(!IsPlaying) SwAnimationState.Set(ref AnimationState, isPlaying:true, frameIdx:0, frameProgress:0);
+//     }
+//     public void Play(string animName)
+//     {
+//         if(animName != CurrentAnimation.Name) SetAnimation(animName);
+//         Play();
+//     }
+//     public void Pause()
+//     {
+//         SetFlags(SwSpriteFlags.IsPaused, true);
+//     }
+//     public void Stop()
+//     {
+//         SwAnimationState.Set(ref AnimationState, isPlaying:false);
+//     }
+//     private bool HasFlags(SwSpriteFlags flags)
+//     {
+//         return (Flags & flags) == flags;
+//     }
+//     private void SetFlags(SwSpriteFlags mask, bool value)
+//     {
+//         // clear masked flags
+//         Flags &= ~mask;
+//         Flags |= value ? (SwSpriteFlags)255&mask : 0;
+//     }
+//     public override void Update()
+//     {
+//         base.Update();
+//         if(Animations.Count == 0) return;
+//         if(CurrentAnimIdx < 0 || CurrentAnimIdx >= Animations.Count)
+//         {
+//             ErEngine.LogWarning("bad anim idx: ", CurrentAnimIdx);
+//             return;
+//         }
+//         SwAnimationState.Advance(ref AnimationState, SwGame.DeltaTime, CurrentAnimation.NumFrames);
+//     }
+//     public override void Draw(SwComponent nextState)
+//     {
+//         base.Draw(nextState);
+//         if(!Visible) return;
+//         if(Animations.Count == 0) return;
+//         AnimationState.Copy(ref NextAnimationState);
+//         SwAnimationState.Advance(ref NextAnimationState, SwGame.FrameDuration, CurrentAnimation.NumFrames);
+//         var pos = ErMath.Lerp(Parent.Position, nextState.Parent.Position, SwGame.FrameWeight) + Offset;
+//         if(!CurrentAnimation.TryGetFrame(out var frame, FrameIdx))
+//         {
+//             ErEngine.LogWarning("bad frame idx ", FrameIdx, " for anim ", CurrentAnimation.Name);
+//             return;
+//         }
+//         if(Name == "reticle")
+//         {
+//             ErEngine.Log(CurrentAnimation.Name, " ", Visible);
+//         }
+//         ErVec2 origin = Centered ? frame.SourceRect.Size * 0.5 : ErVec2.Zero;
+//         frame.Draw(pos, origin, Angle, hFlip:AnimationState.HFlip, vFlip:AnimationState.VFlip);
+//     }
+//     public override void Read(SwByteStream byteStream)
+//     {
+//         base.Read(byteStream);
+//         if(!SwAnimationState.TryRead(byteStream, ref AnimationState)) throw new("bad anim state");
+//         if(!byteStream.TryReadI32(out CurrentAnimIdx)) throw new("bad current anim idx");
+//         if(!byteStream.TryReadF64(out Angle)) throw new("bad angle");
+//         if(!byteStream.TryReadVec2(out Offset)) throw new("bad offset");
+//         if(!byteStream.TryReadByte(out byte b)) throw new("bad sprite flags");
+//         Flags = (SwSpriteFlags)b;
+//     }
+//     public override void Write(SwByteStream byteStream)
+//     {
+//         base.Write(byteStream);
+//         AnimationState.Write(byteStream);
+//         byteStream.WriteI32(CurrentAnimIdx);
+//         byteStream.WriteF64(Angle);
+//         byteStream.WriteVec2(Offset);
+//         byteStream.WriteByte((byte)Flags);
+//     }
+//     public static bool TryFromData(out SwSpriteComponent sprite, SwEntity parent, string name, string dirpath, PriNode priNode)
+//     {
+//         sprite = default!;
+//         if(!priNode.TryGet("animations", out PriDict dict)) return ErEngine.LogWarning("no animations");
+//         if(!priNode.TryGet("visible", out bool visible)) visible = true;
+//         var size = ErVec2.FromPrion(priNode, "width", "height", new(64,64));
+//         var offset = ErVec2.FromPrion(priNode, "offset_x", "offset_y");
+//         if(!priNode.TryGet("centered", out bool centered)) centered = true;
+//         sprite = new(parent, name)
+//         {
+//             Visible = visible,
+//             Offset = offset,
+//             Centered = centered,
+//         };
+//         foreach (var (animName,node) in dict.Data)
+//         {
+//             if(!SwAnimation.TryFromPri(out var animation, animName, dirpath, size, node)) ErEngine.LogWarning("bad animation '", animName, "'");
+//             else sprite.AddAnimation(animation);
+//         }
+//         return true;
+//     }
+// }

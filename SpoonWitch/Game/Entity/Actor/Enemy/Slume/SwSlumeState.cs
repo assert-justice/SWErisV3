@@ -2,16 +2,19 @@ using Eris;
 using Eris.Utils;
 using ErisMath;
 using SpoonWitch.ByteStream;
-using SpoonWitch.Game.Entity.Component.Sprite;
+using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
+using SpoonWitch.Rendering;
 
 namespace SpoonWitch.Game.Entity.Actor.Enemy.Slume;
 
 public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
 {
     protected readonly SwSlume Slume = parent;
-    protected ErWrapper<SwSprite> Sprite = new(() => parent.GetComponent<SwSprite>("body")!);
-    protected ErWrapper<SwStateMachine> StateMachine = new(() => parent.GetComponent<SwStateMachine>("state_machine")!);
+    protected ErWrapper<SwSpriteComponent> _BodySprite = new(() => parent.GetComponent<SwSpriteComponent>("body")!);
+    private SwSprite BodySprite => _BodySprite.Value.Sprite;
+    protected ErWrapper<SwStateMachine> _StateMachine = new(() => parent.GetComponent<SwStateMachine>("state_machine")!);
+    private SwStateMachine StateMachine => _StateMachine.Value;
     private static readonly string[] DirStrings = [
         "move_dr",
         "move_d",
@@ -21,7 +24,7 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
     private void PlayBodyAnim()
     {
         int facingIdx = ErMath.RoundAngleToInt(Slume.Velocity.GetAngle(), 4);
-        Sprite.Value.Play(DirStrings[facingIdx]);
+        BodySprite.Play(DirStrings[facingIdx]);
     }
     // public override void BeginState(string lastState)
     // {
@@ -39,13 +42,13 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
-            Sprite.Value.Play("idle_d");
+            BodySprite.Play("idle_d");
             Slume.Velocity = ErVec2.Zero;
         }
         public override void Update()
         {
             base.Update();
-            // if(Slume.CanSeePlayer())StateMachine.Value.SetState("chasing");
+            // if(Slume.CanSeePlayer())StateMachine.SetState("chasing");
         }
     }
     private class Chasing(SwSlume parent) : SwSlumeState(parent)
@@ -55,7 +58,7 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
         {
             base.Update();
             Slume.TargetPosition = SwGame.PlayerPos;
-            if(!Slume.CanSeePlayer())StateMachine.Value.SetState("seeking");
+            if(!Slume.CanSeePlayer())StateMachine.SetState("seeking");
             Slume.MoveToTarget(Slume.BaseSpeed);
             Slume.DoDamage();
             PlayBodyAnim();
@@ -72,9 +75,9 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
         public override void Update()
         {
             base.Update();
-            if(Slume.CanSeePlayer())StateMachine.Value.SetState("chasing");
+            if(Slume.CanSeePlayer())StateMachine.SetState("chasing");
             else if(Slume.TimeoutClock > 0) Slume.TimeoutClock -= SwGame.DeltaTime;
-            else StateMachine.Value.SetState("wandering");
+            else StateMachine.SetState("wandering");
             Slume.MoveToTarget(Slume.BaseSpeed);
             Slume.DoDamage();
             PlayBodyAnim();
@@ -113,7 +116,7 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
         public override void Update()
         {
             base.Update();
-            if(Slume.CanSeePlayer())StateMachine.Value.SetState("chasing");
+            if(Slume.CanSeePlayer())StateMachine.SetState("chasing");
             else if(Slume.TimeoutClock > 0)
             {
                 Slume.TimeoutClock -= SwGame.DeltaTime;
@@ -134,7 +137,7 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
-            Sprite.Value.Play("death");
+            BodySprite.Play("death");
             Slume.TimeoutClock = 1;
             Slume.Velocity = ErVec2.Zero;
         }
@@ -151,8 +154,8 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
         {
             base.BeginState(lastState);
             // Note: use the first frame of the death animation
-            Sprite.Value.Play("death");
-            Sprite.Value.Stop();
+            BodySprite.Play("death");
+            BodySprite.Stop();
         }
         public override void Update()
         {
@@ -160,8 +163,8 @@ public abstract class SwSlumeState(SwSlume parent) : SwState(parent)
             double speed = Slume.Velocity.GetLength();
             if(speed > ErMath.EPSILON) Slume.Velocity = Slume.Velocity.Normalized() * speed * 0.95;
             if(Slume.IsKnockback) return;
-            if(Slume.IsAlive) StateMachine.Value.SetState(Slume.IsPassive ? "default" : "wandering");
-            else StateMachine.Value.SetState("dead");
+            if(Slume.IsAlive) StateMachine.SetState(Slume.IsPassive ? "default" : "wandering");
+            else StateMachine.SetState("dead");
         }
     }
     public static SwStateMachine GetStateMachine(SwSlume parent, string name)

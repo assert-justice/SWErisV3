@@ -1,11 +1,9 @@
-using System.Text.Json.Nodes;
 using Eris;
 using ErisMath;
 using Prion.Node;
-using Prion.Parser;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Game.Entity.Component;
-using SpoonWitch.Game.Entity.Component.Sprite;
+using SpoonWitch.Rendering;
 
 namespace SpoonWitch.Game.Entity;
 
@@ -152,38 +150,9 @@ public abstract class SwEntity
         if(!priNode.TryGet("sprites", out PriDict dict)) return false;
         foreach (var (name, node) in dict.Data)
         {
-            if(!SwSprite.TryFromData(out var sprite, this, name, dirpath, node)) ErEngine.LogWarning("failed to parse sprite '", name, "'");
-            else RegisterComponent(sprite);
+            if(!SwSprite.TryFromData(out var sprite, name, dirpath, node)) ErEngine.LogWarning("failed to parse sprite '", name, "'");
+            else RegisterComponent(new SwSpriteComponent(this, sprite));
         }
         return true;
-        // Todo: cache filepaths?
-        // PriNode data;
-        // try
-        // {
-        //     string text = File.ReadAllText(filepath);
-        //     var json = JsonNode.Parse(text);
-        //     data = PriParser.Parser.JsonToPrion(json);
-        // }
-        // catch
-        // {
-        //     return false;
-        // }
-        // if(!data.Get("sprites").TryAs(out PriDict sprites))
-        // {
-        //     return ErEngine.LogError("not a dictionary");
-        // }
-        // foreach (var (name, spriteData) in sprites.Data)
-        // {
-        //     if(!spriteData.TryAs(out PriDict spriteDict))
-        //     {
-        //         return ErEngine.LogError("bad sprite data");
-        //     }
-        //     if(!SwSprite.TryFromData(filepath, spriteDict, this, name, out var sprite))
-        //     {
-        //         return ErEngine.LogError("failed to create sprite");
-        //     }
-        //     RegisterComponent(sprite);
-        // }
-        // return true;
     }
 }

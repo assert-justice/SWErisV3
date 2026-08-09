@@ -1,13 +1,12 @@
 using Eris;
-using Eris.Renderer;
 using ErisMath;
 using Prion.Node;
 using SpoonWitch.ByteStream;
-using SpoonWitch.Rendering;
+using SpoonWitch.Game;
 
-namespace SpoonWitch.Game.Entity.Component.Sprite;
+namespace SpoonWitch.Rendering;
 
-public class SwSprite(SwEntity parent, string name) : SwComponent(parent, name)
+public class SwSprite(string name)
 {
     private enum SwSpriteFlags: byte
     {
@@ -16,6 +15,7 @@ public class SwSprite(SwEntity parent, string name) : SwComponent(parent, name)
         IsVisible = 2,
         IsCentered = 4,
     }
+    public readonly string Name = name;
     private readonly List<SwAnimation> Animations = [];
     private readonly Dictionary<string, int> AnimationLookup = [];
     private SwAnimationState NextAnimationState;
@@ -45,7 +45,6 @@ public class SwSprite(SwEntity parent, string name) : SwComponent(parent, name)
     public bool IsPlaying
     {
         get => !IsPaused && AnimationState.IsPlaying;
-        // set => SwAnimationState.Set(ref AnimationState, isPlaying:value);
     }
     public int FrameIdx
     {
@@ -106,9 +105,8 @@ public class SwSprite(SwEntity parent, string name) : SwComponent(parent, name)
         Flags &= ~mask;
         Flags |= value ? (SwSpriteFlags)255&mask : 0;
     }
-    public override void Update()
+    public void Update()
     {
-        base.Update();
         if(Animations.Count == 0) return;
         if(CurrentAnimIdx < 0 || CurrentAnimIdx >= Animations.Count)
         {
@@ -117,42 +115,43 @@ public class SwSprite(SwEntity parent, string name) : SwComponent(parent, name)
         }
         SwAnimationState.Advance(ref AnimationState, SwGame.DeltaTime, CurrentAnimation.NumFrames);
     }
-    public override void Draw(SwComponent nextState)
+    public void Draw(ErVec2 position)
     {
-        base.Draw(nextState);
         if(!Visible) return;
         if(Animations.Count == 0) return;
         AnimationState.Copy(ref NextAnimationState);
         SwAnimationState.Advance(ref NextAnimationState, SwGame.FrameDuration, CurrentAnimation.NumFrames);
-        var pos = ErMath.Lerp(Parent.Position, nextState.Parent.Position, SwGame.FrameWeight) + Offset;
         if(!CurrentAnimation.TryGetFrame(out var frame, FrameIdx))
         {
             ErEngine.LogWarning("bad frame idx ", FrameIdx, " for anim ", CurrentAnimation.Name);
             return;
         }
+        // if(Name == "reticle")
+        // {
+        //     ErEngine.Log(CurrentAnimation.Name, " ", Visible);
+        // }
         ErVec2 origin = Centered ? frame.SourceRect.Size * 0.5 : ErVec2.Zero;
-        frame.Draw(pos, origin:origin, angle: Angle, hFlip:AnimationState.HFlip, vFlip:AnimationState.VFlip);
+        frame.Draw(position + Offset, origin, Angle, hFlip:AnimationState.HFlip, vFlip:AnimationState.VFlip);
     }
-    public override void Read(SwByteStream byteStream)
+    public bool TryRead(SwByteStream byteStream)
     {
-        base.Read(byteStream);
-        if(!SwAnimationState.TryRead(byteStream, ref AnimationState)) throw new("bad anim state");
-        if(!byteStream.TryReadI32(out CurrentAnimIdx)) throw new("bad current anim idx");
-        if(!byteStream.TryReadF64(out Angle)) throw new("bad angle");
-        if(!byteStream.TryReadVec2(out Offset)) throw new("bad offset");
-        if(!byteStream.TryReadByte(out byte b)) throw new("bad sprite flags");
+        if(!SwAnimationState.TryRead(byteStream, ref AnimationState)) return ErEngine.LogError("bad anim state");
+        if(!byteStream.TryReadI32(out CurrentAnimIdx)) return ErEngine.LogError("bad current anim idx");
+        if(!byteStream.TryReadF64(out Angle)) return ErEngine.LogError("bad angle");
+        if(!byteStream.TryReadVec2(out Offset)) return ErEngine.LogError("bad offset");
+        if(!byteStream.TryReadByte(out byte b)) return ErEngine.LogError("bad sprite flags");
         Flags = (SwSpriteFlags)b;
+        return true;
     }
-    public override void Write(SwByteStream byteStream)
+    public void Write(SwByteStream byteStream)
     {
-        base.Write(byteStream);
         AnimationState.Write(byteStream);
         byteStream.WriteI32(CurrentAnimIdx);
         byteStream.WriteF64(Angle);
         byteStream.WriteVec2(Offset);
         byteStream.WriteByte((byte)Flags);
     }
-    public static bool TryFromData(out SwSprite sprite, SwEntity parent, string name, string dirpath, PriNode priNode)
+    public static bool TryFromData(out SwSprite sprite, string name, string dirpath, PriNode priNode)
     {
         sprite = default!;
         if(!priNode.TryGet("animations", out PriDict dict)) return ErEngine.LogWarning("no animations");
@@ -160,7 +159,7 @@ public class SwSprite(SwEntity parent, string name) : SwComponent(parent, name)
         var size = ErVec2.FromPrion(priNode, "width", "height", new(64,64));
         var offset = ErVec2.FromPrion(priNode, "offset_x", "offset_y");
         if(!priNode.TryGet("centered", out bool centered)) centered = true;
-        sprite = new(parent, name)
+        sprite = new(name)
         {
             Visible = visible,
             Offset = offset,
