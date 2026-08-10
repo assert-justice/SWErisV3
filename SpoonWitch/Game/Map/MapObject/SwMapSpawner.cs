@@ -1,5 +1,4 @@
 using Eris;
-using ErisMath;
 using Prion.Node;
 
 namespace SpoonWitch.Game.Map.MapObject;
@@ -36,7 +35,6 @@ public class SwMapSpawner : SwMapObject
         base.Trigger();
         PriDict props = GetProps();
         props.Data["entity_type"] = new PriString(EntityType);
-        ErEngine.Log("here");
         SwApp.CommandStore.AddGlobalCommand(new("spawn_entity", props));
     }
 }
