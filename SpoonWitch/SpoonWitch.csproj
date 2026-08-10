@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\ErisPhysics2D\ErisPhysics2D.csproj" />
+    <ProjectReference Include="..\Eris\Eris.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

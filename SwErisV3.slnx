@@ -1,7 +1,6 @@
 <Solution>
   <Project Path="Eris/Eris.csproj" />
   <Project Path="ErisMath/ErisMath.csproj" />
-  <Project Path="ErisPhysics2D/ErisPhysics2D.csproj" />
   <Project Path="Prion/Prion.csproj" />
   <Project Path="SpoonWitch/SpoonWitch.csproj" />
 </Solution>
