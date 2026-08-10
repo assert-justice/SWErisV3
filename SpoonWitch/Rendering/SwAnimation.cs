@@ -35,19 +35,9 @@ public readonly struct SwAnimation(string name, SwFrame[] frames, ErVec2 size, S
         if(!priNode.TryGet("loops", out bool loops)) loops = false;
         if(!priNode.TryGet("autoplay", out bool autoplay)) autoplay = false;
         SwFrame[] frames = [..SwFrame.GetFrames(texture, size, first_frame, last_frame)];
-        if(name == "charge_0")
-        {
-            ErEngine.Log("first: ", first_frame, " last: ", last_frame);
-            foreach (var item in frames)
-            {
-                ErEngine.Log(item.SourceRect);
-            }
-            ErEngine.Log("");
-        }
         SwAnimationState defaultState = new();
         SwAnimationState.Set(ref defaultState, fps: fps, isPlaying:autoplay, hFlip:h_flip, vFlip:v_flip, isLooping: loops);
         animation = new(name, frames, size, defaultState);
-        // ErEngine.Log(animation.Name, " : ", animation.DefaultState.FrameDuration);
         return true;
     }
 }

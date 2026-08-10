@@ -1,24 +1,19 @@
-using Eris.Utils;
 using SpoonWitch.ByteStream;
 
 namespace SpoonWitch.Game.Entity.Component.State;
 
 public abstract class SwState
 {
-    // private abstract class SwCompRef
-    // {
-    //     private class SwRef<T>: SwCompRef where T : SwComponent
-    //     {
-    //         //
-    //     }
-    //     //
-    // }
     public abstract string Name{get;}
-    // private readonly Dictionary<string, ErWrapper<SwComponent>> CompLookup = [];
-    public readonly SwEntity Parent;
-    public SwState(SwEntity parent)
+    protected SwStateMachine StateMachine{get; private set;}
+    public SwEntity Parent => StateMachine.Parent;
+    public SwState()
     {
-        Parent = parent;
+        StateMachine = null!;
+    }
+    public virtual void Init(SwStateMachine stateMachine)
+    {
+        StateMachine = stateMachine;
     }
     public virtual void BeginState(string lastState){}
     public virtual void EndState(string nextState){}
@@ -26,8 +21,4 @@ public abstract class SwState
     public virtual void Draw(SwState state){}
     public virtual void Read(SwByteStream byteStream){}
     public virtual void Write(SwByteStream byteStream){}
-    // protected T GetComp<T>(string name) where T: SwComponent
-    // {
-    //     //
-    // }
 }
