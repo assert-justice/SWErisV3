@@ -40,9 +40,13 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     private static void SetHud(string key, double value)
     {
         PriDict dict = new();
-        dict.Data["key"] = new PriString(key);
-        dict.Data["value"] = new PriNumber(value);
-        SwApp.CommandStore.AddGlobalCommand(new("hud_set", dict));
+        dict.TrySet("verb", "hud_set");
+        dict.TrySet("key", key);
+        dict.TrySet("value", value);
+        // dict.Data["verb"] = 
+        // dict.Data["key"] = new PriString(key);
+        // dict.Data["value"] = new PriNumber(value);
+        SwApp.CommandStore.AddGlobalCommand(dict);
     }
     public override void Ready()
     {
@@ -54,7 +58,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         if(DodgeCooldownClock > 0) DodgeCooldownClock -= SwGame.DeltaTime;
         SwGame.SetPlayerPos(Position);
     }
-    protected override double Damage(SwCommand command)
+    protected override double Damage(PriNode command)
     {
         double value = base.Damage(command);
         if(value > 0)

@@ -35,7 +35,7 @@ public class SwGame
     public static readonly SwCamera Camera = new();
     public static ErVec2 PlayerPos{get; private set;} = new(32,32);
     private static readonly Queue<Action> QueuedActions = [];
-    private static readonly Queue<(uint,ErRect2,SwCommand)> QueuedCommandRect = [];
+    private static readonly Queue<(uint,ErRect2,PriNode)> QueuedCommandRect = [];
     public static void SetPlayerPos(ErVec2 position)
     {
         PlayerPos = position;
@@ -65,7 +65,7 @@ public class SwGame
     {
         QueuedActions.Enqueue(action);
     }
-    public static void EnqueueCommandRect(uint mask, ErRect2 rect, SwCommand command)
+    public static void EnqueueCommandRect(uint mask, ErRect2 rect, PriNode command)
     {
         QueuedCommandRect.Enqueue((mask,rect,command));
     }
@@ -158,11 +158,11 @@ public class SwGame
         foreach (var command in SwApp.CommandStore.GetGlobalCommands("spawn_player"))
         {
             // Todo: implement this properly
-            AddEntity<SwPlayer>(command.Payload);
+            AddEntity<SwPlayer>(command);
         }
         foreach (var command in SwApp.CommandStore.GetGlobalCommands("spawn_entity"))
         {
-            if(!command.Payload.TryGet("entity_type", out string entityType))
+            if(!command.TryGet("entity_type", out string entityType))
             {
                 ErEngine.LogWarning("spawn entity command missing entity_type field");
                 continue;
@@ -172,10 +172,10 @@ public class SwGame
                 case "none":
                     break;
                 case "slume":
-                    AddEntity<SwSlume>(command.Payload);
+                    AddEntity<SwSlume>(command);
                     break;
                 case "knight":
-                    AddEntity<SwKnight>(command.Payload);
+                    AddEntity<SwKnight>(command);
                     break;
                 default:
                     ErEngine.LogWarning("tried to spawn unknown entity type '", entityType, "'");

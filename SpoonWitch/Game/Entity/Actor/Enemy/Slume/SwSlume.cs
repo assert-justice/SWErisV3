@@ -52,7 +52,7 @@ public class SwSlume : SwEnemy, ISwEntity<SwSlume>
         base.Write(byteStream);
         byteStream.WriteF64(TimeoutClock);
     }
-    protected override double Damage(SwCommand command)
+    protected override double Damage(PriNode command)
     {
         double value = base.Damage(command);
         if(value > 0) StateMachine.SetState("knockback");
@@ -61,7 +61,7 @@ public class SwSlume : SwEnemy, ISwEntity<SwSlume>
     public void DoDamage()
     {
         SwDamage damage = new(10, Position);
-        SwGame.EnqueueCommandRect(2, ErRect2.Centered(Position, HurtboxSize), new("damage", damage.ToPri()));
+        SwGame.EnqueueCommandRect(2, ErRect2.Centered(Position, HurtboxSize), damage.ToPri());
         // SwGame.EnqueueCommandRect(2, ErRect2.Centered(Position, HurtboxSize), new("damage", new PriNumber(10)));
     }
 }

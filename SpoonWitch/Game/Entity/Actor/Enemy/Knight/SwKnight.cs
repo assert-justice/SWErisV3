@@ -1,4 +1,5 @@
 using Eris;
+using Prion.Node;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Command;
 using SpoonWitch.Game.Entity.Component.State;
@@ -44,7 +45,7 @@ public class SwKnight : SwEnemy, ISwEntity<SwKnight>
         base.Die();
         StateMachine.SetState("dead");
     }
-    protected override double Damage(SwCommand command)
+    protected override double Damage(PriNode command)
     {
         double value = base.Damage(command);
         if(value > 0) StateMachine.SetState("knockback");

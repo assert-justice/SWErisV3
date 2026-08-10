@@ -71,9 +71,9 @@ public class SwMenuHolder: SwUiNode
     {
         return MenuStack[^1];
     }
-    private void SetMenu(SwCommand command)
+    private void SetMenu(PriNode command)
     {
-        if(!command.Payload.TryAs(out string menuName))
+        if(!command.TryAs(out string menuName))
         {
             ErEngine.LogWarning("bad set menu command");
             return;

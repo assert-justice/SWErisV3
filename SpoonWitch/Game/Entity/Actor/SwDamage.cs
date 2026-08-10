@@ -10,7 +10,6 @@ public enum SwDamageType: byte
 public readonly struct SwDamage
 {
     public double Value{get; init;}
-    // public int SourceId{get; init;}
     public ErVec2 SourcePos{get; init;}
     public SwDamageType Type{get; init;}
     public SwDamage(){}
@@ -33,10 +32,9 @@ public readonly struct SwDamage
     {
         damage = default;
         if(!node.TryGet("value", out double value)) return false;
-        if(!node.TryGet("source_pos_x", out double source_pos_x)) return false;
-        if(!node.TryGet("source_pos_y", out double source_pos_y)) return false;
+        if(!ErVec2.TryFromPrion(out var sourcePos, node, "source_pos_x", "source_pos_y")) return false;
         if(!node.TryGet("type", out byte type)) return false;
-        damage = new(value, new(source_pos_x,source_pos_y), (SwDamageType)type);
+        damage = new(value, sourcePos, (SwDamageType)type);
         return true;
     }
 }

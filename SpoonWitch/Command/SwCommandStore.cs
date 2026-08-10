@@ -1,4 +1,5 @@
 using Eris;
+using Prion.Node;
 
 namespace SpoonWitch.Command;
 
@@ -6,16 +7,16 @@ public class SwCommandStore
 {
     private class SwStore
     {
-        private readonly List<SwCommand> Commands = [];
-        private readonly Queue<SwCommand> Overflow = [];
-        public IEnumerable<SwCommand> GetCommands()
+        private readonly List<PriNode> Commands = [];
+        private readonly Queue<PriNode> Overflow = [];
+        public IEnumerable<PriNode> GetCommands()
         {
             foreach (var item in Commands)
             {
                 yield return item;
             }
         }
-        public void AddCommand(SwCommand command)
+        public void AddCommand(PriNode command)
         {
             Overflow.Enqueue(command);
         }
@@ -27,13 +28,13 @@ public class SwCommandStore
     }
     private class SwQueue
     {
-        private readonly Queue<SwCommand> Commands = [];
+        private readonly Queue<PriNode> Commands = [];
         private long LastUsed;
         private void NoteUsed()
         {
             LastUsed = DateTime.UtcNow.Ticks;
         }
-        public IEnumerable<SwCommand> GetCommands()
+        public IEnumerable<PriNode> GetCommands()
         {
             if(Commands.Count > 0) NoteUsed();
             while(Commands.TryDequeue(out var command)) yield return command;
@@ -43,7 +44,7 @@ public class SwCommandStore
             if(Commands.Count > 0) return false;
             return now - LastUsed > ageGate;
         }
-        public void AddCommand(SwCommand command)
+        public void AddCommand(PriNode command)
         {
             Commands.Enqueue(command);
             NoteUsed();
@@ -51,26 +52,31 @@ public class SwCommandStore
     }
     private readonly Dictionary<string, SwStore> GeneralStores = [];
     private readonly Dictionary<string,SwQueue> QueueLookup = [];
-    public IEnumerable<SwCommand> GetGlobalCommands(string verb)
+    public IEnumerable<PriNode> GetGlobalCommands(string verb)
     {
         if(!GeneralStores.TryGetValue(verb, out var store)) return [];
         else return store.GetCommands();
     }
-    public IEnumerable<SwCommand> HandleCommands(string id)
+    public IEnumerable<PriNode> HandleCommands(string id)
     {
         if(!QueueLookup.TryGetValue(id, out var commands)) return [];
         return commands.GetCommands();
     }
-    public void AddGlobalCommand(SwCommand command)
+    public void AddGlobalCommand(PriNode command)
     {
-        if(!GeneralStores.TryGetValue(command.Verb, out var store))
+        if(!command.TryGet("verb", out string verb))
+        {
+            ErEngine.LogWarning("malformed command, missing verb");
+            return;
+        }
+        if(!GeneralStores.TryGetValue(verb, out var store))
         {
             store = new();
-            GeneralStores[command.Verb] = store;
+            GeneralStores[verb] = store;
         }
         store.AddCommand(command);
     }
-    public void AddCommand(string id, SwCommand command)
+    public void AddCommand(string id, PriNode command)
     {
         if(!QueueLookup.TryGetValue(id, out var queue))
         {

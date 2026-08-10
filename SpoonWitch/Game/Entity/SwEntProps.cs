@@ -8,7 +8,7 @@ public abstract class SwEntPropsBase
 {
     public readonly int Id;
     public readonly HashSet<string> Groups = [];
-    private readonly Queue<SwCommand> Commands = [];
+    private readonly Queue<PriNode> Commands = [];
     public PriNode Props{get; private set;} = PriNull.Null;
     public SwEntPropsBase()
     {
@@ -18,11 +18,11 @@ public abstract class SwEntPropsBase
     {
         Props = props;
     }
-    public void AddCommand(SwCommand command)
+    public void AddCommand(PriNode command)
     {
         Commands.Enqueue(command);
     }
-    public IEnumerable<SwCommand> GetCommands()
+    public IEnumerable<PriNode> GetCommands()
     {
         while(Commands.TryDequeue(out var command)) yield return command;
     }

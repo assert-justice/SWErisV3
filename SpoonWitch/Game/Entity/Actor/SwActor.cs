@@ -88,9 +88,9 @@ public abstract class SwActor: SwEntity
     {
         return GetType().ToString().Split('.')[^1];
     }
-    protected virtual double Damage(SwCommand command)
+    protected virtual double Damage(PriNode command)
     {
-        if(!SwDamage.TryFromPri(command.Payload, out var damage))
+        if(!SwDamage.TryFromPri(command, out var damage))
         // if(!TryParseDamage(command.Payload, out double value))
         {
             ErEngine.LogWarning("no damage value");

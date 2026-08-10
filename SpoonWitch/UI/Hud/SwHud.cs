@@ -36,7 +36,7 @@ public class SwHud
     {
         foreach (var item in SwApp.CommandStore.GetGlobalCommands("hud_set"))
         {
-            TryHandleSet(item.Payload);
+            TryHandleSet(item);
         }
         foreach (var item in RootSlots)
         {

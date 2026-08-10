@@ -27,6 +27,8 @@ public class SwMapCheckpoint : SwMapObject
         //         props.Data[key] = val;
         //     }
         // }
-        SwApp.CommandStore.AddGlobalCommand(new("spawn_player", GetProps()));
+        var props = GetProps();
+        props.TrySet("verb", "spawn_player");
+        SwApp.CommandStore.AddGlobalCommand(props);
     }
 }

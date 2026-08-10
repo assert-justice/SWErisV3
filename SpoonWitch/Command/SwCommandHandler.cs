@@ -1,11 +1,13 @@
+using Prion.Node;
+
 namespace SpoonWitch.Command;
 
 public class SwCommandHandler(SwCommandStore store)
 {
     private readonly SwCommandStore Store = store;
-    private readonly List<(Action<SwCommand> handler, string verb)> GeneralHandlers = [];
+    private readonly List<(Action<PriNode> handler, string verb)> GeneralHandlers = [];
 
-    public void AddHandler(string verb, Action<SwCommand> handler)
+    public void AddHandler(string verb, Action<PriNode> handler)
     {
         GeneralHandlers.Add((handler, verb));
     }
