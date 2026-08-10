@@ -62,15 +62,6 @@ public readonly struct ErRect2
     {
         return new(Position + vector, Size);
     }
-    // public ErRect2 TranslateAndScale(ErRect2 rect)
-    // {
-    //     return new(Position + rect.Position, Size * rect.Size);
-    // }
-    // public ErRect2 Scale(ErRect2 rect){}
-    // public ErRect2 TranslateAndScale(ErVec2 position, ErVec2 scale)
-    // {
-    //     return new(Position + position, Size * scale);
-    // }
     public ErRect2 Centered(ErVec2 center)
     {
         return Centered(center, Size);
@@ -102,7 +93,10 @@ public readonly struct ErRect2
         double height = bottom - top;
         return new(left, top, width, height);
     }
-    // public ErisRe
+    public static void Set(ref ErRect2 rect, ErVec2? position = null, ErVec2? size = null)
+    {
+        rect = new(position ?? rect.Position, size ?? rect.Size);
+    }
     public override string ToString()
     {
         return $"({Position},{Size})";

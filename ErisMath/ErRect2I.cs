@@ -32,10 +32,6 @@ public readonly struct ErRect2I
     public static ErRect2I operator *(ErRect2I left, ErVec2I right)=>new(left.Position * right, left.Size * right);
     public static ErRect2I operator /(ErRect2I left, ErVec2I right)=>new(left.Position / right, left.Size / right);
     public static explicit operator ErRect2(ErRect2I value) => new((ErVec2)value.Position, (ErVec2)value.Size);
-    // public ErisRect2 Scale(double scale)
-    // {
-    //     return new((ErisVec2)Position*scale, (ErisVec2)Size*scale);
-    // }
     public bool Contains(ErVec2I point)
     {
         if(point.X < Left || point.X > Right) return false;
@@ -79,6 +75,10 @@ public readonly struct ErRect2I
         int width = right - left;
         int height = bottom - top;
         return new(left, top, width, height);
+    }
+    public static void Set(ref ErRect2I rect, ErVec2I? position = null, ErVec2I? size = null)
+    {
+        rect = new(position ?? rect.Position, size ?? rect.Size);
     }
     public override string ToString()
     {
