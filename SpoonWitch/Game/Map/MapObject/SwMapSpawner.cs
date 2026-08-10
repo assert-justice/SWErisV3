@@ -1,5 +1,4 @@
 using Eris;
-using ErisMath;
 using Prion.Node;
 
 namespace SpoonWitch.Game.Map.MapObject;

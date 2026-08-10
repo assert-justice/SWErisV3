@@ -103,7 +103,7 @@ public class PriJsonConverter
         PriList list = new();
         foreach (var item in jsonArray)
         {
-            list.Values.Add(JsonToPrion(item));
+            list.Data.Add(JsonToPrion(item));
         }
         return list;
     }

@@ -8,6 +8,11 @@ public class PriString: PriNode
     {
         Value = value;
     }
+    public override int Count => Value.Length;
+    // public override bool TryAsEnum<TEnum>(out TEnum value)
+    // {
+    //     return Enum.TryParse(Value, out value);
+    // }
     public override string ToString()
     {
         return $"\"{Value}\"";

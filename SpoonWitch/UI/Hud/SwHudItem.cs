@@ -48,6 +48,11 @@ public class SwHudItem
     }
     public void Draw()
     {
+        if(ItemIdx < 0 || ItemIdx >= Icons.Length)
+        {
+            ErEngine.LogError("bad icon idx ", ItemIdx);
+            return;
+        }
         Icons[ItemIdx].Draw(Offset+IconOff);
         Frame.Draw(Offset);
         if(Quantity > 9) Digits[Quantity / 10].Draw(Offset+TensOff);

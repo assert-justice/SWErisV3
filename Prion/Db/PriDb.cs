@@ -24,7 +24,7 @@ public class PriDb
     {
         if(node is PriDict || node is PriList)
         {
-            foreach (var (key,val) in node.GetEntries())
+            foreach (var (key,val) in node.Entries)
             {
                 if(!TryMerge(path + '/' + key, val)) return false;
             }

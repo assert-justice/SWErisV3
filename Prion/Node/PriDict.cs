@@ -4,12 +4,15 @@ namespace Prion.Node;
 public class PriDict: PriNode
 {
     public readonly Dictionary<string,PriNode> Data = [];
+    public override IEnumerable<PriNode> Keys => [..Data.Keys.Select(key => new PriString(key))];
+    public override IEnumerable<PriNode> Values => Data.Values;
+    public override IEnumerable<(PriNode, PriNode)> Entries => [..Data.Select(item => (new PriString(item.Key), item.Value))];
+    public override int Count => Data.Count;
     public PriDict(){}
     public PriDict(Dictionary<string,PriNode> data)
     {
         Data = data;
     }
-
     public override PriNodeKind Kind => PriNodeKind.Dict;
     public override bool IsImmutable => false;
     public override bool TryGet<T>(string key, out T value)
@@ -31,17 +34,13 @@ public class PriDict: PriNode
     {
         return TrySet(index.ToString(), node);
     }
-    public override bool TryAdd(string key, PriNode node)
-    {
-        return Data.TryAdd(key, node);
-    }
-    public override IEnumerable<(string, PriNode)> GetEntries()
-    {
-        foreach (var (key,value) in Data)
-        {
-            yield return(key, value);
-        }
-    }
+    // public override IEnumerable<(string, PriNode)> GetEntries()
+    // {
+    //     foreach (var (key,value) in Data)
+    //     {
+    //         yield return(key, value);
+    //     }
+    // }
     public override string ToString()
     {
         var sb = SbPool.Get();

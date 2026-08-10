@@ -110,8 +110,8 @@ public abstract class SwMapObject
         mapObject = null!;
         try
         {
-            if(!TryLdtkToInternal(tileSize, ldtk, out var data)) return false;
-            if(!data.TryGet("type", out string type)) return false;
+            if(!TryLdtkToInternal(tileSize, ldtk, out var data)) ErEngine.LogWarning("failed to convert");
+            if(!data.TryGet("type", out string type)) return ErEngine.LogWarning("bad object type");
             switch (type)
             {
                 case "area":
