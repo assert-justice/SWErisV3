@@ -74,30 +74,30 @@ public readonly struct ErColor: IPriSchema<ErColor>
         value = new(r,g,b,a);
         return true;
     }
-    public static bool TryParse(string src, out ErColor value)
-    {
-        value = default;
-        src = src.Trim();
-        if(src.StartsWith('#')) src = src[1..];
-        else if(src.StartsWith("0x")) src = src[2..];
-        if(src.Length != 6 && src.Length != 8) return false;
-        if(!uint.TryParse(src, System.Globalization.NumberStyles.HexNumber | System.Globalization.NumberStyles.AllowHexSpecifier, null, out uint n)) return false;
-        byte a;
-        // if string has an alpha value read it
-        if(src.Length == 8)
-        {
-            a = (byte)(n & 255);
-            n <<= 8;
-        }
-        else a = 255;
-        byte b = (byte)(n & 255);
-        n <<= 8;
-        byte g = (byte)(n & 255);
-        n <<= 8;
-        byte r = (byte)(n & 255);
-        value = new(r,g,b,a);
-        return true;
-    }
+    // public static bool TryParse(string src, out ErColor value)
+    // {
+    //     value = default;
+    //     src = src.Trim();
+    //     if(src.StartsWith('#')) src = src[1..];
+    //     else if(src.StartsWith("0x")) src = src[2..];
+    //     if(src.Length != 6 && src.Length != 8) return false;
+    //     if(!uint.TryParse(src, System.Globalization.NumberStyles.HexNumber | System.Globalization.NumberStyles.AllowHexSpecifier, null, out uint n)) return false;
+    //     byte a;
+    //     // if string has an alpha value read it
+    //     if(src.Length == 8)
+    //     {
+    //         a = (byte)(n & 255);
+    //         n <<= 8;
+    //     }
+    //     else a = 255;
+    //     byte b = (byte)(n & 255);
+    //     n <<= 8;
+    //     byte g = (byte)(n & 255);
+    //     n <<= 8;
+    //     byte r = (byte)(n & 255);
+    //     value = new(r,g,b,a);
+    //     return true;
+    // }
     public PriNode ToPrion()
     {
         PriDict dict = new();

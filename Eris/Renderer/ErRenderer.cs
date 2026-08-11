@@ -5,7 +5,7 @@ namespace Eris.Renderer;
 
 public class ErRenderer
 {
-    public ErTextureManager TextureManager{get; private set;} = null!;
+    internal ErTextureManager TextureManager{get; private set;} = null!;
     public readonly ErFontManager FontManager = new();
     private nint Window;
     private ErColor ClearColor = ErColor.Black;
@@ -120,5 +120,9 @@ public class ErRenderer
         end -= ViewportTransform.Position;
         SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, color.A);
         SDL.RenderLine(Handle, (float)start.X, (float)start.Y, (float)end.X, (float)end.Y);
+    }
+    public bool TryGetSurface(string filepath, out nint surfaceHandle)
+    {
+        return TextureManager.TryGetSurface(filepath, out surfaceHandle);
     }
 }

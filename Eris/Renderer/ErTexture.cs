@@ -3,7 +3,7 @@ using SDL3;
 
 namespace Eris.Renderer;
 
-public class ErTexture
+public readonly struct ErTexture
 {
     public readonly nint Handle;
     public readonly ErVec2 Size;
@@ -64,11 +64,11 @@ public class ErTexture
         texture = new(textureHandle);
         return true;
     }
-    public static bool TryFromPath(string filepath, nint palletHandle, out ErTexture texture)
+    public static bool TryFromPath(string filepath, nint paletteHandle, out ErTexture texture)
     {
         texture = default!;
         if(ErEngine.Renderer is null) return false;
-        if(!ErEngine.Renderer.TextureManager.TryGetTextureWithPallet(filepath, palletHandle, out nint handle)) return false;
+        if(!ErEngine.Renderer.TextureManager.TryGetTextureWithPalette(filepath, paletteHandle, out nint handle)) return false;
         texture = new(handle);
         return true;
     }

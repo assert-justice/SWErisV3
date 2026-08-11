@@ -2,9 +2,9 @@ using SDL3;
 
 namespace Eris.Renderer;
 
-public class ErTextureManager
+internal class ErTextureManager
 {
-    private class PalletEqualityComparer : IEqualityComparer<int[]>
+    private class PaletteEqualityComparer : IEqualityComparer<int[]>
     {
         public bool Equals(int[]? x, int[]? y)
         {
@@ -41,8 +41,7 @@ public class ErTextureManager
     private readonly List<nint> OrphanTextures = [];
     private readonly Dictionary<string, nint> SurfaceLookup = [];
     private readonly Dictionary<string, Dictionary<nint, nint>> SurfacePaletteLookup = [];
-    private readonly Dictionary<int[], nint> PaletteLookup = new(new PalletEqualityComparer());
-    private static readonly List<int> PalletKeyBuilder = [];
+    private readonly Dictionary<int[], nint> PaletteLookup = new(new PaletteEqualityComparer());
     public ErTextureManager(nint rendererHandle)
     {
         RendererHandle = rendererHandle;
@@ -70,53 +69,38 @@ public class ErTextureManager
         lookup.Add(paletteHandle, surfaceHandle);
         return true;
     }
-    public nint GetPalette(IList<ErColor> colors)
+    public nint GetPalette(IEnumerable<ErColor> colors)
     {
-        PalletKeyBuilder.Clear();
-        foreach (var color in colors)
-        {
-            PalletKeyBuilder.Add(color.ToInt());
-        }
-        int[] key = [..PalletKeyBuilder];
-        if(PaletteLookup.TryGetValue(key, out nint paletteHandle)) return paletteHandle;
-        paletteHandle = SDL.CreatePalette(colors.Count);
-        SDL.SetPaletteColors(paletteHandle, [..colors.Select(c => c.ToSdlColor())], 0, colors.Count);
-        PaletteLookup.Add(key, paletteHandle);
-        return paletteHandle;
+        return GetPalette([..colors.Select(c => c.ToSdlColor())]);
     }
-    public nint GetPalette(IList<SDL.Color> colors)
+    public nint GetPalette(SDL.Color[] colors)
     {
-        PalletKeyBuilder.Clear();
-        foreach (var color in colors)
-        {
-            PalletKeyBuilder.Add(ErColor.SdlColorToInt(color));
-        }
-        int[] key = [..PalletKeyBuilder];
+        int[] key = [..colors.Select(ErColor.SdlColorToInt)];
         if(PaletteLookup.TryGetValue(key, out nint paletteHandle)) return paletteHandle;
-        paletteHandle = SDL.CreatePalette(colors.Count);
-        SDL.SetPaletteColors(paletteHandle, [..colors], 0, colors.Count);
+        paletteHandle = SDL.CreatePalette(colors.Length);
+        SDL.SetPaletteColors(paletteHandle, [..colors], 0, colors.Length);
         PaletteLookup.Add(key, paletteHandle);
         return paletteHandle;
     }
 
     public bool TryGetPalettes(string filepath, out nint[] palettes)
     {
-        palettes = [];
+        palettes = default!;
         if(!TryGetSurface(filepath, out nint surfaceHandle)) return false;
         SDL.Surface surface = (SDL.Surface)SDL.PointerToStructure<SDL.Surface>(surfaceHandle)!;
-        List<nint> handles = new(surface.Height);
-        List<SDL.Color> colors = new(surface.Width);
+        nint[] handles = new nint[surface.Height];
+        SDL.Color[] colors = new SDL.Color[surface.Width];
         for (int y = 0; y < surface.Height; y++)
         {
-            colors.Clear();
+            Array.Clear(colors);
             for (int x = 0; x < surface.Width; x++)
             {
                 SDL.ReadSurfacePixel(surfaceHandle, x, y, out byte r, out byte g, out byte b, out byte a);
-                colors.Add(new(){R=r, G=g, B=b, A=a});
+                colors[x] = new(){R=r, G=g, B=b, A=a};
             }
-            handles.Add(GetPalette(colors));
+            handles[y] = GetPalette(colors);
         }
-        palettes = [..handles];
+        palettes = handles;
         return true;
     }
     public void AddTextureHandle(nint handle)
@@ -155,7 +139,7 @@ public class ErTextureManager
         TextureLookup.Add(filepath, textureHandle);
         return true;
     }
-    public bool TryGetTextureWithPallet(string filepath, nint palletHandle, out nint textureHandle)
+    public bool TryGetTextureWithPalette(string filepath, nint paletteHandle, out nint textureHandle)
     {
         textureHandle = default;
         if(!TexturePaletteLookup.TryGetValue(filepath, out var lookup))
@@ -163,11 +147,11 @@ public class ErTextureManager
             lookup = [];
             TexturePaletteLookup.Add(filepath, lookup);
         }
-        if(lookup.TryGetValue(palletHandle, out textureHandle)) return true;
-        if(!TryGetSurfaceWithPalette(filepath, palletHandle, out nint surfaceHandle)) return false;
+        if(lookup.TryGetValue(paletteHandle, out textureHandle)) return true;
+        if(!TryGetSurfaceWithPalette(filepath, paletteHandle, out nint surfaceHandle)) return false;
         textureHandle = SDL.CreateTextureFromSurface(RendererHandle, surfaceHandle);
         if(textureHandle == 0) return false;
-        lookup.Add(palletHandle, textureHandle);
+        lookup.Add(paletteHandle, textureHandle);
         ErEngine.Log("here");
         return true;
     }

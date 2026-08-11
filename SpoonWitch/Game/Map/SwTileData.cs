@@ -82,7 +82,7 @@ public class SwTileData
         if(!priNode.Get("source").TryAs(out string texPath)) throw new("no source field provided");
         string? dirpath = Path.GetDirectoryName(filepath);
         texPath = Path.Join(dirpath, texPath);
-        if(!ErEngine.Renderer.TextureManager.TryGetSurface(texPath, out nint surface)) throw new("source path invalid");
+        if(!ErEngine.Renderer.TryGetSurface(texPath, out nint surface)) throw new("source path invalid");
         if(!ErTexture.TryFromPath(texPath, out Texture)) throw new("source path invalid2");
         IsSolid = priNode.TryGet("is_solid", out bool is_solid) && is_solid;
         IsOpaque = priNode.TryGet("is_opaque", out bool is_opaque) && is_opaque;
