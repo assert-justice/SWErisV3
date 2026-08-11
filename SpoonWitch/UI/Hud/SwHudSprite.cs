@@ -22,7 +22,7 @@ public class SwHudSprite
         if(!ErTexture.TryFromPath(filepath, out ErTexture tex)) throw new("bad tex");
         double width = node.TryGet("width", out double d) ? d : tex.Size.X;
         double height = node.TryGet("height", out d) ? d : tex.Size.Y;
-        Frames = [..SwFrame.GetAllFrames(tex, new(width, height))];
+        Frames = [..SwFrame.GetAllFrames(new(tex), new(width, height))];
     }
     public void Update()
     {

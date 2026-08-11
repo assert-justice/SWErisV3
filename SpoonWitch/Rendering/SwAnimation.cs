@@ -41,7 +41,7 @@ public readonly struct SwAnimation(string name, SwFrame[] frames, ErVec2 size, S
         if(!animData.TryGet("v_flip", out bool v_flip)) v_flip = false;
         if(!animData.TryGet("loops", out bool loops)) loops = false;
         if(!animData.TryGet("autoplay", out bool autoplay)) autoplay = false;
-        if(!SwFrame.TryGetFrames(out var frames, texture, defaultSize, first_frame, last_frame)) return ErEngine.LogWarning(name, " anim failed to get frames");
+        if(!SwFrame.TryGetFrames(out var frames, new(texture), defaultSize, first_frame, last_frame)) return ErEngine.LogWarning(name, " anim failed to get frames");
         // SwFrame[] frames = [..SwFrame.GetFrames(texture, defaultSize, first_frame, last_frame)];
         SwAnimationState defaultState = new();
         SwAnimationState.Set(ref defaultState, fps: fps, isPlaying:autoplay, hFlip:h_flip, vFlip:v_flip, isLooping: loops);

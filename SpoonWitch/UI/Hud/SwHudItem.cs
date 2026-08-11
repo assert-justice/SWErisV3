@@ -41,10 +41,10 @@ public class SwHudItem
         if(!ErTexture.TryFromPath(Path.Join(dirpath,filename), out Frame)) throw new("bad frame");
         if(!icon.TryGet("icons_filepath", out filename)) throw new("bad icon file");
         if(!ErTexture.TryFromPath(Path.Join(dirpath,filename), out var tex)) throw new("bad icon");
-        Icons = [..SwFrame.GetAllFrames(tex, new(icon_width, icon_height))];
+        Icons = [..SwFrame.GetAllFrames(new(tex), new(icon_width, icon_height))];
         if(!icon.Get("digits_filepath").TryAs(out filename)) throw new("bad digits file");
         if(!ErTexture.TryFromPath(Path.Join(dirpath,filename), out tex)) throw new("bad digits");
-        Digits = [..SwFrame.GetAllFrames(tex, new(digit_width,digit_height))];
+        Digits = [..SwFrame.GetAllFrames(new(tex), new(digit_width,digit_height))];
     }
     public void Draw()
     {

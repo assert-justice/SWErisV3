@@ -7,9 +7,10 @@ namespace SpoonWitch.Rendering;
 public class SwTextureStore
 {
     private readonly List<ErTexture?> CachedTextures;
-    public ErTexture DefaultTexture => CachedTextures[0]!;
+    public ErTexture DefaultTexture;
     public SwTextureStore(ErTexture defaultTexture)
     {
+        DefaultTexture = defaultTexture;
         CachedTextures = new(SwData.PaletteCount + 1)
         {
             defaultTexture
