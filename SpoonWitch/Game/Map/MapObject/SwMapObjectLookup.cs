@@ -5,7 +5,7 @@ namespace SpoonWitch.Game.Map.MapObject;
 public class SwMapObjectLookup
 {
     private readonly Dictionary<string,SwMapObject> MapObjects = [];
-    private readonly Dictionary<Type,Dictionary<Type,SwMapObject>> TypeLookup = [];
+    private readonly Dictionary<Type,Dictionary<string,SwMapObject>> TypeLookup = [];
     public void AddObject(SwMapObject mapObject)
     {
         if(!MapObjects.TryAdd(mapObject.Id, mapObject))
@@ -19,7 +19,7 @@ public class SwMapObjectLookup
             lookup = [];
             TypeLookup.Add(type, lookup);
         }
-        lookup.Add(mapObject.GetType(), mapObject);
+        lookup.Add(mapObject.Id, mapObject);
     }
     public bool TryGetObject(string id, out SwMapObject mapObject)
     {

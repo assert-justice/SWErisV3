@@ -11,7 +11,7 @@
 	"iid": "56816e60-fa90-11f0-b4ec-5b883517cfbd",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 73,
+	"nextUid": 74,
 	"identifierStyle": "Lowercase",
 	"toc": [],
 	"worldLayout": "GridVania",
@@ -1071,6 +1071,46 @@
 					"allowedRefsEntityUid": null,
 					"allowedRefTags": [],
 					"tilesetUid": null
+				},
+				{
+					"identifier": "prop_collision_mode",
+					"doc": null,
+					"__type": "LocalEnum.prop_collision_mode",
+					"uid": 73,
+					"type": "F_Enum(66)",
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": {
+						"id": "V_String",
+						"params": ["none"]
+					},
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
 				}
 			]
 		}
@@ -1140,7 +1180,6 @@
 			{ "id": "slume", "tileRect": null, "color": 12470831 },
 			{ "id": "knight", "tileRect": null, "color": 15389866 }
 		], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] },
-		{ "identifier": "prop_type", "uid": 62, "values": [], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] },
 		{ "identifier": "prop_collision_mode", "uid": 66, "values": [
 			{ "id": "none", "tileRect": null, "color": 12470831 },
 			{ "id": "tile_aligned", "tileRect": null, "color": 14120515 },
@@ -1269,16 +1308,16 @@
 						},
 						{
 							"__identifier": "prop",
-							"__grid": [54,22],
+							"__grid": [36,28],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#D77643",
 							"iid": "8978f770-6fc0-11f1-b536-3b6b49b070d2",
-							"width": 72,
-							"height": 64,
+							"width": 8,
+							"height": 8,
 							"defUid": 61,
-							"px": [432,176],
+							"px": [288,224],
 							"fieldInstances": [
 								{ "__identifier": "texture_filepath", "__type": "FilePath", "__value": "props/grass_tufts.png", "__tile": null, "defUid": 63, "realEditorValues": [{
 									"id": "V_String",
@@ -1287,10 +1326,34 @@
 								{ "__identifier": "properties_json", "__type": "String", "__value": "{\n  \"tile_width\": 7,\n  \"tile_height\": 7,\n  \"randomize\": true\n}", "__tile": null, "defUid": 65, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["{\\n  \"tile_width\": 7,\\n  \"tile_height\": 7,\\n  \"randomize\": true\\n}"]
-								}] }
+								}] },
+								{ "__identifier": "prop_collision_mode", "__type": "LocalEnum.prop_collision_mode", "__value": "none", "__tile": null, "defUid": 73, "realEditorValues": [] }
 							],
-							"__worldX": 432,
-							"__worldY": 176
+							"__worldX": 288,
+							"__worldY": 224
+						},
+						{
+							"__identifier": "prop",
+							"__grid": [60,20],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#D77643",
+							"iid": "b63bc4e0-6fc0-11f1-b536-4f982ec973e3",
+							"width": 96,
+							"height": 96,
+							"defUid": 61,
+							"px": [480,160],
+							"fieldInstances": [
+								{ "__identifier": "texture_filepath", "__type": "FilePath", "__value": "props/oak_tree_3x3.png", "__tile": null, "defUid": 63, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["props/oak_tree_3x3.png"]
+								}] },
+								{ "__identifier": "properties_json", "__type": "String", "__value": null, "__tile": null, "defUid": 65, "realEditorValues": [] },
+								{ "__identifier": "prop_collision_mode", "__type": "LocalEnum.prop_collision_mode", "__value": "none", "__tile": null, "defUid": 73, "realEditorValues": [] }
+							],
+							"__worldX": 480,
+							"__worldY": 160
 						}
 					]
 				},

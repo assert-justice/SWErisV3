@@ -21,9 +21,7 @@ public class SwMapProp : SwMapObject
         if(!properties.TryGet("randomize", out bool randomize)) randomize = false;
         SwAnimation animation = new("default", [..SwFrame.GetAllFrames(new(texture), tileSize)],tileSize,default);
         Sprite.AddAnimation(animation);
-        Sprite.Visible = true;
         if(randomize) Sprite.FrameIdx = ErMath.FloorToInt(Random.Shared.NextDouble() * animation.NumFrames);
-        // ErEngine.Log(data);
     }
     public override void Draw()
     {

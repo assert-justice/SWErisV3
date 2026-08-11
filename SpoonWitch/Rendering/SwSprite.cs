@@ -25,7 +25,7 @@ public class SwSprite(string name)
     public int PalletIdx{get; private set;}
     public double Angle = 0;
     public ErVec2 Offset = ErVec2.Zero;
-    private SwSpriteFlags Flags = SwSpriteFlags.None;
+    private SwSpriteFlags Flags = SwSpriteFlags.IsVisible | SwSpriteFlags.IsCentered;
     // These are derived from the above fields
     public bool IsPaused
     {
