@@ -152,7 +152,6 @@ internal class ErTextureManager
         textureHandle = SDL.CreateTextureFromSurface(RendererHandle, surfaceHandle);
         if(textureHandle == 0) return false;
         lookup.Add(paletteHandle, textureHandle);
-        ErEngine.Log("here");
         return true;
     }
     public void Cleanup()

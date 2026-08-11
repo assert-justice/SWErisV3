@@ -122,6 +122,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             Entity.Velocity = ErVec2.Zero;
             SwDamage damage = new(10, Entity.Position);
             SwGame.EnqueueCommandRect(4, GetHurtbox(), damage.ToPri());
+            BodySprite.SetPallet(1);
         }
         public override void Update()
         {
@@ -132,6 +133,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         {
             base.EndState(nextState);
             SpoonSprite.Visible = false;
+            BodySprite.SetPallet(0);
         }
         private ErRect2 GetHurtbox()
         {

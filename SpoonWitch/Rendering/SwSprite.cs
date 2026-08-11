@@ -22,6 +22,7 @@ public class SwSprite(string name)
     // These need to be serialized
     private SwAnimationState AnimationState;
     private int CurrentAnimIdx;
+    public int PalletIdx{get; private set;}
     public double Angle = 0;
     public ErVec2 Offset = ErVec2.Zero;
     private SwSpriteFlags Flags = SwSpriteFlags.None;
@@ -105,6 +106,10 @@ public class SwSprite(string name)
         Flags &= ~mask;
         Flags |= value ? (SwSpriteFlags)255&mask : 0;
     }
+    public void SetPallet(int palletIdx)
+    {
+        PalletIdx = palletIdx;
+    }
     public void Update()
     {
         if(Animations.Count == 0) return;
@@ -127,7 +132,7 @@ public class SwSprite(string name)
             return;
         }
         ErVec2 origin = Centered ? frame.SourceRect.Size * 0.5 : ErVec2.Zero;
-        frame.Draw(position + Offset, origin, Angle, NextAnimationState.HFlip, NextAnimationState.VFlip);
+        frame.Draw(position + Offset, PalletIdx, origin, Angle, NextAnimationState.HFlip, NextAnimationState.VFlip);
     }
     public bool TryRead(SwByteStream byteStream)
     {
@@ -136,6 +141,8 @@ public class SwSprite(string name)
         if(!byteStream.TryReadF64(out Angle)) return ErEngine.LogError("bad angle");
         if(!byteStream.TryReadVec2(out Offset)) return ErEngine.LogError("bad offset");
         if(!byteStream.TryReadByte(out byte b)) return ErEngine.LogError("bad sprite flags");
+        if(!byteStream.TryReadI32(out int palletIdx)) return ErEngine.LogError("missing pallet idx");
+        PalletIdx = palletIdx;
         Flags = (SwSpriteFlags)b;
         return true;
     }
@@ -146,6 +153,7 @@ public class SwSprite(string name)
         byteStream.WriteF64(Angle);
         byteStream.WriteVec2(Offset);
         byteStream.WriteByte((byte)Flags);
+        byteStream.WriteI32(PalletIdx);
     }
     // private static bool TryGetPallet(out nint palletHandle, PriNode priNode)
     // {

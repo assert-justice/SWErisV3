@@ -7,6 +7,7 @@ using Prion.Db;
 using Prion.Node;
 using Prion.Parser;
 using SpoonWitch.Command;
+using SpoonWitch.Data;
 using SpoonWitch.Game;
 using SpoonWitch.UI.Menu;
 using SpoonWitch.UI.Node;
@@ -49,6 +50,11 @@ public class SwApp : IErApp
     public void Init()
     {
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
+        if (!SwData.TryInit())
+        {
+            ErEngine.LogError("game initialization failed");
+            return;
+        }
         if(!TryLoadDb(Manifest, $"{GAME_DATA_PATH}/manifest.json"))
         {
             ErEngine.LogError("no manifest found");

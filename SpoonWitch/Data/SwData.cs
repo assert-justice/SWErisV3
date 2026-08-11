@@ -19,6 +19,11 @@ public static class SwData
     private static readonly List<nint> PalletLookup = [];
     public static bool TryInit()
     {
+        if(!ErTexture.TryGetPaletteHandles(out var palletHandles, "game_data/palettes.png")) return ErEngine.LogError("unable to load palettes");
+        foreach (var item in palletHandles)
+        {
+            PalletLookup.Add(item);
+        }
         return true;
     }
     public static int PaletteCount => PalletLookup.Count;

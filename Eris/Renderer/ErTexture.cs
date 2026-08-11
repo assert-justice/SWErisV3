@@ -15,6 +15,10 @@ public class ErTexture
         SDL.GetTextureSize(Handle, out float w, out float h);
         Size = new(w, h);
     }
+    public static bool TryGetPaletteHandles(out nint[] palletHandles, string filepath)
+    {
+        return ErEngine.Renderer.TextureManager.TryGetPalettes(filepath, out palletHandles);
+    }
     public static bool TryGetUnmanagedTexture(nint surfaceHandle, out ErTexture texture)
     {
         texture = default!;
