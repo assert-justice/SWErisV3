@@ -12,11 +12,13 @@ public abstract class SwMapObject
     public readonly ErRect2 RectPx;
     public readonly PriNode Fields;
     public readonly PriNode Data;
-    public virtual bool IsGlobal => Fields.TryGet("is_global", out bool isGlobal) && isGlobal;
+    // private readonly string Dirpath;
+    public virtual bool IsGlobal => Data.TryGet("is_global", out bool isGlobal) && isGlobal;
     public SwMapObject(PriNode data)
     {
         Data = data;
         if(!data.Get("type").TryAs(out Type)) throw new("no type");
+        // if(!data.TryGet("dirpath", out Dirpath)) throw new("no dirpath");
         if(!data.Get("id").TryAs(out Id)) throw new("no id");
         if(!data.Get("x_px").TryAs(out int xPx)) throw new("no world x");
         if(!data.Get("y_px").TryAs(out int yPx)) throw new("no world y");
@@ -29,47 +31,42 @@ public abstract class SwMapObject
         RectTiles = new(xTiles, yTiles, widthTiles, heightTiles);
         RectPx = new(xPx, yPx, widthPx, heightPx);
         if(!data.Get("fields").TryAs(out Fields)) throw new("no fields");
+        var center = RectPx.Center;
+        Fields.TrySet("x", center.X);
+        Fields.TrySet("y", center.Y);
     }
     public virtual void Trigger(){}
     public virtual void Update(){}
-    public PriNode GetData()
-    {
-        PriDict dict = new();
-        dict.Data["id"] = new PriString(Id);
-        dict.Data["type"] = new PriString(Type);
-        dict.Data["x_px"] = new PriNumber(RectPx.Position.X);
-        dict.Data["y_px"] = new PriNumber(RectPx.Position.Y);
-        dict.Data["width_px"] = new PriNumber(RectPx.Size.X);
-        dict.Data["height_px"] = new PriNumber(RectPx.Size.Y);
-        dict.Data["x_t"] = new PriNumber(RectTiles.Position.X);
-        dict.Data["y_t"] = new PriNumber(RectTiles.Position.Y);
-        dict.Data["width_t"] = new PriNumber(RectTiles.Size.X);
-        dict.Data["height_t"] = new PriNumber(RectTiles.Size.Y);
-        dict.Data["fields"] = Fields;
-        return dict;
-    }
+    // public PriNode GetData()
+    // {
+    //     PriDict dict = new();
+    //     dict.Data["id"] = new PriString(Id);
+    //     dict.Data["type"] = new PriString(Type);
+    //     dict.TrySet("dirpath")
+    //     dict.Data["x_px"] = new PriNumber(RectPx.Position.X);
+    //     dict.Data["y_px"] = new PriNumber(RectPx.Position.Y);
+    //     dict.Data["width_px"] = new PriNumber(RectPx.Size.X);
+    //     dict.Data["height_px"] = new PriNumber(RectPx.Size.Y);
+    //     dict.Data["x_t"] = new PriNumber(RectTiles.Position.X);
+    //     dict.Data["y_t"] = new PriNumber(RectTiles.Position.Y);
+    //     dict.Data["width_t"] = new PriNumber(RectTiles.Size.X);
+    //     dict.Data["height_t"] = new PriNumber(RectTiles.Size.Y);
+    //     dict.Data["fields"] = Fields;
+    //     return dict;
+    // }
     public virtual void Load()
     {
-        ErEngine.Log("loaded ", Type, " with id ", Id);
+        // ErEngine.Log("loaded ", Type, " with id ", Id);
     }
-    protected PriDict GetProps()
+    protected PriNode GetProps()
     {
-        PriDict props = new();
-        var center = RectPx.Center;
-        props.Data["x_px"] = new PriNumber(center.X);
-        props.Data["y_px"] = new PriNumber(center.Y);
-        if(Fields.TryGet("property_overrides", out PriDict dict))
-        {
-            foreach (var (key,val) in dict.Data)
-            {
-                props.Data[key] = val;
-            }
-        }
-        return props;
+        return Fields.DeepCopy();
     }
     public virtual void Unload(){}
-    private static bool TryLdtkToInternal(ErVec2I tileSize, PriNode ldtkData, out PriNode data)
+    public virtual void Draw(){}
+    private static bool TryLdtkToInternal(ErVec2I tileSize, PriNode ldtkData, string dirpath, out PriNode data)
     {
+        data = new PriDict();
         if(!ldtkData.Get("iid").TryAs(out string id)) throw new("no id");
         if(!ldtkData.Get("__identifier").TryAs(out string type)) throw new("no type");
         if(!ldtkData.Get("__worldX").TryAs(out int xPx)) throw new("no world x");
@@ -77,21 +74,24 @@ public abstract class SwMapObject
         if(!ldtkData.Get("width").TryAs(out int widthPx)) throw new("no width");
         if(!ldtkData.Get("height").TryAs(out int heightPx)) throw new("no height");
         if(!ldtkData.Get("fieldInstances").TryAs(out PriList fieldList)) throw new("no fields");
-        PriDict fields = new();
+        PriDict fields = [];
         foreach (var item in fieldList.Values)
         {
-            if(!item.Get("__identifier").TryAs(out string key)) throw new("no field name");
+            if(!item.Get("__identifier").TryAs(out string fieldName)) throw new("no field name");
             PriNode value = item.Get("__value");
-            // Note: it's annoying to special case this but oh well
-            if(key == "property_overrides")
+            if(!item.TryGet("__type", out string fieldType)) throw new("missing field type");
+            if(fieldType == "String")
             {
                 if(value is PriNull) continue;
                 if(!value.TryAs(out string src)) throw new("property overrides field must be a string");
-                if(!SwApp.TryParseJsonToPrion(src, out value)) throw new("failed to parse property overrides");
+                if (fieldName.EndsWith("_json"))
+                {
+                    if(!SwApp.TryParseJsonToPrion(src, out value)) return ErEngine.LogWarning("failed to parse json field '", fieldName, "'");
+                }
             }
-            fields.TrySet(key, value);
+            fields.Add(fieldName, value);
         }
-        data = new PriDict();
+        data.TrySet("dirpath", dirpath);
         data.TrySet("id", id);
         data.TrySet("type", type);
         data.TrySet("x_px", xPx);
@@ -105,12 +105,12 @@ public abstract class SwMapObject
         data.TrySet("fields", fields);
         return true;
     }
-    public static bool TryFromLdtkData(ErVec2I tileSize, PriNode ldtk, out SwMapObject mapObject)
+    public static bool TryFromLdtkData(ErVec2I tileSize, PriNode ldtk, string dirpath, out SwMapObject mapObject)
     {
         mapObject = null!;
         try
         {
-            if(!TryLdtkToInternal(tileSize, ldtk, out var data)) ErEngine.LogWarning("failed to convert");
+            if(!TryLdtkToInternal(tileSize, ldtk, dirpath, out var data)) ErEngine.LogWarning("failed to convert");
             if(!data.TryGet("type", out string type)) return ErEngine.LogWarning("bad object type");
             switch (type)
             {
@@ -125,6 +125,9 @@ public abstract class SwMapObject
                     return true;
                 case "spawner":
                     mapObject = new SwMapSpawner(data);
+                    return true;
+                case "prop":
+                    mapObject = new SwMapProp(data);
                     return true;
                 default:
                     return ErEngine.LogWarning("invalid type for map object '", type, "'");

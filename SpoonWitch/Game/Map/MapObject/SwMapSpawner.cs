@@ -33,10 +33,9 @@ public class SwMapSpawner : SwMapObject
     {
         if(!CanTrigger()) return;
         base.Trigger();
-        PriDict props = GetProps();
+        PriNode props = GetProps();
         props.TrySet("verb", "spawn_entity");
         props.TrySet("entity_type", EntityType);
-        // props.Data["entity_type"] = new PriString(EntityType);
         SwApp.CommandStore.AddGlobalCommand(props);
     }
 }

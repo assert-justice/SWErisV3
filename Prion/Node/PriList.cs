@@ -1,14 +1,20 @@
+using System.Collections;
+
 namespace Prion.Node;
-public class PriList: PriNode
+public class PriList: PriNode, IEnumerable
 {
     public readonly List<PriNode> Data;
     public PriList()
     {
         Data = [];
     }
-    public PriList(List<PriNode> values)
+    // public PriList(List<PriNode> values)
+    // {
+    //     Data = values;
+    // }
+    public PriList(IEnumerable<PriNode> keyValuePairs)
     {
-        Data = values;
+        Data = [.. keyValuePairs];
     }
     public PriList(int capacity)
     {
@@ -20,6 +26,19 @@ public class PriList: PriNode
     public override IEnumerable<PriNode> Keys => Enumerable.Range(0, Count).Select(i => new PriNumber(i));
     public override IEnumerable<PriNode> Values => Data;
     public override IEnumerable<(PriNode, PriNode)> Entries => [..Data.Select((node,idx)=> (new PriNumber(idx), node))];
+    public override PriNode DeepCopy()
+    {
+        PriList list = new(Data.Count);
+        foreach (var item in Data)
+        {
+            list.Add(item.DeepCopy());
+        }
+        return list;
+    }
+    public void Add(PriNode priNode)
+    {
+        Data.Add(priNode);
+    }
     public override bool TryGet<T>(string key, out T value)
     {
         value = default!;
@@ -55,5 +74,9 @@ public class PriList: PriNode
         }
         sb.Append(']');
         return SbPool.Free(sb);
+    }
+    public IEnumerator GetEnumerator()
+    {
+        return (IEnumerator)Data;
     }
 }

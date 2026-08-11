@@ -11,7 +11,7 @@
 	"iid": "56816e60-fa90-11f0-b4ec-5b883517cfbd",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 63,
+	"nextUid": 73,
 	"identifierStyle": "Lowercase",
 	"toc": [],
 	"worldLayout": "GridVania",
@@ -83,9 +83,9 @@
 			"uid": 3,
 			"doc": null,
 			"uiColor": null,
-			"gridSize": 32,
-			"guideGridWid": 0,
-			"guideGridHei": 0,
+			"gridSize": 8,
+			"guideGridWid": 32,
+			"guideGridHei": 32,
 			"displayOpacity": 1,
 			"inactiveOpacity": 0.6,
 			"hideInList": false,
@@ -261,11 +261,11 @@
 			"doc": null,
 			"width": 32,
 			"height": 32,
-			"resizableX": true,
-			"resizableY": true,
-			"minWidth": 32,
+			"resizableX": false,
+			"resizableY": false,
+			"minWidth": null,
 			"maxWidth": null,
-			"minHeight": 32,
+			"minHeight": null,
 			"maxHeight": null,
 			"keepAspectRatio": false,
 			"tileOpacity": 1,
@@ -367,7 +367,7 @@
 					"tilesetUid": null
 				},
 				{
-					"identifier": "property_overrides",
+					"identifier": "property_overrides_json",
 					"doc": null,
 					"__type": "String",
 					"uid": 12,
@@ -394,7 +394,7 @@
 					"regex": null,
 					"acceptFileTypes": null,
 					"defaultOverride": null,
-					"textLanguageMode": null,
+					"textLanguageMode": "LangJson",
 					"symmetricalRef": false,
 					"autoChainRef": true,
 					"allowOutOfLevelRef": true,
@@ -673,11 +673,11 @@
 			"doc": null,
 			"width": 32,
 			"height": 32,
-			"resizableX": true,
-			"resizableY": true,
-			"minWidth": 32,
+			"resizableX": false,
+			"resizableY": false,
+			"minWidth": null,
 			"maxWidth": null,
-			"minHeight": 32,
+			"minHeight": null,
 			"maxHeight": null,
 			"keepAspectRatio": false,
 			"tileOpacity": 1,
@@ -739,7 +739,7 @@
 					"tilesetUid": null
 				},
 				{
-					"identifier": "property_overrides",
+					"identifier": "property_overrides_json",
 					"doc": null,
 					"__type": "String",
 					"uid": 45,
@@ -975,9 +975,9 @@
 			"height": 32,
 			"resizableX": true,
 			"resizableY": true,
-			"minWidth": 32,
+			"minWidth": 8,
 			"maxWidth": null,
-			"minHeight": 32,
+			"minHeight": 8,
 			"maxHeight": null,
 			"keepAspectRatio": false,
 			"tileOpacity": 1,
@@ -997,7 +997,82 @@
 			"limitBehavior": "MoveLastOne",
 			"pivotX": 0,
 			"pivotY": 0,
-			"fieldDefs": []
+			"fieldDefs": [
+				{
+					"identifier": "texture_filepath",
+					"doc": null,
+					"__type": "FilePath",
+					"uid": 63,
+					"type": "F_Path",
+					"isArray": false,
+					"canBeNull": true,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": [".png"],
+					"defaultOverride": null,
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
+				},
+				{
+					"identifier": "properties_json",
+					"doc": null,
+					"__type": "String",
+					"uid": 65,
+					"type": "F_Text",
+					"isArray": false,
+					"canBeNull": true,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": "LangJson",
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
+				}
+			]
 		}
 	], "tilesets": [
 		{
@@ -1065,7 +1140,12 @@
 			{ "id": "slume", "tileRect": null, "color": 12470831 },
 			{ "id": "knight", "tileRect": null, "color": 15389866 }
 		], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] },
-		{ "identifier": "prop_type", "uid": 62, "values": [], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }
+		{ "identifier": "prop_type", "uid": 62, "values": [], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] },
+		{ "identifier": "prop_collision_mode", "uid": 66, "values": [
+			{ "id": "none", "tileRect": null, "color": 12470831 },
+			{ "id": "tile_aligned", "tileRect": null, "color": 14120515 },
+			{ "id": "box", "tileRect": null, "color": 15389866 }
+		], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }
 	], "externalEnums": [], "levelFields": [] },
 	"levels": [
 		{
@@ -1117,9 +1197,9 @@
 				{
 					"__identifier": "entities",
 					"__type": "Entities",
-					"__cWid": 20,
-					"__cHei": 10,
-					"__gridSize": 32,
+					"__cWid": 80,
+					"__cHei": 40,
+					"__gridSize": 8,
 					"__opacity": 1,
 					"__pxTotalOffsetX": 0,
 					"__pxTotalOffsetY": 0,
@@ -1140,26 +1220,26 @@
 					"entityInstances": [
 						{
 							"__identifier": "checkpoint",
-							"__grid": [4,4],
+							"__grid": [22,18],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": { "tilesetUid": 29, "x": 16, "y": 16, "w": 32, "h": 32 },
 							"__smartColor": "#C501FF",
 							"iid": "852d7cc0-6fc0-11f1-953e-0d77746195e9",
-							"width": 64,
-							"height": 64,
+							"width": 32,
+							"height": 32,
 							"defUid": 28,
-							"px": [128,128],
+							"px": [176,144],
 							"fieldInstances": [
 								{ "__identifier": "default", "__type": "Bool", "__value": true, "__tile": null, "defUid": 30, "realEditorValues": [] },
-								{ "__identifier": "property_overrides", "__type": "String", "__value": null, "__tile": null, "defUid": 45, "realEditorValues": [] }
+								{ "__identifier": "property_overrides_json", "__type": "String", "__value": null, "__tile": null, "defUid": 45, "realEditorValues": [] }
 							],
-							"__worldX": 128,
-							"__worldY": 128
+							"__worldX": 176,
+							"__worldY": 144
 						},
 						{
 							"__identifier": "spawner",
-							"__grid": [14,5],
+							"__grid": [56,16],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
@@ -1168,7 +1248,7 @@
 							"width": 32,
 							"height": 32,
 							"defUid": 8,
-							"px": [448,160],
+							"px": [448,128],
 							"fieldInstances": [
 								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "knight", "__tile": null, "defUid": 49, "realEditorValues": [{
 									"id": "V_String",
@@ -1178,14 +1258,39 @@
 									"id": "V_Bool",
 									"params": [ true ]
 								}] },
-								{ "__identifier": "property_overrides", "__type": "String", "__value": "{\n \"is_passive\": false\n}", "__tile": null, "defUid": 12, "realEditorValues": [{
+								{ "__identifier": "property_overrides_json", "__type": "String", "__value": "{\n \"is_passive\": true\n}", "__tile": null, "defUid": 12, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["{\\n \"is_passive\": false\\n}"]
+									"params": ["{\\n \"is_passive\": true\\n}"]
 								}] },
 								{ "__identifier": "max_uses", "__type": "Int", "__value": null, "__tile": null, "defUid": 50, "realEditorValues": [] }
 							],
 							"__worldX": 448,
-							"__worldY": 160
+							"__worldY": 128
+						},
+						{
+							"__identifier": "prop",
+							"__grid": [54,22],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#D77643",
+							"iid": "8978f770-6fc0-11f1-b536-3b6b49b070d2",
+							"width": 72,
+							"height": 64,
+							"defUid": 61,
+							"px": [432,176],
+							"fieldInstances": [
+								{ "__identifier": "texture_filepath", "__type": "FilePath", "__value": "props/grass_tufts.png", "__tile": null, "defUid": 63, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["props/grass_tufts.png"]
+								}] },
+								{ "__identifier": "properties_json", "__type": "String", "__value": "{\n  \"tile_width\": 7,\n  \"tile_height\": 7,\n  \"randomize\": true\n}", "__tile": null, "defUid": 65, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["{\\n  \"tile_width\": 7,\\n  \"tile_height\": 7,\\n  \"randomize\": true\\n}"]
+								}] }
+							],
+							"__worldX": 432,
+							"__worldY": 176
 						}
 					]
 				},
@@ -1723,9 +1828,9 @@
 				{
 					"__identifier": "entities",
 					"__type": "Entities",
-					"__cWid": 20,
-					"__cHei": 10,
-					"__gridSize": 32,
+					"__cWid": 80,
+					"__cHei": 40,
+					"__gridSize": 8,
 					"__opacity": 1,
 					"__pxTotalOffsetX": 0,
 					"__pxTotalOffsetY": 0,
@@ -2252,9 +2357,9 @@
 				{
 					"__identifier": "entities",
 					"__type": "Entities",
-					"__cWid": 20,
-					"__cHei": 10,
-					"__gridSize": 32,
+					"__cWid": 80,
+					"__cHei": 40,
+					"__gridSize": 8,
 					"__opacity": 1,
 					"__pxTotalOffsetX": 0,
 					"__pxTotalOffsetY": 0,
@@ -2790,9 +2895,9 @@
 				{
 					"__identifier": "entities",
 					"__type": "Entities",
-					"__cWid": 20,
-					"__cHei": 10,
-					"__gridSize": 32,
+					"__cWid": 80,
+					"__cHei": 40,
+					"__gridSize": 8,
 					"__opacity": 1,
 					"__pxTotalOffsetX": 0,
 					"__pxTotalOffsetY": 0,
@@ -3171,9 +3276,9 @@
 				{
 					"__identifier": "entities",
 					"__type": "Entities",
-					"__cWid": 20,
-					"__cHei": 10,
-					"__gridSize": 32,
+					"__cWid": 80,
+					"__cHei": 40,
+					"__gridSize": 8,
 					"__opacity": 1,
 					"__pxTotalOffsetX": 0,
 					"__pxTotalOffsetY": 0,
@@ -3552,9 +3657,9 @@
 				{
 					"__identifier": "entities",
 					"__type": "Entities",
-					"__cWid": 20,
-					"__cHei": 10,
-					"__gridSize": 32,
+					"__cWid": 80,
+					"__cHei": 40,
+					"__gridSize": 8,
 					"__opacity": 1,
 					"__pxTotalOffsetX": 0,
 					"__pxTotalOffsetY": 0,
@@ -3927,9 +4032,9 @@
 				{
 					"__identifier": "entities",
 					"__type": "Entities",
-					"__cWid": 20,
-					"__cHei": 10,
-					"__gridSize": 32,
+					"__cWid": 80,
+					"__cHei": 40,
+					"__gridSize": 8,
 					"__opacity": 1,
 					"__pxTotalOffsetX": 0,
 					"__pxTotalOffsetY": 0,
@@ -4308,9 +4413,9 @@
 				{
 					"__identifier": "entities",
 					"__type": "Entities",
-					"__cWid": 20,
-					"__cHei": 10,
-					"__gridSize": 32,
+					"__cWid": 80,
+					"__cHei": 40,
+					"__gridSize": 8,
 					"__opacity": 1,
 					"__pxTotalOffsetX": 0,
 					"__pxTotalOffsetY": 0,
@@ -4683,9 +4788,9 @@
 				{
 					"__identifier": "entities",
 					"__type": "Entities",
-					"__cWid": 20,
-					"__cHei": 10,
-					"__gridSize": 32,
+					"__cWid": 80,
+					"__cHei": 40,
+					"__gridSize": 8,
 					"__opacity": 1,
 					"__pxTotalOffsetX": 0,
 					"__pxTotalOffsetY": 0,
@@ -5064,9 +5169,9 @@
 				{
 					"__identifier": "entities",
 					"__type": "Entities",
-					"__cWid": 20,
-					"__cHei": 10,
-					"__gridSize": 32,
+					"__cWid": 80,
+					"__cHei": 40,
+					"__gridSize": 8,
 					"__opacity": 1,
 					"__pxTotalOffsetX": 0,
 					"__pxTotalOffsetY": 0,
@@ -5439,9 +5544,9 @@
 				{
 					"__identifier": "entities",
 					"__type": "Entities",
-					"__cWid": 20,
-					"__cHei": 10,
-					"__gridSize": 32,
+					"__cWid": 80,
+					"__cHei": 40,
+					"__gridSize": 8,
 					"__opacity": 1,
 					"__pxTotalOffsetX": 0,
 					"__pxTotalOffsetY": 0,
@@ -5820,9 +5925,9 @@
 				{
 					"__identifier": "entities",
 					"__type": "Entities",
-					"__cWid": 20,
-					"__cHei": 10,
-					"__gridSize": 32,
+					"__cWid": 80,
+					"__cHei": 40,
+					"__gridSize": 8,
 					"__opacity": 1,
 					"__pxTotalOffsetX": 0,
 					"__pxTotalOffsetY": 0,
@@ -6195,9 +6300,9 @@
 				{
 					"__identifier": "entities",
 					"__type": "Entities",
-					"__cWid": 20,
-					"__cHei": 10,
-					"__gridSize": 32,
+					"__cWid": 80,
+					"__cHei": 40,
+					"__gridSize": 8,
 					"__opacity": 1,
 					"__pxTotalOffsetX": 0,
 					"__pxTotalOffsetY": 0,

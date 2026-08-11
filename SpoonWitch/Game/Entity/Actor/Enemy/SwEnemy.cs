@@ -13,7 +13,7 @@ public abstract class SwEnemy: SwActor
     public override void Ready()
     {
         base.Ready();
-        IsPassive = EntProps.Props.TryGet("is_passive", out bool isPassive) && isPassive;
+        IsPassive = EntProps.Props.Get("property_overrides_json").TryGet("is_passive", out bool isPassive) && isPassive;
     }
     public bool CanSeeTarget()
     {

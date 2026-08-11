@@ -45,10 +45,16 @@ public class SwRoom
     }
     private bool TryAddEntityLayer(PriNode layerData)
     {
-        if(!layerData.Get("entityInstances").TryAs(out PriList entList)) return false;
+        var entList = layerData.Get("entityInstances");
+        if(entList is PriNull) return ErEngine.LogWarning("entity layer has no instances field");
+        // if(!layerData.TryGet("entityInstances").TryAs(out PriList entList)) return false;
         foreach (var entData in entList.Values)
         {
-            if(!SwMapObject.TryFromLdtkData(Map.TileSize, entData, out var mapObject)) return ErEngine.LogWarning("malformed map object");
+            if(!SwMapObject.TryFromLdtkData(Map.TileSize, entData, Map.Dirpath, out var mapObject))
+            {
+                ErEngine.LogWarning("malformed map object");
+                continue;
+            }
             if(mapObject.IsGlobal) Map.AddGlobalObject(mapObject);
             else AddMapObject(mapObject);
         }
@@ -91,7 +97,13 @@ public class SwRoom
         }
     }
     public void Unload(){}
-    public void Draw(){}
+    public void Draw()
+    {
+        foreach (var item in MapObjects.GetObjects())
+        {
+            item.Draw();
+        }
+    }
     public static bool TryFromData(SwMap map, PriNode data, out SwRoom room)
     {
         room = null!;

@@ -43,6 +43,10 @@ public abstract class PriNode
     public virtual IEnumerable<PriNode> Keys{get{yield break;}}
     public virtual IEnumerable<PriNode> Values{get{yield break;}}
     public virtual IEnumerable<(PriNode,PriNode)> Entries{get{yield break;}}
+    public virtual PriNode DeepCopy()
+    {
+        return this;
+    }
     public virtual bool TryAs<T>(out T value)
     {
         if(this is T val)

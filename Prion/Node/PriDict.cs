@@ -5,12 +5,16 @@ using System.Collections;
 namespace Prion.Node;
 public class PriDict: PriNode, IEnumerable
 {
-    public readonly Dictionary<string,PriNode> Data = [];
+    public readonly Dictionary<string,PriNode> Data;
     public override IEnumerable<PriNode> Keys => [..Data.Keys.Select(key => new PriString(key))];
     public override IEnumerable<PriNode> Values => Data.Values;
     public override IEnumerable<(PriNode, PriNode)> Entries => [..Data.Select(item => (new PriString(item.Key), item.Value))];
     public override int Count => Data.Count;
-    public PriDict(){}
+    // public PriDict(){}
+    public PriDict(int capacity = 0)
+    {
+        Data = new(capacity);
+    }
     public PriDict(Dictionary<string,PriNode> data)
     {
         Data = data;
@@ -28,6 +32,15 @@ public class PriDict: PriNode, IEnumerable
     public void Add(string key, PriNode value)
     {
         Data.Add(key, value);
+    }
+    public override PriNode DeepCopy()
+    {
+        PriDict copy = new(Count);
+        foreach (var (key, val) in Data)
+        {
+            copy.Add(key, val.DeepCopy());
+        }
+        return copy;
     }
     public override bool TryGet<T>(string key, out T value)
     {

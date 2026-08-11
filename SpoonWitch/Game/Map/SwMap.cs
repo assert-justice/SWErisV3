@@ -21,8 +21,10 @@ public class SwMap
     public readonly ErVec2I SectorSizeTiles;
     public readonly ErVec2I SectorSizePx;
     private readonly SwMapObjectLookup GlobalMapObjects = new();
-    public SwMap(string id = "", int numTileLayers = 0, ErVec2I? tileSize = null, ErVec2I? sectorSizePx = null)
+    public readonly string Dirpath;
+    public SwMap(string dirpath = "", string id = "", int numTileLayers = 0, ErVec2I? tileSize = null, ErVec2I? sectorSizePx = null)
     {
+        Dirpath = dirpath;
         Id = id;
         NumTileLayers = numTileLayers;
         DisplayLayers = new SwDisplayLayer[numTileLayers];
@@ -143,7 +145,7 @@ public class SwMap
             if(!layerData.Get("type").TryAs(out string layerType)) return ErEngine.LogWarning("malformed layer: ", layerData);
             if(layerType == "Tiles") numTileLayers++;
         }
-        map = new(id, numTileLayers, new(defaultGridSize,defaultGridSize), new(sectorWidthPx,sectorHeightPx));
+        map = new(Path.GetDirectoryName(filepath)!, id, numTileLayers, new(defaultGridSize,defaultGridSize), new(sectorWidthPx,sectorHeightPx));
         foreach (var tileset in tilesetList.Values)
         {
             if(!tileset.Get("identifier").TryAs(out string ident)) continue;

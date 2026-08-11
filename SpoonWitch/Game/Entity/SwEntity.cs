@@ -50,9 +50,10 @@ public abstract class SwEntity
     }
     public virtual void Ready()
     {
-        if(!EntProps.Props.TryGet("x_px", out double x)) x = 0;
-        if(!EntProps.Props.TryGet("y_px", out double y)) y = 0;
-        Position = new(x,y);
+        Position = ErVec2.FromPrion(EntProps.Props);
+        // if(!EntProps.Props.TryGet("x_px", out double x)) x = 0;
+        // if(!EntProps.Props.TryGet("y_px", out double y)) y = 0;
+        // Position = new(x,y);
     }
     public virtual void Read(SwByteStream byteStream)
     {
