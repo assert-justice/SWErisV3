@@ -4,81 +4,100 @@ internal static class PriConverter
 {
     private readonly struct PriCon
     {
-        public Type ValType{get; init;}
         public Func<object,PriNode> ToPri{get; init;}
         public Func<PriNode,object?> FromPri{get; init;}
     }
     private static readonly Dictionary<Type, PriCon> Converters;
     static PriConverter()
     {
-        PriCon[] converters = [
-            new(){
-                ValType = typeof(bool),
-                // A nested ternary in a lambda? I may have gone too far in a few places...
-                ToPri = o => o is bool b ? (b ? PriBool.True : PriBool.False) : PriNull.Null,
-                FromPri = p => p is PriBool b ? b.Value : null,
-            },
-            new(){
-                ValType = typeof(string),
-                ToPri = o => o is string s ? new PriString(s) : new PriString(o.ToString() ?? "null"),
-                FromPri = p => p is PriString s ? s.Value : null,
-            },
-            new(){
-                ValType = typeof(sbyte),
-                ToPri = o => o is sbyte val ? new PriNumber(val) : PriNull.Null,
-                FromPri = p => p is PriNumber n ? n.ToI8() : null,
-            },
-            new(){
-                ValType = typeof(short),
-                ToPri = o => o is short val ? new PriNumber(val) : PriNull.Null,
-                FromPri = p => p is PriNumber n ? n.ToI16() : null,
-            },
-            new(){
-                ValType = typeof(int),
-                ToPri = o => o is int val ? new PriNumber(val) : PriNull.Null,
-                FromPri = p => p is PriNumber n ? n.ToI32() : null,
-            },
-            new(){
-                ValType = typeof(long),
-                ToPri = o => o is long val ? new PriNumber(val) : PriNull.Null,
-                FromPri = p => p is PriNumber n ? n.ToI64() : null,
-            },
-            new(){
-                ValType = typeof(byte),
-                ToPri = o => o is byte val ? new PriNumber(val) : PriNull.Null,
-                FromPri = p => p is PriNumber n ? n.ToU8() : null,
-            },
-            new(){
-                ValType = typeof(ushort),
-                ToPri = o => o is ushort val ? new PriNumber(val) : PriNull.Null,
-                FromPri = p => p is PriNumber n ? n.ToU16() : null,
-            },
-            new(){
-                ValType = typeof(uint),
-                ToPri = o => o is uint val ? new PriNumber(val) : PriNull.Null,
-                FromPri = p => p is PriNumber n ? n.ToU32() : null,
-            },
-            new(){
-                ValType = typeof(ulong),
-                ToPri = o => o is ulong val ? new PriNumber(val) : PriNull.Null,
-                FromPri = p => p is PriNumber n ? n.ToU64() : null,
-            },
-            new(){
-                ValType = typeof(float),
-                ToPri = o => o is float val ? new PriNumber(val) : PriNull.Null,
-                FromPri = p => p is PriNumber n ? n.ToF32() : null,
-            },
-            new(){
-                ValType = typeof(double),
-                ToPri = o => o is double val ? new PriNumber(val) : PriNull.Null,
-                FromPri = p => p is PriNumber n ? n.ToF64() : null,
-            },
-        ];
-        Converters = new(converters.Length);
-        foreach (var item in converters)
+        Converters = new()
         {
-            Converters.Add(item.ValType, item);
-        }
+            {
+                typeof(bool),
+                new(){
+                    // A nested ternary in a lambda? I may have gone too far in a few places...
+                    ToPri = o => o is bool b ? (b ? PriBool.True : PriBool.False) : PriNull.Null,
+                    FromPri = p => p is PriBool b ? b.Value : null,
+                }
+            },
+            {
+                typeof(string),
+                new(){
+                    ToPri = o => o is string s ? new PriString(s) : new PriString(o.ToString() ?? "null"),
+                    FromPri = p => p is PriString s ? s.Value : null,
+                }
+            },
+            {
+                typeof(sbyte),
+                new(){
+                    ToPri = o => o is sbyte val ? new PriNumber(val) : PriNull.Null,
+                    FromPri = p => p is PriNumber n ? n.ToI8() : null,
+                }
+            },
+            {
+                typeof(short),
+                new(){
+                    ToPri = o => o is short val ? new PriNumber(val) : PriNull.Null,
+                    FromPri = p => p is PriNumber n ? n.ToI16() : null,
+                }
+            },
+            {
+                typeof(int),
+                new(){
+                    ToPri = o => o is int val ? new PriNumber(val) : PriNull.Null,
+                    FromPri = p => p is PriNumber n ? n.ToI32() : null,
+                }
+            },
+            {
+                typeof(long),
+                new(){
+                    ToPri = o => o is long val ? new PriNumber(val) : PriNull.Null,
+                    FromPri = p => p is PriNumber n ? n.ToI64() : null,
+                }
+            },
+            {
+                typeof(byte),
+                new(){
+                    ToPri = o => o is byte val ? new PriNumber(val) : PriNull.Null,
+                    FromPri = p => p is PriNumber n ? n.ToU8() : null,
+                }
+            },
+            {
+                typeof(ushort),
+                new(){
+                    ToPri = o => o is ushort val ? new PriNumber(val) : PriNull.Null,
+                    FromPri = p => p is PriNumber n ? n.ToU16() : null,
+                }
+            },
+            {
+                typeof(uint),
+                new(){
+                    ToPri = o => o is uint val ? new PriNumber(val) : PriNull.Null,
+                    FromPri = p => p is PriNumber n ? n.ToU32() : null,
+                }
+            },
+            {
+                typeof(ulong),
+                new(){
+                    ToPri = o => o is ulong val ? new PriNumber(val) : PriNull.Null,
+                    FromPri = p => p is PriNumber n ? n.ToU64() : null,
+                }
+            },
+            {
+                typeof(float),
+                new(){
+                    ToPri = o => o is float val ? new PriNumber(val) : PriNull.Null,
+                    FromPri = p => p is PriNumber n ? n.ToF32() : null,
+                }
+            },
+            {
+                typeof(double),
+                new(){
+                    ToPri = o => o is double val ? new PriNumber(val) : PriNull.Null,
+                    FromPri = p => p is PriNumber n ? n.ToF64() : null,
+                }
+            },
+        };
     }
     public static bool TryToPri<T>(T value, out PriNode priNode)
     {

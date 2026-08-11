@@ -70,7 +70,6 @@ public abstract class SwMapObject
     public virtual void Unload(){}
     private static bool TryLdtkToInternal(ErVec2I tileSize, PriNode ldtkData, out PriNode data)
     {
-        data = new PriDict();
         if(!ldtkData.Get("iid").TryAs(out string id)) throw new("no id");
         if(!ldtkData.Get("__identifier").TryAs(out string type)) throw new("no type");
         if(!ldtkData.Get("__worldX").TryAs(out int xPx)) throw new("no world x");
@@ -92,16 +91,17 @@ public abstract class SwMapObject
             }
             fields.TrySet(key, value);
         }
-        data.TrySet("id", new PriString(id));
-        data.TrySet("type", new PriString(type));
-        data.TrySet("x_px", new PriNumber(xPx));
-        data.TrySet("y_px", new PriNumber(yPx));
-        data.TrySet("width_px", new PriNumber(widthPx));
-        data.TrySet("height_px", new PriNumber(heightPx));
-        data.TrySet("x_t", new PriNumber(xPx/tileSize.X));
-        data.TrySet("y_t", new PriNumber(yPx/tileSize.Y));
-        data.TrySet("width_t", new PriNumber(widthPx/tileSize.X));
-        data.TrySet("height_t", new PriNumber(heightPx/tileSize.Y));
+        data = new PriDict();
+        data.TrySet("id", id);
+        data.TrySet("type", type);
+        data.TrySet("x_px", xPx);
+        data.TrySet("y_px", yPx);
+        data.TrySet("width_px", widthPx);
+        data.TrySet("height_px", heightPx);
+        data.TrySet("x_t", xPx/tileSize.X);
+        data.TrySet("y_t", yPx/tileSize.Y);
+        data.TrySet("width_t", widthPx/tileSize.X);
+        data.TrySet("height_t", heightPx/tileSize.Y);
         data.TrySet("fields", fields);
         return true;
     }

@@ -1,7 +1,9 @@
 // using Prion.Node.Converter;
 
+using System.Collections;
+
 namespace Prion.Node;
-public class PriDict: PriNode
+public class PriDict: PriNode, IEnumerable
 {
     public readonly Dictionary<string,PriNode> Data = [];
     public override IEnumerable<PriNode> Keys => [..Data.Keys.Select(key => new PriString(key))];
@@ -13,8 +15,20 @@ public class PriDict: PriNode
     {
         Data = data;
     }
+    public PriDict(IEnumerable<KeyValuePair<string, PriNode>> keyValuePairs)
+    {
+        Data = new(keyValuePairs);
+    }
+    public PriDict(IEnumerable<(string, PriNode)> keyValuePairs)
+    {
+        Data = new(keyValuePairs.Select(pair => new KeyValuePair<string, PriNode>(pair.Item1, pair.Item2)));
+    }
     public override PriNodeKind Kind => PriNodeKind.Dict;
     public override bool IsImmutable => false;
+    public void Add(string key, PriNode value)
+    {
+        Data.Add(key, value);
+    }
     public override bool TryGet<T>(string key, out T value)
     {
         value = default!;
@@ -34,13 +48,6 @@ public class PriDict: PriNode
     {
         return TrySet(index.ToString(), node);
     }
-    // public override IEnumerable<(string, PriNode)> GetEntries()
-    // {
-    //     foreach (var (key,value) in Data)
-    //     {
-    //         yield return(key, value);
-    //     }
-    // }
     public override string ToString()
     {
         var sb = SbPool.Get();
@@ -54,5 +61,10 @@ public class PriDict: PriNode
         }
         sb.Append('}');
         return SbPool.Free(sb);
+    }
+
+    public IEnumerator GetEnumerator()
+    {
+        return (IEnumerator)Data;
     }
 }
