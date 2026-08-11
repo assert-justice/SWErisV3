@@ -123,7 +123,7 @@ public class SwSprite(string name)
         SwAnimationState.Advance(ref NextAnimationState, SwGame.FrameDuration, CurrentAnimation.NumFrames);
         if(!CurrentAnimation.TryGetFrame(out var frame, NextAnimationState.FrameIdx))
         {
-            ErEngine.LogWarning("bad frame idx ", NextAnimationState.FrameIdx, " for anim ", CurrentAnimation.Name);
+            ErEngine.LogError("bad frame idx ", NextAnimationState.FrameIdx, " for anim ", CurrentAnimation.Name);
             return;
         }
         ErVec2 origin = Centered ? frame.SourceRect.Size * 0.5 : ErVec2.Zero;
@@ -147,12 +147,17 @@ public class SwSprite(string name)
         byteStream.WriteVec2(Offset);
         byteStream.WriteByte((byte)Flags);
     }
+    // private static bool TryGetPallet(out nint palletHandle, PriNode priNode)
+    // {
+    //     palletHandle = 0;
+    //     return true;
+    // }
     public static bool TryFromData(out SwSprite sprite, string name, string dirpath, PriNode priNode)
     {
         sprite = default!;
         if(!priNode.TryGet("animations", out PriDict dict)) return ErEngine.LogWarning("no animations");
         if(!priNode.TryGet("visible", out bool visible)) visible = true;
-        var size = ErVec2.FromPrion(priNode, "width", "height", new(64,64));
+        // var size = ErVec2.FromPrion(priNode, "width", "height", new(64,64));
         var offset = ErVec2.FromPrion(priNode, "offset_x", "offset_y");
         if(!priNode.TryGet("centered", out bool centered)) centered = true;
         sprite = new(name)
@@ -161,9 +166,9 @@ public class SwSprite(string name)
             Offset = offset,
             Centered = centered,
         };
-        foreach (var (animName,node) in dict.Data)
+        foreach (var animName in dict.Data.Keys)
         {
-            if(!SwAnimation.TryFromPri(out var animation, animName, dirpath, size, node)) ErEngine.LogWarning("bad animation '", animName, "'");
+            if(!SwAnimation.TryFromPri(out var animation, animName, dirpath, priNode)) ErEngine.LogWarning("bad animation '", animName, "'");
             else sprite.AddAnimation(animation);
         }
         return true;

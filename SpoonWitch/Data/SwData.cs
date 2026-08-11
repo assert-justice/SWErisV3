@@ -16,8 +16,27 @@ public static class SwData
     public static readonly PriDb Settings = new();
     public static readonly PriDb SaveData = new();
     public static readonly PriDb Manifest = new();
+    private static readonly List<nint> PalletLookup = [];
     public static bool TryInit()
     {
+        return true;
+    }
+    public static int PaletteCount => PalletLookup.Count;
+    public static bool TryGetPallet(out nint palletHandle, int palletIdx)
+    {
+        palletHandle = default;
+        // Note, a pallet index of 0 is the default pallet, so valid pallet indicies start at 1
+        // We decrement the pallet index to get it back in range
+        palletIdx--;
+        if(palletIdx < 0 || palletIdx >= PalletLookup.Count) return false;
+        palletHandle = PalletLookup[palletIdx];
+        return true;
+    }
+    public static bool TryGetPalletTexture(out ErTexture texture, string filepath, int palletIdx)
+    {
+        texture = default!;
+        if(!TryGetPallet(out nint palletHandle, palletIdx)) return ErEngine.LogError("invalid pallet id ", palletIdx);
+        if(!ErTexture.TryFromPath(filepath, palletHandle, out texture)) return ErEngine.LogError("failed to get palleted texture at filepath ", filepath);
         return true;
     }
     public static bool TryLoadPrion(string filepath, out PriNode priNode)

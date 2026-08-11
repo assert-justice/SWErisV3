@@ -64,13 +64,13 @@ public class SwTileData
         mask = TileMasks[GetMaskIdx(x%ATLAS_WIDTH, y%ATLAS_HEIGHT)];
         return mask != SwTileMask.None;
     }
-    private static bool IsSurfaceRectEmpty(nint surface, ErRect2I rect)
+    private static bool IsSurfaceRectEmpty(nint surfaceHandle, ErRect2I rect)
     {
         for (int x = rect.Position.X; x < rect.Position.X + rect.Size.X; x++)
         {
             for (int y = rect.Position.Y; y < rect.Position.Y + rect.Size.Y; y++)
             {
-                SDL.ReadSurfacePixel(surface, x, y, out _, out _, out _, out byte a);
+                SDL.ReadSurfacePixel(surfaceHandle, x, y, out _, out _, out _, out byte a);
                 if(a != 0) return false;
             }
         }
@@ -82,8 +82,8 @@ public class SwTileData
         if(!priNode.Get("source").TryAs(out string texPath)) throw new("no source field provided");
         string? dirpath = Path.GetDirectoryName(filepath);
         texPath = Path.Join(dirpath, texPath);
-        if(!ErEngine.Renderer.TryGetSurface(texPath, out nint surface)) throw new("source path invalid");
-        if(!ErTexture.TryFromPath(texPath, out Texture)) throw new("source path invalid2");
+        // if(!ErEngine.Renderer.TryGetSurface(texPath, out nint surface)) throw new("source path invalid");
+        if(!ErTexture.TryFromPath(texPath, out Texture, out nint surfaceHandle)) throw new("source path invalid2");
         IsSolid = priNode.TryGet("is_solid", out bool is_solid) && is_solid;
         IsOpaque = priNode.TryGet("is_opaque", out bool is_opaque) && is_opaque;
         MoveSpeedMul = priNode.TryGet("move_speed_mul", out double mul) ? mul : 1;
@@ -113,7 +113,7 @@ public class SwTileData
                         int x = (xi + varIdx * ATLAS_WIDTH) * tileSize.X;
                         int y = (yi + yf) * tileSize.Y;
                         ErRect2I rect = new(x, y, tileSize.X, tileSize.Y);
-                        if(IsSurfaceRectEmpty(surface, rect)) continue;
+                        if(IsSurfaceRectEmpty(surfaceHandle, rect)) continue;
                         variants.Add((ErRect2)rect);
                     }
                     frame[(int)mask] = [..variants];

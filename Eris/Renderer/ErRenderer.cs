@@ -121,8 +121,4 @@ public class ErRenderer
         SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, color.A);
         SDL.RenderLine(Handle, (float)start.X, (float)start.Y, (float)end.X, (float)end.Y);
     }
-    public bool TryGetSurface(string filepath, out nint surfaceHandle)
-    {
-        return TextureManager.TryGetSurface(filepath, out surfaceHandle);
-    }
 }

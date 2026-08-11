@@ -3,13 +3,15 @@ using SDL3;
 
 namespace Eris.Renderer;
 
-public readonly struct ErTexture
+public class ErTexture
 {
     public readonly nint Handle;
     public readonly ErVec2 Size;
-    private ErTexture(nint handle)
+    public readonly string? Filepath;
+    private ErTexture(nint handle, string? filepath = null)
     {
         Handle = handle;
+        Filepath = filepath;
         SDL.GetTextureSize(Handle, out float w, out float h);
         Size = new(w, h);
     }
@@ -52,7 +54,7 @@ public readonly struct ErTexture
         texture = default!;
         if(ErEngine.Renderer is null) return false;
         if(!ErEngine.Renderer.TextureManager.TryGetTexture(filepath, out nint handle)) return false;
-        texture = new(handle);
+        texture = new(handle, filepath);
         return true;
     }
     public static bool TryFromPath(string filepath, out ErTexture texture, out nint surfaceHandle)
@@ -61,7 +63,7 @@ public readonly struct ErTexture
         surfaceHandle = default;
         if(ErEngine.Renderer is null) return false;
         if(!ErEngine.Renderer.TextureManager.TryGetTexture(filepath, out nint textureHandle, out surfaceHandle)) return false;
-        texture = new(textureHandle);
+        texture = new(textureHandle, filepath);
         return true;
     }
     public static bool TryFromPath(string filepath, nint paletteHandle, out ErTexture texture)
@@ -69,7 +71,7 @@ public readonly struct ErTexture
         texture = default!;
         if(ErEngine.Renderer is null) return false;
         if(!ErEngine.Renderer.TextureManager.TryGetTextureWithPalette(filepath, paletteHandle, out nint handle)) return false;
-        texture = new(handle);
+        texture = new(handle, filepath);
         return true;
     }
     public void Cleanup()
