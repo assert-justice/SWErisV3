@@ -6,7 +6,7 @@ namespace SpoonWitch.ByteStream;
 public class SwByteStream
 {
     private readonly List<byte> Data = [];
-    private readonly byte[] Bytes = new byte[8];
+    private readonly byte[] Bytes = new byte[sizeof(double) * 4];
     public int Head{get; private set;}
     public int Length{get; private set;}
     public void SetHead(int head){Head = head;}
@@ -108,6 +108,18 @@ public class SwByteStream
             WriteBytesUnchecked(BitConverter.GetBytes(item));
         }
     }
+    public void WriteI64(long value)
+    {
+        WriteBytes(BitConverter.GetBytes(value));
+    }
+    public void WriteI64s(in long[] value)
+    {
+        Reserve(sizeof(long) * value.Length);
+        foreach (var item in value)
+        {
+            WriteBytesUnchecked(BitConverter.GetBytes(item));
+        }
+    }
     public void WriteVec2I(ErVec2I value)
     {
         Reserve(sizeof(int) * 2);
@@ -169,25 +181,25 @@ public class SwByteStream
             WriteBytesUnchecked(BitConverter.GetBytes(value[idx].Y));
         }
     }
-    // public void WriteRect2(ErRect2 value)
-    // {
-    //     Reserve(sizeof(double) * 4);
-    //     WriteBytesUnchecked(BitConverter.GetBytes(value.Position.X));
-    //     WriteBytesUnchecked(BitConverter.GetBytes(value.Position.Y));
-    //     WriteBytesUnchecked(BitConverter.GetBytes(value.Size.X));
-    //     WriteBytesUnchecked(BitConverter.GetBytes(value.Size.Y));
-    // }
-    // public void WriteRect2s(ErRect2[] value)
-    // {
-    //     Reserve(sizeof(double) * 4 * value.Length);
-    //     for (int idx = 0; idx < value.Length; idx++)
-    //     {
-    //         WriteBytesUnchecked(BitConverter.GetBytes(value[idx].Position.X));
-    //         WriteBytesUnchecked(BitConverter.GetBytes(value[idx].Position.Y));
-    //         WriteBytesUnchecked(BitConverter.GetBytes(value[idx].Size.X));
-    //         WriteBytesUnchecked(BitConverter.GetBytes(value[idx].Size.Y));        
-    //     }
-    // }
+    public void WriteRect2(ErRect2 value)
+    {
+        Reserve(sizeof(double) * 4);
+        WriteBytesUnchecked(BitConverter.GetBytes(value.Position.X));
+        WriteBytesUnchecked(BitConverter.GetBytes(value.Position.Y));
+        WriteBytesUnchecked(BitConverter.GetBytes(value.Size.X));
+        WriteBytesUnchecked(BitConverter.GetBytes(value.Size.Y));
+    }
+    public void WriteRect2s(ErRect2[] value)
+    {
+        Reserve(sizeof(double) * 4 * value.Length);
+        for (int idx = 0; idx < value.Length; idx++)
+        {
+            WriteBytesUnchecked(BitConverter.GetBytes(value[idx].Position.X));
+            WriteBytesUnchecked(BitConverter.GetBytes(value[idx].Position.Y));
+            WriteBytesUnchecked(BitConverter.GetBytes(value[idx].Size.X));
+            WriteBytesUnchecked(BitConverter.GetBytes(value[idx].Size.Y));        
+        }
+    }
     public bool TryPeekByte(out byte value)
     {
         value = default;
@@ -257,8 +269,25 @@ public class SwByteStream
         }
         return true;
     }
-    public bool TryReadVec2I(ref ErVec2I value)
+    public bool TryReadI64(out long value)
     {
+        value = default;
+        if(!TryReadBytes(sizeof(long), out var bytes)) return false;
+        value = BitConverter.ToInt64(bytes);
+        return true;
+    }
+    public bool TryReadU64s(in long[] value)
+    {
+        if(!HasRemaining(sizeof(long) * value.Length)) return false;
+        for (int idx = 0; idx < value.Length; idx++)
+        {
+            value[idx] = BitConverter.ToInt64(ReadBytesUnchecked(sizeof(long)));
+        }
+        return true;
+    }
+    public bool TryReadVec2I(out ErVec2I value)
+    {
+        value = default;
         if(!HasRemaining(sizeof(int) * 2)) return false;
         int x = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
         int y = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
@@ -276,29 +305,30 @@ public class SwByteStream
         }
         return true;
     }
-    // public bool TryReadRect2I(ref ErRect2I value)
-    // {
-    //     if(!HasRemaining(sizeof(int) * 4)) return false;
-    //     int px = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
-    //     int py = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
-    //     int sx = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
-    //     int sy = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
-    //     value = new(px,py,sx,sy);
-    //     return true;
-    // }
-    // public bool TryReadRect2Is(ref ErRect2I[] value)
-    // {
-    //     if(!HasRemaining(sizeof(int) * 4 * value.Length)) return false;
-    //     for (int idx = 0; idx < value.Length; idx++)
-    //     {
-    //         int px = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
-    //         int py = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
-    //         int sx = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
-    //         int sy = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
-    //         value[idx] = new(px,py,sx,sy);
-    //     }
-    //     return true;
-    // }
+    public bool TryReadRect2I(out ErRect2I value)
+    {
+        value = default;
+        if(!HasRemaining(sizeof(int) * 4)) return false;
+        int px = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
+        int py = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
+        int sx = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
+        int sy = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
+        value = new(px,py,sx,sy);
+        return true;
+    }
+    public bool TryReadRect2Is(ref ErRect2I[] value)
+    {
+        if(!HasRemaining(sizeof(int) * 4 * value.Length)) return false;
+        for (int idx = 0; idx < value.Length; idx++)
+        {
+            int px = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
+            int py = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
+            int sx = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
+            int sy = BitConverter.ToInt32(ReadBytesUnchecked(sizeof(int)));
+            value[idx] = new(px,py,sx,sy);
+        }
+        return true;
+    }
     public bool TryReadF64(out double value)
     {
         value = default;
@@ -335,28 +365,28 @@ public class SwByteStream
         }
         return true;
     }
-    // public bool TryReadRect2I(out ErRect2 value)
-    // {
-    //     value = default;
-    //     if(!HasRemaining(sizeof(double) * 4)) return false;
-    //     double px = BitConverter.ToDouble(ReadBytesUnchecked(sizeof(double)));
-    //     double py = BitConverter.ToDouble(ReadBytesUnchecked(sizeof(double)));
-    //     double sx = BitConverter.ToDouble(ReadBytesUnchecked(sizeof(double)));
-    //     double sy = BitConverter.ToDouble(ReadBytesUnchecked(sizeof(double)));
-    //     value = new(px,py,sx,sy);
-    //     return true;
-    // }
-    // public bool TryReadRect2Is(ref ErRect2[] value)
-    // {
-    //     if(!HasRemaining(sizeof(double) * 4 * value.Length)) return false;
-    //     for (int idx = 0; idx < value.Length; idx++)
-    //     {
-    //         double px = BitConverter.ToDouble(ReadBytesUnchecked(sizeof(double)));
-    //         double py = BitConverter.ToDouble(ReadBytesUnchecked(sizeof(double)));
-    //         double sx = BitConverter.ToDouble(ReadBytesUnchecked(sizeof(double)));
-    //         double sy = BitConverter.ToDouble(ReadBytesUnchecked(sizeof(double)));
-    //         value[idx] = new(px,py,sx,sy);
-    //     }
-    //     return true;
-    // }
+    public bool TryReadRect2(out ErRect2 value)
+    {
+        value = default;
+        if(!HasRemaining(sizeof(double) * 4)) return false;
+        double px = BitConverter.ToDouble(ReadBytesUnchecked(sizeof(double)));
+        double py = BitConverter.ToDouble(ReadBytesUnchecked(sizeof(double)));
+        double sx = BitConverter.ToDouble(ReadBytesUnchecked(sizeof(double)));
+        double sy = BitConverter.ToDouble(ReadBytesUnchecked(sizeof(double)));
+        value = new(px,py,sx,sy);
+        return true;
+    }
+    public bool TryReadRect2s(ref ErRect2[] value)
+    {
+        if(!HasRemaining(sizeof(double) * 4 * value.Length)) return false;
+        for (int idx = 0; idx < value.Length; idx++)
+        {
+            double px = BitConverter.ToDouble(ReadBytesUnchecked(sizeof(double)));
+            double py = BitConverter.ToDouble(ReadBytesUnchecked(sizeof(double)));
+            double sx = BitConverter.ToDouble(ReadBytesUnchecked(sizeof(double)));
+            double sy = BitConverter.ToDouble(ReadBytesUnchecked(sizeof(double)));
+            value[idx] = new(px,py,sx,sy);
+        }
+        return true;
+    }
 }
