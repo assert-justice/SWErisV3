@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using Eris;
+using Eris.Renderer;
 using ErisMath;
 using ErisPhysics2D;
 using Prion.Node;
@@ -41,7 +42,28 @@ public class SwMap
         // CollisionLayer = new(this);
         TileData = tileData ?? [];
         uint[] tileMaskLookup = [..TileData.Select(t => t.CollisionMask)];
-        PhysicsWorld = new(new(8,8), TileSize, 0, tileMaskLookup);
+        static void debugDrawRect(ErRect2 rect, bool overlap, uint mask)
+        {
+            if(mask == 0) return;
+            ErEngine.Renderer.DebugDrawRect(overlap ? ErColor.Red : ErColor.Blue, rect, false);
+        }
+        static void debugDrawLine(ErVec2 start, ErVec2 end, bool overlap, uint mask)
+        {
+            if(mask == 0) return;
+            ErEngine.Renderer.DebugDrawLine(overlap ? ErColor.Red : ErColor.Blue, start, end);
+        }
+        PhysicsWorld = new(new(8, 8), TileSize, 0, tileMaskLookup)
+        {
+            DebugDrawRect = debugDrawRect,
+            DebugDrawLine = debugDrawLine,
+        };
+        SwColliderArea area = new()
+        {
+            Size = new(32, 32),
+            Position = new(128, 128),
+            Mask = uint.MaxValue,
+        };
+        PhysicsWorld.SetArea(0, area);
     }
     public void AddGlobalObject(SwMapObject mapObject)
     {
@@ -91,6 +113,7 @@ public class SwMap
         //     CollisionLayer.DebugDraw();
         // }
     }
+    public void DebugDraw(){}
     public bool TryGetDefaultCheckpoint(out SwMapCheckpoint checkpoint)
     {
         checkpoint = null!;

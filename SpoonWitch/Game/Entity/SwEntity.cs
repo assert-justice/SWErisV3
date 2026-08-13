@@ -92,6 +92,7 @@ public abstract class SwEntity
         // write current head index as last head index
         // Note: if it is negative, that means there is no valid last head index. this is relevant for drawing.
         byteStream.WriteI32(_CurrentHeadIndex);
+        Body.ParentId = Id;
         Body.Position = Position;
         Body.Velocity = Velocity;
         Body.Mask = Mask;

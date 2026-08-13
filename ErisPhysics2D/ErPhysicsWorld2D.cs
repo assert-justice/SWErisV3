@@ -82,6 +82,8 @@ public partial class ErPhysicsWorld2D
     public readonly ErVec2I CellSizeTiles;
     public readonly ErVec2I CellSizePx;
     public readonly int DefaultTileIdx;
+    public Action<ErRect2,bool,uint>? DebugDrawRect;
+    public Action<ErVec2,ErVec2,bool,uint>? DebugDrawLine;
     public ErPhysicsWorld2D(ErVec2I cellSizeTiles, ErVec2I tileSizePx, int defaultTileIdx, uint[] tileMaskLookup)
     {
         TileSizePx = tileSizePx;
@@ -348,21 +350,57 @@ public partial class ErPhysicsWorld2D
     }
     public bool Raycast(uint mask, ErVec2 start, ErVec2 end)
     {
-        // if (SwApp.Debug)
-        // {
-        //     DebugLineDrawQueue.Enqueue((new(start, end - start), ErColor.Blue));
-        //     foreach (var coord in GetLine(start, end))
-        //     {
-        //         DebugRectDrawQueue.Enqueue((GetTileRect(coord), ErColor.Blue));
-        //     }
-        // }
         foreach (var coord in GetLine(start, end))
         {
             int tileId = GetTile(coord);
             uint tileMask = TileMaskLookup[tileId];
             if((mask & tileMask) != 0) return true;
-            // DebugRectDrawQueue.Enqueue((GetTileRect(cell), ErColor.Blue));
         }
         return false;
+    }
+    public bool RaycastDebug(uint mask, ErVec2 start, ErVec2 end)
+    {
+        bool res = Raycast(mask, start, end);
+        if(DebugDrawLine is not null) DebugDrawLine(start, end, res, mask);
+        if(DebugDrawRect is null) return res;
+        foreach (var coord in GetLine(start, end))
+        {
+            DebugDrawRect(GetTileRect(coord), res, mask);
+        }
+        return res;
+    }
+    public void DebugDrawTiles()
+    {
+        if(DebugDrawRect is null) return;
+        foreach (var cell in Cells.Values)
+        {
+            for (int xi = 0; xi < CellSizeTiles.X; xi++)
+            {
+                for (int yi = 0; yi < CellSizeTiles.Y; yi++)
+                {
+                    var coord = new ErVec2I(xi,yi) + cell.CoordTiles;
+                    int tileId = cell.GetTileId(coord);
+                    var rect = GetTileRect(coord);
+                    DebugDrawRect(rect, false, TileMaskLookup[tileId]);
+                }
+            }
+        }
+    }
+    public void DebugDrawBodies()
+    {
+        if(DebugDrawRect is null) return;
+        foreach (var item in BodyLookup.Lookup.Values)
+        {
+            // Console.WriteLine($"{item.Rect} {item.Rect.Centered(item.Rect.Position)}");
+            DebugDrawRect(item.Rect.Centered(), false, item.Mask);
+        }
+    }
+    public void DebugDrawAreas()
+    {
+        if(DebugDrawRect is null) return;
+        foreach (var item in AreaLookup.Lookup.Values)
+        {
+            DebugDrawRect(item.Rect.Centered(), item.OverlappingCount > 0, item.Mask);
+        }
     }
 }

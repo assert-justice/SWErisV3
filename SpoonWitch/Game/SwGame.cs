@@ -25,7 +25,7 @@ public class SwGame
     public static double GameSpeed => 1;
     private static readonly SwEntPropsLookup PropsLookup = new();
     public static SwMap Map{get; private set;} = new();
-    private static readonly Queue<SwMove> MoveQueue = [];
+    // private static readonly Queue<SwMove> MoveQueue = [];
     private readonly Dictionary<byte, (SwEntity,SwEntity)> Prototypes = [];
     private SwByteStream LastStream = new();
     private SwByteStream NextStream = new();
@@ -45,13 +45,13 @@ public class SwGame
     {
         return Map;
     }
-    private readonly struct SwMove
-    {
-        public int Id{get; init;}
-        public uint Mask{get; init;}
-        public ErVec2 Size{get; init;}
-        public int Head{get; init;}
-    }
+    // private readonly struct SwMove
+    // {
+    //     public int Id{get; init;}
+    //     public uint Mask{get; init;}
+    //     public ErVec2 Size{get; init;}
+    //     public int Head{get; init;}
+    // }
     public SwGame()
     {
         if(!SwHud.TryLoad(ErVec2.Zero, out Hud))
@@ -165,6 +165,14 @@ public class SwGame
     private void DrawScene()
     {
         Map.Draw();
+        if (SwApp.Debug)
+        {
+            // ErEngine.Log("here");
+            Map.PhysicsWorld.DebugDrawTiles();
+            Map.PhysicsWorld.DebugDrawBodies();
+            Map.PhysicsWorld.DebugDrawAreas();
+            ErEngine.Renderer.FlushDebug();
+        }
         LastStream.Reset();
         NextStream.Reset();
         while(NextStream.BytesRemaining() > 0)

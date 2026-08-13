@@ -62,11 +62,15 @@ public readonly struct ErRect2
     {
         return new(Position + vector, Size);
     }
+    public ErRect2 Centered()
+    {
+        return Centered(Position, Size);
+    }
     public ErRect2 Centered(ErVec2 center)
     {
         return Centered(center, Size);
-        // return new(center - rect.Size * 0.5, rect.Size);
     }
+
     public ErVec2 Clamp(ErVec2 vec)
     {
         double x = Math.Clamp(vec.X,Left,Right);

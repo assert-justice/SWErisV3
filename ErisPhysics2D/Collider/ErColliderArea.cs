@@ -4,6 +4,7 @@ public abstract class ErColliderArea: ErCollider
 {
     private readonly HashSet<int> OverlappingBodyIds = [];
     private readonly List<int> BodyIds = [];
+    public int OverlappingCount => OverlappingBodyIds.Count;
     internal void ClearBodies()
     {
         OverlappingBodyIds.Clear();
