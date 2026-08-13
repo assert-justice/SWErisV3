@@ -3,6 +3,7 @@ using Eris.Renderer;
 using ErisMath;
 using Prion.Node;
 using SpoonWitch.Data;
+using SpoonWitch.Utils;
 
 namespace SpoonWitch.Rendering;
 
@@ -29,7 +30,7 @@ public readonly struct SwAnimation(string name, SwFrame[] frames, ErVec2 size, S
     {
         animation = default;
         if(!spriteData.Get("animations").TryGet(name, out PriDict animData)) return ErEngine.LogWarning(name, " animation does not exist");
-        var defaultSize = ErVec2.FromPrion(spriteData, "width", "height", DefaultSize);
+        var defaultSize = SwPrion.GetVec2(spriteData, "width", "height", DefaultSize);
         // if(!TryGetTexture(out var texture, spriteData, animData, name, dirpath)) return ErEngine.LogWarning(name, " animation could not ");
         if(!animData.TryGet("texture", out string textureFilepath)) return ErEngine.LogWarning(name, " anim is missing texture field");
         textureFilepath = Path.Join(dirpath, textureFilepath);

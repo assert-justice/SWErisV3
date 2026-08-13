@@ -1,11 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
-using Prion.Node;
-using Prion.Validator;
 using SDL3;
 
 namespace ErisMath;
 
-public readonly struct ErVec2: IPriSchema<ErVec2>
+public readonly struct ErVec2: IEquatable<ErVec2>
 {
     public double X{get; init;}
     public double Y{get; init;}
@@ -80,9 +78,13 @@ public readonly struct ErVec2: IPriSchema<ErVec2>
     {
         return new(){X = (float)X, Y = (float)Y};
     }
+    private bool IsEqual(ErVec2 other)
+    {
+        return X == other.X && Y == other.Y;
+    }
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
-        return obj is ErVec2I vec && X == vec.X && Y == vec.Y;
+        return obj is ErVec2 vec && IsEqual(vec);
     }
     public override string ToString()
     {
@@ -92,32 +94,8 @@ public readonly struct ErVec2: IPriSchema<ErVec2>
     {
         return ToString().GetHashCode();
     }
-
-    public static bool TryFromPrion(PriNode priNode, out ErVec2 value)
+    public bool Equals(ErVec2 other)
     {
-        return TryFromPrion(out value, priNode);
-    }
-    public static bool TryFromPrion(out ErVec2 value, PriNode priNode, string xName = "x", string yName = "y")
-    {
-        value = default;
-        if(!priNode.TryGet(xName, out double x)) return false;
-        if(!priNode.TryGet(yName, out double y)) return false;
-        value = new(x,y);
-        return true;
-    }
-    public static ErVec2 FromPrion(PriNode priNode, string xName = "x", string yName = "y", ErVec2? defaultVec = null)
-    {
-        var def = defaultVec ?? Zero;
-        if(!priNode.TryGet(xName, out double x)) x = def.X;
-        if(!priNode.TryGet(yName, out double y)) y = def.Y;
-        return new(x,y);
-    }
-
-    public PriNode ToPrion()
-    {
-        PriDict dict = new();
-        dict.TrySet("x",new PriNumber(X));
-        dict.TrySet("y",new PriNumber(Y));
-        return dict;
+        return IsEqual(other);
     }
 }

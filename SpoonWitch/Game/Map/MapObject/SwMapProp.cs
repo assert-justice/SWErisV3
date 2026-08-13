@@ -3,6 +3,7 @@ using Eris.Renderer;
 using ErisMath;
 using Prion.Node;
 using SpoonWitch.Rendering;
+using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Map.MapObject;
 
@@ -17,7 +18,7 @@ public class SwMapProp : SwMapObject
         Sprite = new("sprite_" + Id);
 
         var properties = Fields.Get("properties_json");
-        ErVec2 tileSize = ErVec2.FromPrion(properties, "tile_width", "tile_height", texture.Size);
+        ErVec2 tileSize = SwPrion.GetVec2(properties, "tile_width", "tile_height", texture.Size);
         if(!properties.TryGet("randomize", out bool randomize)) randomize = false;
         SwAnimation animation = new("default", [..SwFrame.GetAllFrames(new(texture), tileSize)],tileSize,default);
         Sprite.AddAnimation(animation);

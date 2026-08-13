@@ -11,6 +11,7 @@ using SpoonWitch.Game.Entity.Actor.Enemy.Knight;
 using SpoonWitch.Game.Entity.Actor.Enemy.Slume;
 using SpoonWitch.Game.Entity.Actor.Player;
 using SpoonWitch.Game.Map;
+using SpoonWitch.Game.Map.Collision;
 using SpoonWitch.UI.Hud;
 
 namespace SpoonWitch.Game;
@@ -23,7 +24,7 @@ public class SwGame
     public static double FrameWeight{get; private set;}
     public static double GameSpeed => 1;
     private static readonly SwEntPropsLookup PropsLookup = new();
-    private static SwMap Map = new();
+    public static SwMap Map{get; private set;} = new();
     private static readonly Queue<SwMove> MoveQueue = [];
     private readonly Dictionary<byte, (SwEntity,SwEntity)> Prototypes = [];
     private SwByteStream LastStream = new();
@@ -34,8 +35,7 @@ public class SwGame
     private readonly SwHud Hud;
     public static readonly SwCamera Camera = new();
     public static ErVec2 PlayerPos{get; private set;} = new(32,32);
-    private static readonly Queue<Action> QueuedActions = [];
-    private static readonly Queue<(uint,ErRect2,PriNode)> QueuedCommandRect = [];
+    public static SwGame Game{get; private set;} = null!;
     public static void SetPlayerPos(ErVec2 position)
     {
         PlayerPos = position;
@@ -60,30 +60,17 @@ public class SwGame
             return;
         }
         Camera.DrawFn = DrawScene;
-    }
-    public static void EnqueueAction(Action action)
-    {
-        QueuedActions.Enqueue(action);
-    }
-    public static void EnqueueCommandRect(uint mask, ErRect2 rect, PriNode command)
-    {
-        QueuedCommandRect.Enqueue((mask,rect,command));
+        Game = this;
     }
     public static bool TryGetEntProps(int id, out SwEntPropsBase entProps)
     {
         return PropsLookup.TryGet(id, out entProps);
     }
-    public static void EnqueueMove(int id, uint mask, ErVec2 size, int head)
+    public static void PatchEnt(int head, ErVec2 position, ErVec2 velocity)
     {
-        MoveQueue.Enqueue(new(){Id=id,Mask=mask,Size=size,Head=head});
-    }
-    public static void AddCollider(SwCollisionLayer.SwEntRect entRect)
-    {
-        Map.CollisionLayer.AddCollider(entRect);
-    }
-    public static IEnumerable<int> GetRectIds(ErRect2 rect, uint mask = uint.MaxValue)
-    {
-        return Map.CollisionLayer.GetRectIds(rect, mask);
+        Game.NextStream.SetHead(head);
+        Game.NextStream.WriteVec2(position);
+        Game.NextStream.WriteVec2(velocity);
     }
     private bool TryReadEnt(SwByteStream bs, out SwEntity primary)
     {
@@ -99,7 +86,6 @@ public class SwGame
         HandleRooms();
         HandleCommands();
         Camera.Update();
-        Map.CollisionLayer.ClearColliders();
         (LastStream,NextStream) = (NextStream,LastStream);
         LastStream.Reset();
         NextStream.Clear();
@@ -115,30 +101,7 @@ public class SwGame
             NextStream.Extend(NewEntities);
             NewEntities.Clear();
         }
-        // Handle moves
-        while(MoveQueue.TryDequeue(out var move))
-        {
-            NextStream.SetHead(move.Head);
-            if(!NextStream.TryReadVec2(out var pos)) throw new("darn");
-            if(!NextStream.TryReadVec2(out var vel)) throw new("poo");
-            pos -= move.Size * 0.5;
-            vel *= DeltaTime;
-            Map.CollisionLayer.MoveAndSlide(move.Id, move.Mask, move.Size, ref pos, ref vel);
-            pos += move.Size * 0.5;
-            vel /= DeltaTime;
-            NextStream.SetHead(move.Head);
-            NextStream.WriteVec2(pos);
-            NextStream.WriteVec2(vel);
-        }
-        while(QueuedActions.TryDequeue(out var action)) action();
-        while(QueuedCommandRect.TryDequeue(out var result))
-        {
-            var (mask,rect,command) = result;
-            foreach (var id in Map.CollisionLayer.GetRectIds(rect, mask))
-            {
-                if(TryGetEntProps(id, out var props)) props.AddCommand(command);
-            }
-        }
+        Map.PhysicsWorld.Update(DeltaTime);
         Hud.Update();
     }
     private static void CalculateFrameWeight()

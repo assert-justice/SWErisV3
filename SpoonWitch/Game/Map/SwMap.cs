@@ -1,8 +1,10 @@
 using System.Text.Json.Nodes;
 using Eris;
 using ErisMath;
+using ErisPhysics2D;
 using Prion.Node;
 using Prion.Parser;
+using SpoonWitch.Game.Map.Collision;
 using SpoonWitch.Game.Map.MapObject;
 
 namespace SpoonWitch.Game.Map;
@@ -12,17 +14,18 @@ public class SwMap
     private readonly Dictionary<string,SwRoom> Rooms = [];
     private readonly Dictionary<string,SwRoom> LoadedRooms = [];
     private readonly Dictionary<ErVec2I, SwRoom> SectorLookup = [];
-    private readonly List<SwTileData> TileData = [];
+    private readonly SwTileData[] TileData;
     private readonly SwDisplayLayer[] DisplayLayers;
     public readonly int NumTileLayers;
-    public readonly SwCollisionLayer CollisionLayer;
+    // public readonly SwCollisionLayer CollisionLayer;
+    public readonly ErPhysicsWorld2D PhysicsWorld;
     public readonly string Id;
     public readonly ErVec2I TileSize;
     public readonly ErVec2I SectorSizeTiles;
     public readonly ErVec2I SectorSizePx;
     private readonly SwMapObjectLookup GlobalMapObjects = new();
     public readonly string Dirpath;
-    public SwMap(string dirpath = "", string id = "", int numTileLayers = 0, ErVec2I? tileSize = null, ErVec2I? sectorSizePx = null)
+    public SwMap(string dirpath = "", string id = "", int numTileLayers = 0, ErVec2I? tileSize = null, ErVec2I? sectorSizePx = null, SwTileData[]? tileData = null)
     {
         Dirpath = dirpath;
         Id = id;
@@ -35,7 +38,10 @@ public class SwMap
         TileSize = tileSize ?? new(32, 32);
         SectorSizePx = sectorSizePx ?? new(640, 320);
         SectorSizeTiles = SectorSizePx / TileSize;
-        CollisionLayer = new(this);
+        // CollisionLayer = new(this);
+        TileData = tileData ?? [];
+        uint[] tileMaskLookup = [..TileData.Select(t => t.CollisionMask)];
+        PhysicsWorld = new(new(8,8), TileSize, 0, tileMaskLookup);
     }
     public void AddGlobalObject(SwMapObject mapObject)
     {
@@ -47,7 +53,8 @@ public class SwMap
     }
     public void SetTile(int layer, ErVec2I coord, int tileId)
     {
-        CollisionLayer.SetTile(coord, tileId);
+        // CollisionLayer.SetTile(coord, tileId);
+        PhysicsWorld.SetTile(coord, tileId);
         DisplayLayers[layer].SetTile(coord, tileId);
     }
     private void AddRoom(SwRoom room)
@@ -79,10 +86,10 @@ public class SwMap
         {
             room.Draw();
         }
-        if (SwApp.Debug)
-        {
-            CollisionLayer.DebugDraw();
-        }
+        // if (SwApp.Debug)
+        // {
+        //     CollisionLayer.DebugDraw();
+        // }
     }
     public bool TryGetDefaultCheckpoint(out SwMapCheckpoint checkpoint)
     {
@@ -139,13 +146,14 @@ public class SwMap
         if(!data.Get("defaultGridSize").TryAs(out int defaultGridSize)) defaultGridSize = 32;
         if(!data.Get("worldGridWidth").TryAs(out int sectorWidthPx)) sectorWidthPx = 640;
         if(!data.Get("worldGridHeight").TryAs(out int sectorHeightPx)) sectorHeightPx = 320;
+        ErVec2I tileSize = new(defaultGridSize, defaultGridSize);
         int numTileLayers = 0;
         foreach (var layerData in layers.Values)
         {
             if(!layerData.Get("type").TryAs(out string layerType)) return ErEngine.LogWarning("malformed layer: ", layerData);
             if(layerType == "Tiles") numTileLayers++;
         }
-        map = new(Path.GetDirectoryName(filepath)!, id, numTileLayers, new(defaultGridSize,defaultGridSize), new(sectorWidthPx,sectorHeightPx));
+        List<SwTileData> tileDataEntries = [];
         foreach (var tileset in tilesetList.Values)
         {
             if(!tileset.Get("identifier").TryAs(out string ident)) continue;
@@ -158,8 +166,8 @@ public class SwMap
                 {
                     var json = JsonNode.Parse(dataStr);
                     var prion = PriJsonConverter.JsonToPrion(json);
-                    if(!SwTileData.TryFromData(filepath, prion, map.TileSize, out var tileData)) return ErEngine.LogWarning("corrupt tile data");
-                    map.TileData.Add(tileData);
+                    if(!SwTileData.TryFromData(filepath, prion, tileSize, out var tileData)) return ErEngine.LogWarning("corrupt tile data");
+                    tileDataEntries.Add(tileData);
                 }
                 catch(Exception e)
                 {
@@ -168,6 +176,7 @@ public class SwMap
             }
             break;
         }
+        map = new(Path.GetDirectoryName(filepath)!, id, numTileLayers, tileSize, new(sectorWidthPx,sectorHeightPx), [..tileDataEntries]);
         foreach (var roomData in rooms.Values)
         {
             if(SwRoom.TryFromData(map, roomData, out var room)) map.AddRoom(room);

@@ -59,7 +59,7 @@ public abstract class SwActor: SwEntity
     public override void Update()
     {
         base.Update();
-        if(IsAlive) SwGame.AddCollider(new(){ Id=Id,Mask=Mask,Rect=ErRect2.Centered(Position,Size)});
+        // if(IsAlive) SwGame.AddCollider(new(){ Id=Id,Mask=Mask,Rect=ErRect2.Centered(Position,Size)});
         if(InvulnClock > 0)InvulnClock -= SwGame.DeltaTime;
         if(KnockbackClock > 0)KnockbackClock -= SwGame.DeltaTime;
         HandleFlicker();

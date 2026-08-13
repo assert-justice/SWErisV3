@@ -1,9 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using Prion.Node;
 
 namespace ErisMath;
 
-public readonly struct ErVec2I
+public readonly struct ErVec2I: IEquatable<ErVec2I>
 {
     public int X{get; init;}
     public int Y{get; init;}
@@ -24,6 +23,8 @@ public readonly struct ErVec2I
     public static readonly ErVec2I Right = new(1, 0);
     public static readonly ErVec2I Up = new(0, -1);
     public static readonly ErVec2I Down = new(0, 1);
+    public static readonly ErVec2I Max = new(int.MaxValue, int.MaxValue);
+    public static readonly ErVec2I Min = new(int.MinValue, int.MinValue);
     public static ErVec2I operator +(ErVec2I left, ErVec2I right)=>new(left.X + right.X, left.Y + right.Y);
     public static ErVec2I operator -(ErVec2I left, ErVec2I right)=>new(left.X - right.X, left.Y - right.Y);
     public static ErVec2I operator *(ErVec2I left, ErVec2I right)=>new(left.X * right.X, left.Y * right.Y);
@@ -35,7 +36,11 @@ public readonly struct ErVec2I
     public static explicit operator ErVec2I(ErVec2 value) => new(ErMath.RoundToInt(value.X), ErMath.RoundToInt(value.Y));
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
-        return obj is ErVec2I vec && X == vec.X && Y == vec.Y;
+        return obj is ErVec2I vec && IsEqual(vec);
+    }
+    private bool IsEqual(ErVec2I vec)
+    {
+        return X == vec.X && Y == vec.Y;
     }
     public override string ToString()
     {
@@ -45,19 +50,9 @@ public readonly struct ErVec2I
     {
         return ToString().GetHashCode();
     }
-    public static bool TryFromPrion(out ErVec2I value, PriNode priNode, string xName = "x", string yName = "y")
+
+    public bool Equals(ErVec2I other)
     {
-        value = default;
-        if(!priNode.TryGet(xName, out int x)) return false;
-        if(!priNode.TryGet(yName, out int y)) return false;
-        value = new(x,y);
-        return true;
-    }
-    public static ErVec2I FromPrion(PriNode priNode, string xName = "x", string yName = "y", ErVec2I? defaultVec = null)
-    {
-        var def = defaultVec ?? Zero;
-        if(!priNode.TryGet(xName, out int x)) x = def.X;
-        if(!priNode.TryGet(yName, out int y)) y = def.Y;
-        return new(x,y);
+        return IsEqual(other);
     }
 }

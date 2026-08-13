@@ -3,7 +3,9 @@ using ErisMath;
 using Prion.Node;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Game.Entity.Component;
+using SpoonWitch.Game.Map.Collision;
 using SpoonWitch.Rendering;
+using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Entity;
 
@@ -27,6 +29,7 @@ public abstract class SwEntity
     public bool IsFreeQueued{get; private set;}
     protected virtual int NumClocks => 0;
     protected readonly double[] Clocks;
+    private readonly SwColliderBody Body = new();
     public SwEntity()
     {
         Clocks = new double[NumClocks];
@@ -50,10 +53,7 @@ public abstract class SwEntity
     }
     public virtual void Ready()
     {
-        Position = ErVec2.FromPrion(EntProps.Props);
-        // if(!EntProps.Props.TryGet("x_px", out double x)) x = 0;
-        // if(!EntProps.Props.TryGet("y_px", out double y)) y = 0;
-        // Position = new(x,y);
+        Position = SwPrion.GetVec2(EntProps.Props);
     }
     public virtual void Read(SwByteStream byteStream)
     {
@@ -92,11 +92,12 @@ public abstract class SwEntity
         // write current head index as last head index
         // Note: if it is negative, that means there is no valid last head index. this is relevant for drawing.
         byteStream.WriteI32(_CurrentHeadIndex);
-        if (Velocity.IsNonzero())
-        {
-            // queue move
-            SwGame.EnqueueMove(Id,Mask,Size,byteStream.Head);
-        }
+        Body.Position = Position;
+        Body.Velocity = Velocity;
+        Body.Mask = Mask;
+        Body.Head = byteStream.Head;
+        Body.Size = Size;
+        SwGame.Map.PhysicsWorld.SetBody(Id, Body);
         byteStream.WriteVec2(Position);
         byteStream.WriteVec2(Velocity);
         byteStream.WriteBool(Visible);

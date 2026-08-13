@@ -3,6 +3,7 @@ using ErisMath;
 using Prion.Node;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Game;
+using SpoonWitch.Utils;
 
 namespace SpoonWitch.Rendering;
 
@@ -155,18 +156,12 @@ public class SwSprite(string name)
         byteStream.WriteByte((byte)Flags);
         byteStream.WriteI32(PalletIdx);
     }
-    // private static bool TryGetPallet(out nint palletHandle, PriNode priNode)
-    // {
-    //     palletHandle = 0;
-    //     return true;
-    // }
     public static bool TryFromData(out SwSprite sprite, string name, string dirpath, PriNode priNode)
     {
         sprite = default!;
         if(!priNode.TryGet("animations", out PriDict dict)) return ErEngine.LogWarning("no animations");
         if(!priNode.TryGet("visible", out bool visible)) visible = true;
-        // var size = ErVec2.FromPrion(priNode, "width", "height", new(64,64));
-        var offset = ErVec2.FromPrion(priNode, "offset_x", "offset_y");
+        var offset = SwPrion.GetVec2(priNode, "offset_x", "offset_y");
         if(!priNode.TryGet("centered", out bool centered)) centered = true;
         sprite = new(name)
         {

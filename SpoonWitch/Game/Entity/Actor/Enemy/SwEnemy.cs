@@ -17,11 +17,13 @@ public abstract class SwEnemy: SwActor
     }
     public bool CanSeeTarget()
     {
-        return !SwGame.GetMap().CollisionLayer.Raycast(2, Position, TargetPosition);
+        return false;
+        // return !SwGame.GetMap().CollisionLayer.Raycast(2, Position, TargetPosition);
     }
     public bool CanSeePoint(ErVec2 point)
     {
-        return !SwGame.GetMap().CollisionLayer.Raycast(2, Position, point);
+        return false;
+        // return !SwGame.GetMap().CollisionLayer.Raycast(2, Position, point);
     }
     public bool CanSeePlayer()
     {

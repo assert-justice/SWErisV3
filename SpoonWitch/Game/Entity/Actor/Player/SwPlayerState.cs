@@ -121,7 +121,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             BodySprite.Play(BodyAnims[0][0][Controls.LastFacingIdx]);
             Entity.Velocity = ErVec2.Zero;
             SwDamage damage = new(10, Entity.Position);
-            SwGame.EnqueueCommandRect(4, GetHurtbox(), damage.ToPri());
+            // SwGame.EnqueueCommandRect(4, GetHurtbox(), damage.ToPri());
             BodySprite.SetPallet(1);
         }
         public override void Update()

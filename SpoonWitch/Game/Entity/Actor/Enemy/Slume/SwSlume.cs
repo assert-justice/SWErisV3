@@ -61,7 +61,7 @@ public class SwSlume : SwEnemy, ISwEntity<SwSlume>
     public void DoDamage()
     {
         SwDamage damage = new(10, Position);
-        SwGame.EnqueueCommandRect(2, ErRect2.Centered(Position, HurtboxSize), damage.ToPri());
+        // SwGame.EnqueueCommandRect(2, ErRect2.Centered(Position, HurtboxSize), damage.ToPri());
         // SwGame.EnqueueCommandRect(2, ErRect2.Centered(Position, HurtboxSize), new("damage", new PriNumber(10)));
     }
 }

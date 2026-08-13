@@ -39,7 +39,7 @@
 	"levelNamePattern": "Level_%idx",
 	"tutorialDesc": null,
 	"customCommands": [],
-	"flags": [],
+	"flags": ["IgnoreBackupSuggest"],
 	"defs": { "layers": [
 		{
 			"__type": "Entities",
@@ -1289,17 +1289,17 @@
 							"defUid": 8,
 							"px": [448,128],
 							"fieldInstances": [
-								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "knight", "__tile": null, "defUid": 49, "realEditorValues": [{
+								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "none", "__tile": null, "defUid": 49, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["knight"]
+									"params": ["none"]
 								}] },
 								{ "__identifier": "trigger_on_load", "__type": "Bool", "__value": true, "__tile": null, "defUid": 9, "realEditorValues": [{
 									"id": "V_Bool",
 									"params": [ true ]
 								}] },
-								{ "__identifier": "property_overrides_json", "__type": "String", "__value": "{\n \"is_passive\": true\n}", "__tile": null, "defUid": 12, "realEditorValues": [{
+								{ "__identifier": "property_overrides_json", "__type": "String", "__value": "{\n \"is_passive\": false\n}", "__tile": null, "defUid": 12, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["{\\n \"is_passive\": true\\n}"]
+									"params": ["{\\n \"is_passive\": false\\n}"]
 								}] },
 								{ "__identifier": "max_uses", "__type": "Int", "__value": null, "__tile": null, "defUid": 50, "realEditorValues": [] }
 							],
@@ -1345,9 +1345,9 @@
 							"defUid": 61,
 							"px": [480,160],
 							"fieldInstances": [
-								{ "__identifier": "texture_filepath", "__type": "FilePath", "__value": "props/oak_tree_3x3.png", "__tile": null, "defUid": 63, "realEditorValues": [{
+								{ "__identifier": "texture_filepath", "__type": "FilePath", "__value": "props/grass_tufts.png", "__tile": null, "defUid": 63, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["props/oak_tree_3x3.png"]
+									"params": ["props/grass_tufts.png"]
 								}] },
 								{ "__identifier": "properties_json", "__type": "String", "__value": null, "__tile": null, "defUid": 65, "realEditorValues": [] },
 								{ "__identifier": "prop_collision_mode", "__type": "LocalEnum.prop_collision_mode", "__value": "none", "__tile": null, "defUid": 73, "realEditorValues": [] }
