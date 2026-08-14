@@ -15,6 +15,10 @@ public abstract class SwComponent(SwEntity parent, string name)
     {
         //
     }
+    public virtual void Ready()
+    {
+        //
+    }
     public virtual void Update()
     {
         //

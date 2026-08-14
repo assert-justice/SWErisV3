@@ -14,6 +14,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     private SwSprite SlingSprite = null!;
     private SwSprite ReticleSprite = null!;
     private SwPlayerControls Controls = null!;
+    private SwAreaComponent SpoonHurtbox = null!;
     // name, hands, facing
     private static readonly string[][][] BodyAnims = [
         [
@@ -83,6 +84,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         SlingSprite = Entity.GetComponent<SwSpriteComponent>("sling")?.Sprite!;
         ReticleSprite = Entity.GetComponent<SwSpriteComponent>("reticle")?.Sprite!;
         Controls = Entity.GetComponent<SwPlayerControls>("controls")!;
+        SpoonHurtbox = Entity.GetComponent<SwAreaComponent>("spoon_hurtbox")!;
     }
     // public override void BeginState(string lastState)
     // {
@@ -120,7 +122,9 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             SpoonSprite.Play();
             BodySprite.Play(BodyAnims[0][0][Controls.LastFacingIdx]);
             Entity.Velocity = ErVec2.Zero;
-            SwDamage damage = new(10, Entity.Position);
+            SetHurtbox();
+            // SpoonHurtbox.Enabled = true;
+            // SwDamage damage = new(10, Entity.Position);
             // SwGame.EnqueueCommandRect(4, GetHurtbox(), damage.ToPri());
             BodySprite.SetPallet(1);
         }
@@ -134,14 +138,14 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             base.EndState(nextState);
             SpoonSprite.Visible = false;
             BodySprite.SetPallet(0);
+            SpoonHurtbox.Enabled = false;
         }
-        private ErRect2 GetHurtbox()
+        private void SetHurtbox()
         {
-            var dir = Controls.LastFacing;
+            var dir = ErVec2.FromAngle(Controls.LastFacingIdx * ErMath.HALF_PI);
             double dis = 32;
-            ErVec2 size = new(32, 32);
-            var pos = Parent.Position + dir * dis;
-            return ErRect2.Centered(pos, size);
+            SpoonHurtbox.Offset = dir * dis;
+            SpoonHurtbox.Enabled = true;
         }
     }
     public class Charging: SwPlayerState

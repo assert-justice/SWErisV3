@@ -54,6 +54,10 @@ public abstract class SwEntity
     public virtual void Ready()
     {
         Position = SwPrion.GetVec2(EntProps.Props);
+        foreach (var item in Components)
+        {
+            item.Ready();
+        }
     }
     public virtual void Read(SwByteStream byteStream)
     {

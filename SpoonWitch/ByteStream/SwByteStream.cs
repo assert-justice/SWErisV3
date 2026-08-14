@@ -120,6 +120,30 @@ public class SwByteStream
             WriteBytesUnchecked(BitConverter.GetBytes(item));
         }
     }
+    public void WriteU32(uint value)
+    {
+        WriteBytes(BitConverter.GetBytes(value));
+    }
+    public void WriteU32s(in uint[] value)
+    {
+        Reserve(sizeof(uint) * value.Length);
+        foreach (var item in value)
+        {
+            WriteBytesUnchecked(BitConverter.GetBytes(item));
+        }
+    }
+    public void WriteU64(ulong value)
+    {
+        WriteBytes(BitConverter.GetBytes(value));
+    }
+    public void WriteU64s(in ulong[] value)
+    {
+        Reserve(sizeof(ulong) * value.Length);
+        foreach (var item in value)
+        {
+            WriteBytesUnchecked(BitConverter.GetBytes(item));
+        }
+    }
     public void WriteVec2I(ErVec2I value)
     {
         Reserve(sizeof(int) * 2);
@@ -276,12 +300,28 @@ public class SwByteStream
         value = BitConverter.ToInt64(bytes);
         return true;
     }
-    public bool TryReadU64s(in long[] value)
+    public bool TryReadU32(out uint value)
     {
-        if(!HasRemaining(sizeof(long) * value.Length)) return false;
+        value = default;
+        if(!TryReadBytes(sizeof(uint), out var bytes)) return false;
+        value = BitConverter.ToUInt32(bytes);
+        return true;
+    }
+    public bool TryReadU32s(in uint[] value)
+    {
+        if(!HasRemaining(sizeof(uint) * value.Length)) return false;
         for (int idx = 0; idx < value.Length; idx++)
         {
-            value[idx] = BitConverter.ToInt64(ReadBytesUnchecked(sizeof(long)));
+            value[idx] = BitConverter.ToUInt32(ReadBytesUnchecked(sizeof(uint)));
+        }
+        return true;
+    }
+    public bool TryReadU64s(in ulong[] value)
+    {
+        if(!HasRemaining(sizeof(ulong) * value.Length)) return false;
+        for (int idx = 0; idx < value.Length; idx++)
+        {
+            value[idx] = BitConverter.ToUInt64(ReadBytesUnchecked(sizeof(ulong)));
         }
         return true;
     }

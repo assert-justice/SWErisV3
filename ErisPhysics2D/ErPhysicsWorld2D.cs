@@ -33,6 +33,7 @@ public partial class ErPhysicsWorld2D
             if(!Lookup.TryGetValue(id, out var cached)) return false;
             Pop(id, cached);
             cached.OnRemove();
+            Lookup.Remove(id);
             return true;
         }
     }

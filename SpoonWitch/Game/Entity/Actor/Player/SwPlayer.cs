@@ -2,6 +2,7 @@ using Eris;
 using Prion.Node;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Command;
+using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
 
 namespace SpoonWitch.Game.Entity.Actor.Player;
@@ -34,24 +35,23 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         RegisterComponent(Controls);
         string path = "game_data/entities/actors/player/player_anim_data.json";
         if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load player sprites");
+        SwAreaComponent spoonHurtbox = new(this, "spoon_hurtbox", 4, new(32,32));
+        RegisterComponent(spoonHurtbox);
         StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
     }
     private static void SetHud(string key, double value)
     {
-        PriDict dict = new();
+        PriDict dict = [];
         dict.TrySet("verb", "hud_set");
         dict.TrySet("key", key);
         dict.TrySet("value", value);
-        // dict.Data["verb"] = 
-        // dict.Data["key"] = new PriString(key);
-        // dict.Data["value"] = new PriNumber(value);
         SwApp.CommandStore.AddGlobalCommand(dict);
     }
-    public override void Ready()
-    {
-        base.Ready();
-    }
+    // public override void Ready()
+    // {
+    //     base.Ready();
+    // }
     public override void Update()
     {
         base.Update();
