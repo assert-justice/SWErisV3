@@ -184,7 +184,7 @@ public abstract class SwKnightState: SwEntState<SwKnight>
             SwordSprite.Play();
             SwordSprite.Angle = (Entity.FacingIdx - 1) * ErMath.HALF_PI;
             // do damage
-            SwDamage damage = new(10, Entity.Position);
+            // SwDamage damage = new(10, Entity.Position);
             // SwGame.EnqueueCommandRect(2, GetHurtbox(), damage.ToPri());
         }
         public override void BeginState(string lastState)

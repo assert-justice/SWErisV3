@@ -1289,17 +1289,17 @@
 							"defUid": 8,
 							"px": [448,128],
 							"fieldInstances": [
-								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "none", "__tile": null, "defUid": 49, "realEditorValues": [{
+								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "slume", "__tile": null, "defUid": 49, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["none"]
+									"params": ["slume"]
 								}] },
 								{ "__identifier": "trigger_on_load", "__type": "Bool", "__value": true, "__tile": null, "defUid": 9, "realEditorValues": [{
 									"id": "V_Bool",
 									"params": [ true ]
 								}] },
-								{ "__identifier": "property_overrides_json", "__type": "String", "__value": "{\n \"is_passive\": false\n}", "__tile": null, "defUid": 12, "realEditorValues": [{
+								{ "__identifier": "property_overrides_json", "__type": "String", "__value": "{\n \"is_passive\": true\n}", "__tile": null, "defUid": 12, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["{\\n \"is_passive\": false\\n}"]
+									"params": ["{\\n \"is_passive\": true\\n}"]
 								}] },
 								{ "__identifier": "max_uses", "__type": "Int", "__value": null, "__tile": null, "defUid": 50, "realEditorValues": [] }
 							],

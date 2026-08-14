@@ -52,16 +52,16 @@ public class SwSlume : SwEnemy, ISwEntity<SwSlume>
         base.Write(byteStream);
         byteStream.WriteF64(TimeoutClock);
     }
-    protected override double Damage(PriNode command)
+    protected override double Damage(SwDamage damage)
     {
-        double value = base.Damage(command);
+        double value = base.Damage(damage);
         if(value > 0) StateMachine.SetState("knockback");
         return value;
     }
-    public void DoDamage()
-    {
-        SwDamage damage = new(10, Position);
+    // public void DoDamage()
+    // {
+        // SwDamage damage = new(10, Position);
         // SwGame.EnqueueCommandRect(2, ErRect2.Centered(Position, HurtboxSize), damage.ToPri());
         // SwGame.EnqueueCommandRect(2, ErRect2.Centered(Position, HurtboxSize), new("damage", new PriNumber(10)));
-    }
+    // }
 }

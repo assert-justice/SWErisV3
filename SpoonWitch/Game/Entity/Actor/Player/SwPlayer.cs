@@ -1,9 +1,13 @@
 using Eris;
+using ErisMath;
+using ErisPhysics2D.Collider;
 using Prion.Node;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Command;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
+using SpoonWitch.Game.Map.Collision;
+using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Entity.Actor.Player;
 
@@ -36,6 +40,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         string path = "game_data/entities/actors/player/player_anim_data.json";
         if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load player sprites");
         SwAreaComponent spoonHurtbox = new(this, "spoon_hurtbox", 4, new(32,32));
+        spoonHurtbox.Area.OnBodyEnterFn = OnEnterSpoonHurtbox;
         RegisterComponent(spoonHurtbox);
         StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
@@ -48,19 +53,39 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         dict.TrySet("value", value);
         SwApp.CommandStore.AddGlobalCommand(dict);
     }
-    // public override void Ready()
-    // {
-    //     base.Ready();
-    // }
+    private static void OnEnterSpoonHurtbox(SwColliderArea area, int bodyId, ErColliderBody body)
+    {
+        if(!SwGame.TryGetEntProps(area.ParentId, out var playerProps)) return;
+        if(!SwGame.TryGetEntProps(body.ParentId, out var targetProps)) return;
+        if(!playerProps.Props.TryGet("spoon_damage", out PriNode spoonDamage)) return;
+        var areaCenter = area.Rect.Center;
+        SwPrion.TrySetVec2(spoonDamage, areaCenter, "source_pos_x", "source_pos_y");
+        targetProps.AddCommand(spoonDamage);
+    }
+    public override void Ready()
+    {
+        base.Ready();
+        SwDamage spoonDamage = new([(SwDamageType.Untyped, 10)]);
+        // PriDict spoonDamage = [];
+        // PriList damageList = [];
+        // PriDict dict = [];
+        // dict.TrySet("value", 10);
+        // dict.TrySet("type", (byte)0);
+        // damageList.Add(dict);
+        // spoonDamage.TrySet("verb", "damage");
+        // SwPrion.TrySetVec2(spoonDamage, ErVec2.Zero, "source_pos_x", "source_pos_y");
+        // spoonDamage.TrySet("damage", damageList);
+        EntProps.Props.TrySet("spoon_damage", spoonDamage.ToPri());
+    }
     public override void Update()
     {
         base.Update();
         if(DodgeCooldownClock > 0) DodgeCooldownClock -= SwGame.DeltaTime;
         SwGame.SetPlayerPos(Position);
     }
-    protected override double Damage(PriNode command)
+    protected override double Damage(SwDamage damage)
     {
-        double value = base.Damage(command);
+        double value = base.Damage(damage);
         if(value > 0)
         {
             SetHud("health", Health);

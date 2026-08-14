@@ -20,7 +20,7 @@ public static class SwPrion
         value = new(x,y);
         return true;
     }
-    public static bool TrySetVec2(ref PriNode priNode, ErVec2 value, string xName = "x", string yName = "y")
+    public static bool TrySetVec2(PriNode priNode, ErVec2 value, string xName = "x", string yName = "y")
     {
         if(!priNode.TrySet(xName, value.X)) return false;
         if(!priNode.TrySet(yName, value.Y)) return false;
@@ -41,7 +41,7 @@ public static class SwPrion
         value = new(x,y);
         return true;
     }
-    public static bool TrySetVec2I(ref PriNode priNode, ErVec2I value, string xName = "x", string yName = "y")
+    public static bool TrySetVec2I(PriNode priNode, ErVec2I value, string xName = "x", string yName = "y")
     {
         if(!priNode.TrySet(xName, value.X)) return false;
         if(!priNode.TrySet(yName, value.Y)) return false;

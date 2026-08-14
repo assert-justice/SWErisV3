@@ -10,32 +10,47 @@ public enum SwDamageType: byte
 }
 public readonly struct SwDamage
 {
-    public double Value{get; init;}
+    public (SwDamageType,double)[] Entries{get; init;}
     public ErVec2 SourcePos{get; init;}
-    public SwDamageType Type{get; init;}
-    public SwDamage(){}
-    public SwDamage(double value, ErVec2 sourcePos, SwDamageType type = SwDamageType.Untyped)
+    public SwDamage()
     {
-        Value = value;
-        SourcePos = sourcePos;
-        Type = type;
+        Entries = [];
+    }
+    public SwDamage((SwDamageType,double)[] entries, ErVec2? sourcePos = null)
+    {
+        SourcePos = sourcePos ?? ErVec2.Zero;
+        Entries = entries;
     }
     public PriNode ToPri()
     {
-        PriDict dict = new();
-        dict.Data["value"] = new PriNumber(Value);
-        dict.Data["source_pos_x"] = new PriNumber(SourcePos.X);
-        dict.Data["source_pos_y"] = new PriNumber(SourcePos.Y);
-        dict.Data["type"] = new PriNumber((byte)Type);
+        PriDict dict = [];
+        PriList damageList = [];
+        foreach (var (type,value) in Entries)
+        {
+            PriDict entry = [];
+            entry.TrySet("type", (byte)type);
+            entry.TrySet("value", value);
+            damageList.Add(entry);
+        }
+        dict.TrySet("verb", "damage");
+        SwPrion.TrySetVec2(dict, ErVec2.Zero, "source_pos_x", "source_pos_y");
+        dict.TrySet("entries", damageList);
         return dict;
     }
     public static bool TryFromPri(PriNode node, out SwDamage damage)
     {
         damage = default;
-        if(!node.TryGet("value", out double value)) return false;
-        if(!SwPrion.TryGetVec2(out var sourcePos, node, "source_pos_x", "source_pos_y")) return false;
-        if(!node.TryGet("type", out byte type)) return false;
-        damage = new(value, sourcePos, (SwDamageType)type);
+        var sourcePos = SwPrion.GetVec2(node, "source_pos_x", "source_pos_y");
+        if(!node.TryGet("entries", out PriList list)) return false;
+        (SwDamageType,double)[] damages = new (SwDamageType,double)[list.Data.Count];
+        for (int idx = 0; idx < damages.Length; idx++)
+        {
+            var item = list.Data[idx];
+            if(!item.TryGet("type", out byte type)) return false;
+            if(!item.TryGet("value", out double value)) return false;
+            damages[idx] = ((SwDamageType)type, value);
+        }
+        damage = new(damages, sourcePos);
         return true;
     }
 }

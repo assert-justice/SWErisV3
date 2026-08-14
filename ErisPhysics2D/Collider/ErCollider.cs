@@ -4,6 +4,7 @@ namespace ErisPhysics2D.Collider;
 
 public abstract class ErCollider
 {
+    public int ParentId;
     public ErVec2 Position
     {
         get => _Position.Value;
@@ -30,18 +31,20 @@ public abstract class ErCollider
         _Size = new(size ?? ErVec2.Zero);
         _Mask = new(mask);
     }
-    public virtual bool TryCopy<T>(ref T value) where T: ErCollider
-    {
-        value.Position = Position;
-        value.Size = Size;
-        value.Mask = Mask;
-        return true;
-    }
+    // public virtual bool TryCopy<T>(ref T value) where T: ErCollider
+    // {
+    //     value.Position = Position;
+    //     value.Size = Size;
+    //     value.Mask = Mask;
+    //     value.ParentId = ParentId;
+    //     return true;
+    // }
     public virtual void Copy<T>(ref T value) where T: ErCollider
     {
         value.Position = Position;
         value.Size = Size;
         value.Mask = Mask;
+        value.ParentId = ParentId;
     }
     internal void Clean()
     {

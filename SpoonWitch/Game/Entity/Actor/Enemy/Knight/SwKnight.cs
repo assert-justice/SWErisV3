@@ -45,9 +45,9 @@ public class SwKnight : SwEnemy, ISwEntity<SwKnight>
         base.Die();
         StateMachine.SetState("dead");
     }
-    protected override double Damage(PriNode command)
+    protected override double Damage(SwDamage damage)
     {
-        double value = base.Damage(command);
+        double value = base.Damage(damage);
         if(value > 0) StateMachine.SetState("knockback");
         return value;
     }

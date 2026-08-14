@@ -60,7 +60,7 @@ public abstract class SwSlumeState: SwEntState<SwSlume>
             Entity.TargetPosition = SwGame.PlayerPos;
             if(!Entity.CanSeePlayer())StateMachine.SetState("seeking");
             Entity.MoveToTarget(Entity.BaseSpeed);
-            Entity.DoDamage();
+            // Entity.DoDamage();
             PlayBodyAnim();
         }
     }
@@ -79,7 +79,7 @@ public abstract class SwSlumeState: SwEntState<SwSlume>
             else if(Entity.TimeoutClock > 0) Entity.TimeoutClock -= SwGame.DeltaTime;
             else StateMachine.SetState("wandering");
             Entity.MoveToTarget(Entity.BaseSpeed);
-            Entity.DoDamage();
+            // Entity.DoDamage();
             PlayBodyAnim();
         }
     }
@@ -127,7 +127,7 @@ public abstract class SwSlumeState: SwEntState<SwSlume>
                 // pick a new random wander point
                 SetNewWander();
             }
-            Entity.DoDamage();
+            // Entity.DoDamage();
             PlayBodyAnim();
         }
     }

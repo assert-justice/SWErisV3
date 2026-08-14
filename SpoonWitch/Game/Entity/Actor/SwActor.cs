@@ -81,24 +81,40 @@ public abstract class SwActor: SwEntity
         // foreach (var item in SwApp.CommandStore.GetCommands("damage", Id))
         foreach (var item in EntProps.GetCommands())
         {
-            Damage(item);
+            if(!item.TryGet("verb", out string verb))
+            {
+                ErEngine.LogWarning("bad command");
+                return;
+            }
+            switch (verb)
+            {
+                case "damage":
+                if(!SwDamage.TryFromPri(item, out var damage))
+                {
+                    ErEngine.LogWarning("bad damage");
+                    return;
+                }
+                Damage(damage);
+                break;
+                default:
+                break;
+            }
         }
     }
     private string GetTypeName()
     {
         return GetType().ToString().Split('.')[^1];
     }
-    protected virtual double Damage(PriNode command)
+    protected virtual double Damage(SwDamage damage)
     {
-        if(!SwDamage.TryFromPri(command, out var damage))
-        // if(!TryParseDamage(command.Payload, out double value))
-        {
-            ErEngine.LogWarning("no damage value");
-            return 0;
-        }
         if(IsInvuln) return 0;
         if(!IsAlive) return 0;
-        double value = damage.Value;
+        double value = 0;
+        foreach (var item in damage.Entries)
+        {
+            value += item.Item2;
+        }
+        // double value = damage.Value;
         var knockback = (Position - damage.SourcePos).Normalized() * value * KnockbackFactor;
         Velocity = knockback;
         Health -= value;

@@ -32,6 +32,7 @@ public class SwAreaComponent(SwEntity parent, string name, uint mask, ErVec2 siz
         Area.Position = Parent.Position + Offset;
         Area.Size = Size;
         Area.Mask = Mask;
+        Area.ParentId = Parent.Id;
         SwGame.GetMap().PhysicsWorld.SetArea(_Id, Area);
     }
     public override void Read(SwByteStream byteStream)
