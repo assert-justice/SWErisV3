@@ -4,7 +4,7 @@ namespace Prion.Db;
 
 public class PriDb
 {
-    private PriNode Data = PriNull.Null;
+    public PriNode Data{get; private set;} = PriNull.Null;
     public PriDb(){}
     public PriDb(PriNode data)
     {
@@ -75,11 +75,11 @@ public class PriDb
         }
         return node.TryAs(out value);
     }
-    public bool TrySet(string path, PriNode value)
+    public bool TrySet<T>(string path, T value)
     {
         return TrySet(SplitPath(path), value);
     }
-    public bool TrySet(Queue<string> path, PriNode value)
+    private bool TrySet<T>(Queue<string> path, T value)
     {
         PriNode? lastNode = null;
         string? lastKey = null;
@@ -96,7 +96,11 @@ public class PriDb
                 lastNode.TrySet(key, node);
             }
         }
-        if(lastNode is null || lastKey is null) Data = value;
+        if(lastNode is null || lastKey is null)
+        {
+            if(!PriNode.TryToPrion(value, out var data)) return false;
+            Data = data;
+        }
         else lastNode.TrySet(lastKey, value);
         return true;
     }

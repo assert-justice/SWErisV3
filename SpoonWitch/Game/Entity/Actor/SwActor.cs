@@ -102,6 +102,7 @@ public abstract class SwActor: SwEntity
             value += item.Item2;
         }
         var knockback = (Position - damage.SourcePos).Normalized() * value * KnockbackFactor;
+        ErEngine.Log("knockback: ", knockback.GetLength());
         Velocity = knockback;
         Health -= value;
         KnockbackClock = KnockbackTime;

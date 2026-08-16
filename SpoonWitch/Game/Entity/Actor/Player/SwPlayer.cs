@@ -58,8 +58,8 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         if(!SwGame.TryGetEntProps(area.ParentId, out var playerProps)) return;
         if(!SwGame.TryGetEntProps(body.ParentId, out var targetProps)) return;
         if(!playerProps.Props.TryGet("spoon_damage", out PriNode spoonDamage)) return;
-        var areaCenter = area.Rect.Center;
-        SwPrion.TrySetVec2(spoonDamage, areaCenter, "source_pos_x", "source_pos_y");
+        // var areaCenter = area.Rect.Center;
+        // SwPrion.TrySetVec2(spoonDamage, areaCenter, "source_pos_x", "source_pos_y");
         targetProps.AddCommand(spoonDamage);
     }
     public override void Ready()
@@ -82,6 +82,8 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         base.Update();
         if(DodgeCooldownClock > 0) DodgeCooldownClock -= SwGame.DeltaTime;
         SwGame.SetPlayerPos(Position);
+        EntProps.Props.TrySet("spoon_damage/source_pos_x", Position.X);
+        EntProps.Props.TrySet("spoon_damage/source_pos_y", Position.Y);
     }
     protected override double Damage(SwDamage damage)
     {

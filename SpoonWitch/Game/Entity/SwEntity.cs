@@ -53,7 +53,7 @@ public abstract class SwEntity
     }
     public virtual void Ready()
     {
-        Position = SwPrion.GetVec2(EntProps.Props);
+        Position = SwPrion.GetVec2(EntProps.Props.Data);
         foreach (var item in Components)
         {
             item.Ready();
@@ -66,9 +66,10 @@ public abstract class SwEntity
         if(!byteStream.TryReadI32(out _Id)) throw new("jerkbag");
         if(!byteStream.TryReadI32(out _CurrentHeadIndex)) throw new("oops2");
         if(!byteStream.TryReadI32(out _LastHeadIndex)) throw new("oops3");
-        if(!byteStream.TryReadVec2(out Position)) throw new("oops4");
+        if(!byteStream.TryReadVec2(out var pos)) throw new("oops4");
         if(!byteStream.TryReadVec2(out Velocity)) throw new("oops5");
         if(!byteStream.TryReadBool(out Visible)) throw new("oops6");
+        Position = pos + Size * 0.5;
         // read clocks
         if(!byteStream.TryReadF64s(in Clocks)) throw new("bad clocks");
         // read components
@@ -97,7 +98,7 @@ public abstract class SwEntity
         // Note: if it is negative, that means there is no valid last head index. this is relevant for drawing.
         byteStream.WriteI32(_CurrentHeadIndex);
         Body.ParentId = Id;
-        Body.Position = Position;
+        Body.Position = Position - Size * 0.5;
         Body.Velocity = Velocity;
         Body.Mask = Mask;
         Body.Head = byteStream.Head;

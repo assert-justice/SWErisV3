@@ -1,3 +1,4 @@
+using Prion.Db;
 using Prion.Node;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Command;
@@ -9,14 +10,14 @@ public abstract class SwEntPropsBase
     public readonly int Id;
     public readonly HashSet<string> Groups = [];
     private readonly Queue<PriNode> Commands = [];
-    public PriNode Props{get; private set;} = PriNull.Null;
+    public PriDb Props{get; private set;} = new();
     public SwEntPropsBase()
     {
         Id = SwApp.GetNextId();
     }
     public SwEntPropsBase(PriNode props): this()
     {
-        Props = props;
+        Props = new(props);
     }
     public void AddCommand(PriNode command)
     {
@@ -26,15 +27,15 @@ public abstract class SwEntPropsBase
     {
         while(Commands.TryDequeue(out var command)) yield return command;
     }
-    public void Set(string key, PriNode node)
-    {
-        if(!Props.TrySet(key, node))
-        {
-            PriDict dict = new();
-            dict.Data[key]= node;
-            Props = dict;
-        }
-    }
+    // public void Set(string key, PriNode node)
+    // {
+    //     if(!Props.TrySet(key, node))
+    //     {
+    //         PriDict dict = new();
+    //         dict.Data[key]= node;
+    //         Props = dict;
+    //     }
+    // }
 }
 
 public class SwEntProps<T>: SwEntPropsBase where T: SwEntity, ISwEntity<T>

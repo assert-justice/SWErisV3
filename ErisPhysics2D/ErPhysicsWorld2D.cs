@@ -323,10 +323,10 @@ public partial class ErPhysicsWorld2D
         // try to move bodies, calling on_move
         foreach (var (bodyId, body) in BodyLookup.Lookup)
         {
-            var pos = body.Position - body.Size * 0.5;
+            var pos = body.Position;// - body.Size * 0.5;
             var vel = body.Velocity * dt;
             MoveAndSlide(bodyId, body.Mask, body.Size, ref pos, ref vel);
-            body.Position = pos + body.Size * 0.5;
+            body.Position = pos;// + body.Size * 0.5;
             body.Velocity = vel / dt;
             body.OnMove();
         }
@@ -393,7 +393,7 @@ public partial class ErPhysicsWorld2D
         foreach (var item in BodyLookup.Lookup.Values)
         {
             // Console.WriteLine($"{item.Rect} {item.Rect.Centered(item.Rect.Position)}");
-            DebugDrawRect(item.Rect.Centered(), false, item.Mask);
+            DebugDrawRect(item.Rect, false, item.Mask);
         }
     }
     public void DebugDrawAreas()
@@ -401,7 +401,7 @@ public partial class ErPhysicsWorld2D
         if(DebugDrawRect is null) return;
         foreach (var item in AreaLookup.Lookup.Values)
         {
-            DebugDrawRect(item.Rect.Centered(), item.OverlappingCount > 0, item.Mask);
+            DebugDrawRect(item.Rect, item.OverlappingCount > 0, item.Mask);
         }
     }
 }

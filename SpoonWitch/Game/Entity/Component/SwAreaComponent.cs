@@ -29,7 +29,7 @@ public class SwAreaComponent(SwEntity parent, string name, uint mask, ErVec2 siz
             if (!Enabled) SwGame.GetMap().PhysicsWorld.RemoveArea(_Id);
         }
         if(!Enabled) return;
-        Area.Position = Parent.Position + Offset;
+        Area.Position = Parent.Position + Offset - Size*0.5;
         Area.Size = Size;
         Area.Mask = Mask;
         Area.ParentId = Parent.Id;

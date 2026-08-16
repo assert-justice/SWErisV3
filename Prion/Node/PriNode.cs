@@ -117,7 +117,9 @@ public abstract class PriNode
     }
     public static bool TryToPrion<T>(T value, out PriNode priNode)
     {
-        return PriConverter.TryToPri(value, out priNode);
+        if(value is not PriNode node) return PriConverter.TryToPri(value, out priNode);
+        priNode = node;
+        return true;
     }
     public static bool TryToPrion<T,U>(T value, out U priNode) where U: PriNode
     {
