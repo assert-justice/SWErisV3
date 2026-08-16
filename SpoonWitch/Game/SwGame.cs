@@ -22,7 +22,20 @@ public class SwGame
     public static double FrameDuration => ErEngine.FrameDuration * GameSpeed;
     // The factor to blend between the last state and the next state with
     public static double FrameWeight{get; private set;}
+    private static ErTexture[] RenderTextures = [];
     public static double GameSpeed => 1;
+    private static int _RenderLayer;
+    public static int RenderLayer
+    {
+        get => _RenderLayer;
+        set
+        {
+            if(value == _RenderLayer) return;
+            ErEngine.Renderer.PopViewport();
+            _RenderLayer = value;
+            ErEngine.Renderer.PushViewport(ErVec2.Zero, RenderTextures[value]);
+        }
+    }
     private static readonly SwEntPropsLookup PropsLookup = new();
     public static SwMap Map{get; private set;} = new();
     // private static readonly Queue<SwMove> MoveQueue = [];
@@ -61,6 +74,11 @@ public class SwGame
         }
         Camera.DrawFn = DrawScene;
         Game = this;
+        RenderTextures = new ErTexture[5];
+        for (int idx = 0; idx < RenderTextures.Length; idx++)
+        {
+            RenderTextures[idx] = ErTexture.GetRenderTexture((int)SwApp.CameraSize.X, (int)SwApp.CameraSize.Y);
+        }
     }
     public static bool TryGetEntProps(int id, out SwEntPropsBase entProps)
     {
@@ -173,6 +191,14 @@ public class SwGame
             Map.PhysicsWorld.DebugDrawAreas();
             ErEngine.Renderer.FlushDebug();
         }
+        _RenderLayer = 0;
+        ErEngine.Renderer.PushViewport(ErVec2.Zero, RenderTextures[RenderLayer]);
+        for (int idx = 0; idx < RenderTextures.Length; idx++)
+        {
+            // RenderTextures[idx].Draw(ErVec2.Zero);
+            RenderLayer = idx;
+            ErEngine.Renderer.Clear();
+        }
         LastStream.Reset();
         NextStream.Reset();
         while(NextStream.BytesRemaining() > 0)
@@ -190,6 +216,11 @@ public class SwGame
             }
             lastEnt.Read(LastStream);
             lastEnt.Draw(nextEnt);
+        }
+        ErEngine.Renderer.PopViewport();
+        for (int idx = 0; idx < RenderTextures.Length; idx++)
+        {
+            RenderTextures[idx].Draw(ErVec2.Zero);
         }
     }
     private bool TryGetPrototype(byte typeId, out (SwEntity, SwEntity) pair)

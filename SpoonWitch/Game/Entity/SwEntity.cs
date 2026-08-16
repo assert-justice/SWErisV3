@@ -14,6 +14,7 @@ public abstract class SwEntity
     private readonly Dictionary<(Type,string), SwComponent> ComponentLookup = [];
     private readonly List<SwComponent> Components = [];
     public SwEntPropsBase EntProps{get; private set;} = null!;
+    public virtual int RenderLayer => 1;
     abstract protected byte GetTypeId{get;}
     private int _Id;
     public int Id => _Id;
@@ -130,6 +131,7 @@ public abstract class SwEntity
         if(!Visible) return;
         if(nextState.GetType() != GetType()) throw new Exception("type mismatch");
         if(nextState.Components.Count != Components.Count) throw new Exception("component mismatch");
+        SwGame.RenderLayer = RenderLayer;
         for (int idx = 0; idx < Components.Count; idx++)
         {
             var comp = Components[idx];

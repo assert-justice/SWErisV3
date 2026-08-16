@@ -17,8 +17,7 @@ public class SwCamera
     public bool UseBounds = false;
     private ErVec2 TargetPos;
     private ErVec2 CurrentPos;
-    public ErVec2 Position => CurrentPos;//+ Half;
-    // public ErVec2 Corner => CurrentPos - Half;
+    public ErVec2 Position => CurrentPos;
     private ErVec2 NextPos;
     public ErVec2 Size => Texture.Size;
     public SwCamera()
@@ -69,9 +68,9 @@ public class SwCamera
         ErEngine.Renderer.PushViewport(pos-Half, Texture);
         ErEngine.Renderer.SetClearColor(CamColor);
         ErEngine.Renderer.Clear();
+        ErEngine.Renderer.SetClearColor(ClearColor);
         DrawFn();
         ErEngine.Renderer.PopViewport();
         Texture.Draw(Offset);
-        ErEngine.Renderer.SetClearColor(ClearColor);
     }
 }

@@ -17,6 +17,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     private static SwPlayer? _Secondary;
     public static SwPlayer Primary => _Primary ??= new();
     public static SwPlayer Secondary => _Secondary ??= new();
+    public override int RenderLayer => 2;
     public static byte TypeId => 0;
     protected override byte GetTypeId => TypeId;
     public override uint Mask => 3;
