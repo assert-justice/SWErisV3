@@ -59,26 +59,13 @@ public abstract class SwActor: SwEntity
     public override void Update()
     {
         base.Update();
-        // if(IsAlive) SwGame.AddCollider(new(){ Id=Id,Mask=Mask,Rect=ErRect2.Centered(Position,Size)});
         if(InvulnClock > 0)InvulnClock -= SwGame.DeltaTime;
         if(KnockbackClock > 0)KnockbackClock -= SwGame.DeltaTime;
         HandleFlicker();
-        // if(FlickerClock > 0)
-        // {
-        //     FlickerClock -= SwGame.DeltaTime;
-        //     if(FlickerClock <= 0) Visible = true;
-        // }
     }
-    // private static bool TryParseDamage(PriNode node, out double value)
-    // {
-    //     if(node.TryAs(out value)) return true;
-    //     if(node.Get("value").TryAs(out value)) return true;
-    //     return false;
-    // }
     protected override void HandleCommands()
     {
         base.HandleCommands();
-        // foreach (var item in SwApp.CommandStore.GetCommands("damage", Id))
         foreach (var item in EntProps.GetCommands())
         {
             if(!item.TryGet("verb", out string verb))
@@ -114,7 +101,6 @@ public abstract class SwActor: SwEntity
         {
             value += item.Item2;
         }
-        // double value = damage.Value;
         var knockback = (Position - damage.SourcePos).Normalized() * value * KnockbackFactor;
         Velocity = knockback;
         Health -= value;

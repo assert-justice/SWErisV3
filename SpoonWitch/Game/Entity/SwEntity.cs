@@ -86,7 +86,7 @@ public abstract class SwEntity
     protected virtual void HandleCommands(){}
     public virtual void Write(SwByteStream byteStream)
     {
-        if(IsFreeQueued) return;
+        if(IsFreeQueued) return; // Todo: prevent child classes from writing as well
         int head = byteStream.Head;
         // write type byte
         byteStream.WriteByte(GetTypeId);
