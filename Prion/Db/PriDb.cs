@@ -35,6 +35,11 @@ public class PriDb
             return TrySet(path, node);
         }
     }
+    public PriNode Get(string path)
+    {
+        if(TryGet(path, out PriNode priNode)) return priNode;
+        return PriNull.Null;
+    }
     public bool TryGet<T>(string path, out T value)
     {
         return TryGet(SplitPath(path), out value);

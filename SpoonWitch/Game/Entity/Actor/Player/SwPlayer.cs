@@ -29,6 +29,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     public double DodgeDuration => 9.0 / 12;
     public double DodgeCooldown => 0.15;
     public double DodgeSpeedMul => 1.5;
+    public double BulletSpeed => 100;
     protected override int NumClocks => base.NumClocks + 2;
     public double Clock0{get => Clocks[base.NumClocks+0]; set {Clocks[base.NumClocks+0] = value;}}
     public double DodgeCooldownClock{get => Clocks[base.NumClocks+1]; set {Clocks[base.NumClocks+1] = value;}}
@@ -77,6 +78,9 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         // SwPrion.TrySetVec2(spoonDamage, ErVec2.Zero, "source_pos_x", "source_pos_y");
         // spoonDamage.TrySet("damage", damageList);
         EntProps.Props.TrySet("spoon_damage", spoonDamage.ToPri());
+        // PriDict bulletData = [];
+        // SwPrion.TrySetVec2(bulletData, )
+        // EntProps.Props.TrySet("bullet", bulletData);
     }
     public override void Update()
     {

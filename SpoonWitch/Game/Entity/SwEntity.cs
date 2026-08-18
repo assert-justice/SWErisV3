@@ -26,10 +26,12 @@ public abstract class SwEntity
     public ErVec2 Velocity;
     public bool Visible = true;
     public virtual ErVec2 Size => new(32,32);
-    public virtual uint Mask => 1;
+    public virtual uint Mask => 0;
     public bool IsFreeQueued{get; private set;}
     protected virtual int NumClocks => 0;
     protected readonly double[] Clocks;
+    // private bool WasBodyEnabled = false;
+    // public bool BodyEnabled = true;
     private readonly SwColliderBody Body = new();
     public SwEntity()
     {
@@ -67,10 +69,12 @@ public abstract class SwEntity
         if(!byteStream.TryReadI32(out _Id)) throw new("jerkbag");
         if(!byteStream.TryReadI32(out _CurrentHeadIndex)) throw new("oops2");
         if(!byteStream.TryReadI32(out _LastHeadIndex)) throw new("oops3");
-        if(!byteStream.TryReadVec2(out var pos)) throw new("oops4");
+        if(!byteStream.TryReadVec2(out Position)) throw new("oops4");
         if(!byteStream.TryReadVec2(out Velocity)) throw new("oops5");
         if(!byteStream.TryReadBool(out Visible)) throw new("oops6");
-        Position = pos + Size * 0.5;
+        // if(!byteStream.TryReadBool(out WasBodyEnabled)) throw new("oops7");
+        // if(!byteStream.TryReadBool(out BodyEnabled)) throw new("oops7");
+        // Position = BodyEnabled ? pos + Size * 0.5 : pos;
         // read clocks
         if(!byteStream.TryReadF64s(in Clocks)) throw new("bad clocks");
         // read components
@@ -98,16 +102,27 @@ public abstract class SwEntity
         // write current head index as last head index
         // Note: if it is negative, that means there is no valid last head index. this is relevant for drawing.
         byteStream.WriteI32(_CurrentHeadIndex);
+        // if(BodyEnabled != WasBodyEnabled)
+        // {
+        //     WasBodyEnabled = BodyEnabled;
+        //     if(!BodyEnabled) SwGame.Map.PhysicsWorld.RemoveBody(Id);
+        // }
+        // if (BodyEnabled)
+        // {
         Body.ParentId = Id;
-        Body.Position = Position - Size * 0.5;
+        Body.Rect = ErRect2.Centered(Position, Size);
+        // Body.Position = Position - Size * 0.5;
+        // Body.Size = Size;
         Body.Velocity = Velocity;
         Body.Mask = Mask;
         Body.Head = byteStream.Head;
-        Body.Size = Size;
         SwGame.Map.PhysicsWorld.SetBody(Id, Body);
+        // }
         byteStream.WriteVec2(Position);
         byteStream.WriteVec2(Velocity);
         byteStream.WriteBool(Visible);
+        // byteStream.WriteBool(WasBodyEnabled);
+        // byteStream.WriteBool(BodyEnabled);
         // clocks
         byteStream.WriteF64s(in Clocks);
         // write components
@@ -132,6 +147,7 @@ public abstract class SwEntity
         if(nextState.GetType() != GetType()) throw new Exception("type mismatch");
         if(nextState.Components.Count != Components.Count) throw new Exception("component mismatch");
         SwGame.RenderLayer = RenderLayer;
+        DrawImpl(nextState);
         for (int idx = 0; idx < Components.Count; idx++)
         {
             var comp = Components[idx];
@@ -139,6 +155,7 @@ public abstract class SwEntity
             comp.Draw(nextComp);
         }
     }
+    protected virtual void DrawImpl(SwEntity nextState){}
     public bool TryGetComponent<T>(string name, out T component) where T: SwComponent
     {
         component = null!;

@@ -1,7 +1,6 @@
 using Prion.Db;
 using Prion.Node;
 using SpoonWitch.ByteStream;
-using SpoonWitch.Command;
 
 namespace SpoonWitch.Game.Entity;
 
@@ -27,15 +26,6 @@ public abstract class SwEntPropsBase
     {
         while(Commands.TryDequeue(out var command)) yield return command;
     }
-    // public void Set(string key, PriNode node)
-    // {
-    //     if(!Props.TrySet(key, node))
-    //     {
-    //         PriDict dict = new();
-    //         dict.Data[key]= node;
-    //         Props = dict;
-    //     }
-    // }
 }
 
 public class SwEntProps<T>: SwEntPropsBase where T: SwEntity, ISwEntity<T>

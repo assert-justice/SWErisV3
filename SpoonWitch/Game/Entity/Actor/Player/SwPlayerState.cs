@@ -3,6 +3,7 @@ using Eris.Utils;
 using ErisMath;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
+using SpoonWitch.Game.Entity.Projectile;
 using SpoonWitch.Rendering;
 
 namespace SpoonWitch.Game.Entity.Actor.Player;
@@ -194,6 +195,12 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             base.BeginState(lastState);
             SlingSprite.Play("charged");
         }
+        private bool CanFire()
+        {
+            if(!Controls.FireJustPressed) return false;
+            if(!Controls.Aim.IsNonzero()) return false;
+            return true;
+        }
         public override void Update()
         {
             base.Update();
@@ -201,6 +208,17 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             BodySprite.Play(BodyAnims[animIdx][1][Controls.LastFacingIdx]);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.ChargeSpeedMul;
             if (!Controls.IsCharging) StateMachine.SetState("default");
+            else if (CanFire())
+            {
+                // fire!
+                var pos = Entity.Position - Entity.Size * 0.5;
+                Entity.EntProps.Props.TrySet("bullet/x", pos.X);
+                Entity.EntProps.Props.TrySet("bullet/y", pos.Y);
+                Entity.EntProps.Props.TrySet("bullet/x_velocity", Controls.Aim.X * Entity.BulletSpeed);
+                Entity.EntProps.Props.TrySet("bullet/y_velocity", Controls.Aim.Y * Entity.BulletSpeed);
+                SwGame.Game.AddEntity<SwProjectile>(Entity.EntProps.Props.Get("bullet"));
+                StateMachine.SetState("default");
+            }
         }
         public override void EndState(string nextState)
         {

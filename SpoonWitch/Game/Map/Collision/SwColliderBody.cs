@@ -15,6 +15,6 @@ public class SwColliderBody: ErColliderBody
     public override void OnMove()
     {
         base.OnMove();
-        SwGame.PatchEnt(Head, Position, Velocity);
+        SwGame.PatchEnt(Head, Rect.Center, Velocity);
     }
 }

@@ -21,12 +21,6 @@ public class SwEntPropsLookup
         }
         props[entProps.Id] = entProps;
     }
-    // public bool RemoveEntProps<T>(int id) where T: SwEntity, ISwEntity<T>
-    // {
-    //     bool res = EntProps.Remove(id);
-    //     if(res && TypeLookup.TryGetValue(typeof(T), out var lookup)) lookup.Remove(id);
-    //     return res;
-    // }
     public bool RemoveEntProps(SwEntity entity)
     {
         bool res = EntProps.Remove(entity.Id);

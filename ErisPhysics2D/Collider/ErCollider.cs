@@ -20,7 +20,15 @@ public abstract class ErCollider
         get => _Mask.Value;
         set => _Mask.Value = value;
     }
-    public ErRect2 Rect => new(Position,Size);
+    public ErRect2 Rect
+    {
+        get => new(Position,Size);
+        set
+        {
+            Position = value.Position;
+            Size = value.Size;
+        }
+    }
     private readonly ErDirtyFlag<ErVec2> _Position;
     private readonly ErDirtyFlag<ErVec2> _Size;
     private readonly ErDirtyFlag<uint> _Mask;
@@ -31,14 +39,6 @@ public abstract class ErCollider
         _Size = new(size ?? ErVec2.Zero);
         _Mask = new(mask);
     }
-    // public virtual bool TryCopy<T>(ref T value) where T: ErCollider
-    // {
-    //     value.Position = Position;
-    //     value.Size = Size;
-    //     value.Mask = Mask;
-    //     value.ParentId = ParentId;
-    //     return true;
-    // }
     public virtual void Copy<T>(ref T value) where T: ErCollider
     {
         value.Position = Position;
