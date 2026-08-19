@@ -77,6 +77,11 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         if(!Controls.Move.IsNonzero()) return false;
         return true;
     }
+    private bool CanAttack()
+    {
+        if(Entity.AttackCooldownClock > 0) return false;
+        return true;
+    }
     public override void Init(SwStateMachine stateMachine)
     {
         base.Init(stateMachine);
@@ -107,7 +112,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
             BodySprite.Play(BodyAnims[animIdx][2][Controls.LastFacingIdx]);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed;
-            if(Controls.AttackJustPressed) StateMachine.SetState("attack");
+            if(Controls.AttackJustPressed && CanAttack()) StateMachine.SetState("attack");
             else if(Controls.IsCharging) StateMachine.SetState("charging");
             else if(Controls.DodgeJustPressed && CanDodge()) StateMachine.SetState("dodging");
         }
@@ -218,6 +223,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
                 Entity.EntProps.Props.TrySet("bullet/y_velocity", Controls.Aim.Y * Entity.BulletSpeed);
                 SwGame.Game.AddEntity<SwProjectile>(Entity.EntProps.Props.Get("bullet"));
                 StateMachine.SetState("default");
+                Entity.AttackCooldownClock = 0.1;
             }
         }
         public override void EndState(string nextState)
