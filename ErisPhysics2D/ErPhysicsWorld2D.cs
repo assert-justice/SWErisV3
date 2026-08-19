@@ -163,6 +163,17 @@ public partial class ErPhysicsWorld2D
     // Move and slide methods
     private IEnumerable<ErRect2> GetColliders(int id, uint mask, ErRect2 rect)
     {
+        foreach (var cell in GetExtantCells(rect))
+        {
+            foreach (var (bodyId, body) in cell.Bodies)
+            {
+                if(bodyId == id) continue;
+                if((body.Mask & mask) == 0) continue;
+                var bodyRect = body.Rect;
+                if(!rect.Overlaps(bodyRect)) continue;
+                yield return bodyRect;
+            }
+        }
         var tl = PointToTileCoord(rect.Position);
         var br = PointToTileCoord(rect.Position + rect.Size);
         ErVec2I currentCellCoords = tl / CellSizeTiles;
@@ -183,17 +194,6 @@ public partial class ErPhysicsWorld2D
                 uint tileMask = TileMaskLookup[tileId];
                 if((mask & tileMask) == 0) continue;
                 yield return GetTileRect(tileCoord);
-            }
-        }
-        foreach (var cell in GetExtantCells(rect))
-        {
-            foreach (var (bodyId, body) in cell.Bodies)
-            {
-                if(bodyId == id) continue;
-                if((body.Mask & mask) == 0) continue;
-                var bodyRect = body.Rect;
-                if(!rect.Overlaps(bodyRect)) continue;
-                yield return bodyRect;
             }
         }
     }

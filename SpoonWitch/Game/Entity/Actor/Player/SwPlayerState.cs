@@ -211,7 +211,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             else if (CanFire())
             {
                 // fire!
-                var pos = Entity.Position - Entity.Size * 0.5;
+                var pos = Entity.Position;// - Entity.Size * 0.5;
                 Entity.EntProps.Props.TrySet("bullet/x", pos.X);
                 Entity.EntProps.Props.TrySet("bullet/y", pos.Y);
                 Entity.EntProps.Props.TrySet("bullet/x_velocity", Controls.Aim.X * Entity.BulletSpeed);
