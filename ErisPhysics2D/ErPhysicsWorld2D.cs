@@ -118,7 +118,7 @@ public partial class ErPhysicsWorld2D
     {
         return (position / (ErVec2)CellSizePx).FloorToInt();
     }
-    private ErVec2I PointToTileCoord(ErVec2 position)
+    public ErVec2I PointToTileCoord(ErVec2 position)
     {
         return (position / (ErVec2)TileSizePx).FloorToInt();
     }

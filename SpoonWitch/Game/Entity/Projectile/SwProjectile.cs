@@ -18,7 +18,7 @@ public class SwProjectile : SwEntity, ISwEntity<SwProjectile>
     // public override uint Mask => 0;
     public SwProjectile()
     {
-        SwAreaComponent hurtbox = new(this, "hurtbox", 4, new(32,32), enabled:true);
+        SwAreaComponent hurtbox = new(this, "hurtbox", 4, new(14,14), enabled:true);
         // hurtbox.Area.OnBodyEnterFn = OnEnterSpoonHurtbox;
         RegisterComponent(hurtbox);
         if(!ErTexture.TryFromPath("game_data/entities/actors/player/images/bella_sling_ammo_shot.png", out Texture)) ErEngine.LogError("bad projectile texture path");
@@ -35,6 +35,10 @@ public class SwProjectile : SwEntity, ISwEntity<SwProjectile>
     public override void Update()
     {
         base.Update();
+        // var tileCoord = SwGame.Map.PhysicsWorld.PointToTileCoord(Position);
+        // var tileId = SwGame.Map.PhysicsWorld.GetTile(tileCoord);
+        // var tileData = SwGame.Map.GetTileData(tileId);
+        // if(tileData.IsOpaque) QueueFree();
         // EntProps.Props.TryGet("x_velocity", out double xVel);
         // EntProps.Props.TryGet("y_velocity", out double yVel);
         // Velocity = new(xVel, yVel);
