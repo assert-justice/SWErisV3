@@ -6,11 +6,22 @@ public class ErEcsWorld
     private readonly List<(ErEcsEntity,ErEcsEntity)> Prototypes = [];
     private ErByteStream LastStream;
     private ErByteStream NextStream;
+    private int NextId = 0;
     private readonly ErByteStream NewEntities = new();
     public ErEcsWorld(int capacity = 0)
     {
         LastStream = new(capacity);
         NextStream = new(capacity);
+    }
+    public int GetNextId()
+    {
+        int id = NextId;
+        NextId++;
+        return id;
+    }
+    public int PeekNextId()
+    {
+        return NextId;
     }
     private bool TryReadEnt(ErByteStream byteStream, out ErEcsEntity entity)
     {
@@ -42,9 +53,9 @@ public class ErEcsWorld
         int typeId = Prototypes.Count;
         if(!PrototypeLookup.TryAdd(typeof(T), typeId)) throw new("attempted to add duplicate prototype, type '{typeof(T)}' is already registered");
         var primary = new T();
-        primary.WorldSetTypeId(typeId);
+        primary.RegisterPrototype(this, typeId);
         var secondary = new T();
-        secondary.WorldSetTypeId(typeId);
+        secondary.RegisterPrototype(this, typeId);
         Prototypes.Add((primary, secondary));
         return typeId;
     }
