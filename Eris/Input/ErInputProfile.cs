@@ -50,8 +50,7 @@ public class ErInputProfile
     }
     public static IEnumerable<T> GetEnumArray<T>(PriNode items) where T : struct, Enum
     {
-        if(items is not PriList list) yield break;
-        foreach (var item in list.Values)
+        foreach (var item in items.Values)
         {
             if(!item.TryAs(out string name))
             {

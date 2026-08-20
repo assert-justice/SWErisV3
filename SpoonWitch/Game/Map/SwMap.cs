@@ -1,8 +1,12 @@
 using System.Text.Json.Nodes;
 using Eris;
+using Eris.Renderer;
 using ErisMath;
+using ErisPhysics2D;
 using Prion.Node;
 using Prion.Parser;
+using SpoonWitch.Game.Map.Collision;
+using SpoonWitch.Game.Map.MapObject;
 
 namespace SpoonWitch.Game.Map;
 
@@ -11,16 +15,22 @@ public class SwMap
     private readonly Dictionary<string,SwRoom> Rooms = [];
     private readonly Dictionary<string,SwRoom> LoadedRooms = [];
     private readonly Dictionary<ErVec2I, SwRoom> SectorLookup = [];
-    private readonly List<SwTileData> TileData = [];
+    private readonly SwTileData[] TileData;
     private readonly SwDisplayLayer[] DisplayLayers;
-    public readonly SwCollisionLayer CollisionLayer;
+    public readonly int NumTileLayers;
+    // public readonly SwCollisionLayer CollisionLayer;
+    public readonly ErPhysicsWorld2D PhysicsWorld;
     public readonly string Id;
     public readonly ErVec2I TileSize;
     public readonly ErVec2I SectorSizeTiles;
     public readonly ErVec2I SectorSizePx;
-    public SwMap(string id = "", int numTileLayers = 0, ErVec2I? tileSize = null, ErVec2I? sectorSizePx = null)
+    private readonly SwMapObjectLookup GlobalMapObjects = new();
+    public readonly string Dirpath;
+    public SwMap(string dirpath = "", string id = "", int numTileLayers = 0, ErVec2I? tileSize = null, ErVec2I? sectorSizePx = null, SwTileData[]? tileData = null)
     {
+        Dirpath = dirpath;
         Id = id;
+        NumTileLayers = numTileLayers;
         DisplayLayers = new SwDisplayLayer[numTileLayers];
         for (int i = 0; i < DisplayLayers.Length; i++)
         {
@@ -29,7 +39,35 @@ public class SwMap
         TileSize = tileSize ?? new(32, 32);
         SectorSizePx = sectorSizePx ?? new(640, 320);
         SectorSizeTiles = SectorSizePx / TileSize;
-        CollisionLayer = new(this);
+        // CollisionLayer = new(this);
+        TileData = tileData ?? [];
+        uint[] tileMaskLookup = [..TileData.Select(t => t.CollisionMask)];
+        static void debugDrawRect(ErRect2 rect, bool overlap, uint mask)
+        {
+            if(mask == 0) return;
+            ErEngine.Renderer.DebugDrawRect(overlap ? ErColor.Red : ErColor.Blue, rect, false);
+        }
+        static void debugDrawLine(ErVec2 start, ErVec2 end, bool overlap, uint mask)
+        {
+            if(mask == 0) return;
+            ErEngine.Renderer.DebugDrawLine(overlap ? ErColor.Red : ErColor.Blue, start, end);
+        }
+        PhysicsWorld = new(new(8, 8), TileSize, 0, tileMaskLookup)
+        {
+            DebugDrawRect = debugDrawRect,
+            DebugDrawLine = debugDrawLine,
+        };
+        SwColliderArea area = new()
+        {
+            Size = new(32, 32),
+            Position = new(128, 128),
+            Mask = uint.MaxValue,
+        };
+        PhysicsWorld.SetArea(0, area);
+    }
+    public void AddGlobalObject(SwMapObject mapObject)
+    {
+        GlobalMapObjects.AddObject(mapObject);
     }
     public SwTileData GetTileData(int tileId)
     {
@@ -37,42 +75,80 @@ public class SwMap
     }
     public void SetTile(int layer, ErVec2I coord, int tileId)
     {
-        CollisionLayer.SetTile(coord, tileId);
+        // CollisionLayer.SetTile(coord, tileId);
+        PhysicsWorld.SetTile(coord, tileId);
         DisplayLayers[layer].SetTile(coord, tileId);
     }
     private void AddRoom(SwRoom room)
     {
-        Rooms.Add(room.Id, room);
-        room.Load();
         foreach (var sector in room.GetSectors())
         {
-            SectorLookup.Add(sector,room);
+            SectorLookup.Add(sector.PositionSectors,room);
+        }
+        LoadRoom(room);
+    }
+    public void Update()
+    {
+        foreach (var item in GlobalMapObjects.GetObjects())
+        {
+            item.Update();
+        }
+        foreach (var room in LoadedRooms.Values)
+        {
+            room.Update();
         }
     }
-    public void Update(){}
     public void Draw()
     {
-        foreach (var item in DisplayLayers)
+        foreach (var layer in DisplayLayers)
         {
-            item.Draw();
+            layer.Draw();
         }
-        if (SwApp.Debug)
+        foreach (var room in LoadedRooms.Values)
         {
-            CollisionLayer.DebugDraw();
+            room.Draw();
         }
+        // if (SwApp.Debug)
+        // {
+        //     CollisionLayer.DebugDraw();
+        // }
+    }
+    public void DebugDraw(){}
+    public bool TryGetDefaultCheckpoint(out SwMapCheckpoint checkpoint)
+    {
+        checkpoint = null!;
+        foreach (var item in GlobalMapObjects.GetObjects<SwMapCheckpoint>())
+        {
+            if(!item.Fields.TryGet("default", out bool isDefault) || !isDefault) continue;
+            if(checkpoint is null) checkpoint = item;
+            else ErEngine.LogWarning("duplicate default checkpoints found");
+        }
+        return checkpoint is not null;
     }
     public bool TryGetRoom(ErVec2 position, out SwRoom room)
     {
         ErVec2I sector = (position/(ErVec2)SectorSizePx).FloorToInt();
         return SectorLookup.TryGetValue(sector, out room!);
     }
-    // public bool TryLoadRoom(string roomId)
-    // {
-    //     if(!Rooms.TryGetValue(roomId, out var room)) return false;
-    //     LoadedRooms.Add(roomId, room);
-    //     room.Load();
-    //     return true;
-    // }
+    private void LoadRoom(SwRoom room)
+    {
+        Rooms.TryAdd(room.Id, room);
+        LoadedRooms.Add(room.Id, room);
+        room.Load();
+    }
+    public bool TryLoadRoom(string roomId)
+    {
+        if(!Rooms.TryGetValue(roomId, out var room)) return false;
+        LoadRoom(room);
+        return true;
+    }
+    public void LoadGlobals()
+    {
+        foreach (var item in GlobalMapObjects.GetObjects())
+        {
+            item.Load();
+        }
+    }
     // public void UnloadRoom(string roomId)
     // {
     //     if(!LoadedRooms.TryGetValue(roomId, out var room))
@@ -93,18 +169,14 @@ public class SwMap
         if(!data.Get("defaultGridSize").TryAs(out int defaultGridSize)) defaultGridSize = 32;
         if(!data.Get("worldGridWidth").TryAs(out int sectorWidthPx)) sectorWidthPx = 640;
         if(!data.Get("worldGridHeight").TryAs(out int sectorHeightPx)) sectorHeightPx = 320;
+        ErVec2I tileSize = new(defaultGridSize, defaultGridSize);
         int numTileLayers = 0;
         foreach (var layerData in layers.Values)
         {
             if(!layerData.Get("type").TryAs(out string layerType)) return ErEngine.LogWarning("malformed layer: ", layerData);
             if(layerType == "Tiles") numTileLayers++;
         }
-        map = new(id, numTileLayers, new(defaultGridSize,defaultGridSize), new(sectorWidthPx,sectorHeightPx));
-        foreach (var roomData in rooms.Values)
-        {
-            if(SwRoom.TryFromData(map, roomData, out var room)) map.AddRoom(room);
-            else return ErEngine.LogWarning("malformed room");
-        }
+        List<SwTileData> tileDataEntries = [];
         foreach (var tileset in tilesetList.Values)
         {
             if(!tileset.Get("identifier").TryAs(out string ident)) continue;
@@ -117,8 +189,8 @@ public class SwMap
                 {
                     var json = JsonNode.Parse(dataStr);
                     var prion = PriJsonConverter.JsonToPrion(json);
-                    if(!SwTileData.TryFromData(filepath, prion, map.TileSize, out var tileData)) return ErEngine.LogWarning("corrupt tile data");
-                    map.TileData.Add(tileData);
+                    if(!SwTileData.TryFromData(filepath, prion, tileSize, out var tileData)) return ErEngine.LogWarning("corrupt tile data");
+                    tileDataEntries.Add(tileData);
                 }
                 catch(Exception e)
                 {
@@ -126,6 +198,12 @@ public class SwMap
                 }
             }
             break;
+        }
+        map = new(Path.GetDirectoryName(filepath)!, id, numTileLayers, tileSize, new(sectorWidthPx,sectorHeightPx), [..tileDataEntries]);
+        foreach (var roomData in rooms.Values)
+        {
+            if(SwRoom.TryFromData(map, roomData, out var room)) map.AddRoom(room);
+            else return ErEngine.LogWarning("malformed room");
         }
         return true;
     }

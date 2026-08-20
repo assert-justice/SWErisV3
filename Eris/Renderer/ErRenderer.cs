@@ -5,7 +5,8 @@ namespace Eris.Renderer;
 
 public class ErRenderer
 {
-    public ErTextureManager TextureManager{get; private set;} = null!;
+    internal ErTextureManager TextureManager{get; private set;} = null!;
+    public readonly ErFontManager FontManager = new();
     private nint Window;
     private ErColor ClearColor = ErColor.Black;
     public string WindowName{get; private set;} = "Eris Engine";
@@ -15,11 +16,7 @@ public class ErRenderer
     public nint Handle{get; private set;}
     public ErRect2 ViewportTransform{get; private set;}
     private readonly Stack<(ErRect2,nint)> ViewportStack = [];
-    // public void PushViewport(ErRect2 rect, ErTexture? target = null)
-    // {
-    //     ViewportStack.Push((rect,target?.Handle??0));
-    //     UseViewport();
-    // }
+    private readonly Queue<Action> DebugDrawQueue = [];
     public void PushViewport(ErVec2 position, ErTexture target)
     {
         ViewportStack.Push((new(position,target.Size),target.Handle));
@@ -43,11 +40,6 @@ public class ErRenderer
             SDL.SetRenderTarget(Handle, 0);
         }
     }
-    // public void SetViewport(ErRect2 rect, ErTexture? target = null)
-    // {
-    //     ViewportTransform = rect;
-    //     SDL.SetRenderTarget(Handle, target?.Handle ?? 0);
-    // }
     private void ResetViewport()
     {
         ViewportTransform = new(ErVec2.Zero, ErVec2.One);
@@ -76,6 +68,7 @@ public class ErRenderer
             return;
         }
         CleanupStack.Push(TTF.Quit);
+        CleanupStack.Push(FontManager.Cleanup);
         Handle = renderer;
         SDL.SetRenderVSync(Handle, 1);
         SDL.SetDefaultTextureScaleMode(Handle, SDL.ScaleMode.Nearest);
@@ -104,6 +97,7 @@ public class ErRenderer
     }
     public void EndRender()
     {
+        FlushDebug();
         SDL.RenderPresent(Handle);
     }
     public void Clear()
@@ -111,19 +105,37 @@ public class ErRenderer
         SDL.SetRenderDrawColor(Handle, ClearColor.R, ClearColor.G, ClearColor.B, ClearColor.A);
         SDL.RenderClear(Handle);
     }
-    // public void SetTarget(ErTexture? texture = null)
-    // {
-    //     SDL.SetRenderTarget(Handle, texture?.Handle ?? 0);
-    // }
+    public void FlushDebug()
+    {
+        while (DebugDrawQueue.TryDequeue(out var fn))
+        {
+            fn();
+        }
+    }
     public void SetClearColor(ErColor color)
     {
         ClearColor = color;
     }
     public void DebugDrawRect(ErColor color, ErRect2 rect, bool filled)
     {
-        rect = rect.Translate(-ViewportTransform.Position);
-        SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, color.A);
-        if (filled)SDL.RenderFillRect(Handle, rect.ToSdlRect());
-        else SDL.RenderRect(Handle, rect.ToSdlRect());
+        void fn()
+        {
+            rect = rect.Translate(-ViewportTransform.Position);
+            SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, color.A);
+            if (filled)SDL.RenderFillRect(Handle, rect.ToSdlRect());
+            else SDL.RenderRect(Handle, rect.ToSdlRect());
+        }
+        DebugDrawQueue.Enqueue(fn);
+    }
+    public void DebugDrawLine(ErColor color, ErVec2 start, ErVec2 end)
+    {
+        void fn()
+        {
+            start -= ViewportTransform.Position;
+            end -= ViewportTransform.Position;
+            SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, color.A);
+            SDL.RenderLine(Handle, (float)start.X, (float)start.Y, (float)end.X, (float)end.Y);
+        }
+        DebugDrawQueue.Enqueue(fn);
     }
 }

@@ -1,6 +1,4 @@
 {
-    "tile_width": 64,
-    "tile_height": 64,
     "sprites": {
         "spoon": {
             "offset_x": 0,
@@ -195,29 +193,29 @@
                 "dodge_d": {
                     "texture": "images/bella_dodge_d.png",
                     "first_frame": 0,
-                    "last_frame": 7,
+                    "last_frame": 8,
                     "fps": 12,
                     "loops": false
                 },
                 "dodge_dr": {
                     "texture": "images/bella_dodge_d.png",
                     "first_frame": 0,
-                    "last_frame": 7,
+                    "last_frame": 8,
                     "fps": 12,
                     "loops": false
                 },
                 "dodge_dl": {
                     "texture": "images/bella_dodge_d.png",
                     "first_frame": 0,
-                    "last_frame": 7,
+                    "last_frame": 8,
                     "fps": 12,
                     "loops": false
                 },
                 "dodge_u": {
-                    "texture": "images/bella_dodge_d.png",
+                    "texture": "images/bella_dodge_u.png",
                     "first_frame": 0,
-                    "last_frame": 7,
-                    "fps": 16,
+                    "last_frame": 8,
+                    "fps": 12,
                     "loops": false
                 }
             }
@@ -242,19 +240,41 @@
             }
         },
         "reticle":{
-            "width": 8,
-            "height": 8,
+            "width": 12,
+            "height": 12,
             "visible": false,
             "animations":{
                 "still": {
-                    "texture": "images/bella_reticle.png",
+                    "texture": "images/bella_cursor.png",
                     "first_frame": 0,
-                    "last_frame": 0
+                    "last_frame": 0,
+                    "loops": true
                 },
-                "aiming": {
-                    "texture": "images/bella_reticle.png",
-                    "first_frame": 1,
-                    "last_frame": 4,
+                "charge_0":{
+                    "texture": "images/bella_cursor.png",
+                    "first_frame": 4,
+                    "last_frame": 7,
+                    "fps": 8,
+                    "loops": true
+                },
+                "charge_1":{
+                    "texture": "images/bella_cursor.png",
+                    "first_frame": 8,
+                    "last_frame": 11,
+                    "fps": 8,
+                    "loops": true
+                },
+                "charge_2":{
+                    "texture": "images/bella_cursor.png",
+                    "first_frame": 12,
+                    "last_frame": 15,
+                    "fps": 8,
+                    "loops": true
+                },
+                "charge_3":{
+                    "texture": "images/bella_cursor.png",
+                    "first_frame": 16,
+                    "last_frame": 19,
                     "fps": 8,
                     "loops": true
                 }

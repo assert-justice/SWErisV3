@@ -67,17 +67,4 @@ public static class ErMath
             idx += step;
         }
     }
-    // public static double AbsAverage(IEnumerable<double> values)
-    // {
-    //     double max = double.MinValue;
-    //     double min = double.MaxValue;
-    //     foreach (var value in values)
-    //     {
-    //         if(value > max){max = value;}
-    //         if(value < min){min = value;}
-    //     }
-    //     double maxAbs = Math.Abs(max);
-    //     double minAbs = Math.Abs(min);
-    //     double totalAbs = maxAbs - minAbs;
-    // }
 }

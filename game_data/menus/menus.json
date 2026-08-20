@@ -1,0 +1,272 @@
+{
+    "type": "menu_holder",
+    "children":[
+        {
+            "type": "menu",
+            "id": "main_menu",
+            "flow_h": "centered",
+            "flow_v": "centered",
+            "children":[
+                {
+                    "type": "text",
+                    "text": "Spoon Witch",
+                    "text_justify": "centered",
+                    "font_size": 24,
+                    "font_color": "white"
+                },
+                {
+                    "type": "button",
+                    "text": "New Game",
+                    "font_size": 16,
+                    "font_color": "white",
+                    "on_click_command":{
+                        "verb": "launch"
+                    }
+                },
+                {
+                    "type": "button",
+                    "text": "Options",
+                    "font_size": 16,
+                    "font_color": "white",
+                    "on_click_command":{
+                        "verb": "menu_set",
+                        "payload": "settings"
+                    }
+                },
+                {
+                    "type": "button",
+                    "text": "Credits",
+                    "font_size": 16,
+                    "font_color": "white",
+                    "on_click_command":{
+                        "verb": "menu_set",
+                        "payload": "credits"
+                    }
+                },
+                {
+                    "type": "button",
+                    "text": "Quit",
+                    "font_size": 16,
+                    "font_color": "white",
+                    "on_click_command":{
+                        "verb": "quit"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "menu",
+            "id": "credits",
+            "flow_h": "centered",
+            "flow_v": "centered",
+            "children":[
+                {
+                    "type": "text",
+                    "text": "Credits",
+                    "text_justify": "centered",
+                    "font_size": 24,
+                    "font_color": "white"
+                },
+                {
+                    "type": "text",
+                    "text": [
+                        "Alexa - Writing",
+                        "GOLEM PINK - Music and Sfx",
+                        "Jaid Laidlaw/Starfishness - Art",
+                        "Riley/Etmm - Programming"
+                    ],
+                    "font_size": 16,
+                    "font_color": "white"
+                },
+                {
+                    "type": "button",
+                    "text": "Back",
+                    "font_size": 16,
+                    "font_color": "white",
+                    "on_click_command":{
+                        "verb": "menu_back"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "menu",
+            "id": "settings",
+            "flow_h": "centered",
+            "flow_v": "centered",
+            "children": [
+                {
+                    "type": "text",
+                    "text": "Options",
+                    "text_justify": "centered",
+                    "font_size": 24,
+                    "font_color": "white"
+                },
+                {
+                    "type": "button",
+                    "text": "Audio Settings",
+                    "font_size": 16,
+                    "font_color": "white",
+                    "on_click_command":{
+                        "verb": "menu_set",
+                        "payload": "audio_settings"
+                    }
+                },
+                {
+                    "type": "button",
+                    "text": "Game Settings",
+                    "font_size": 16,
+                    "font_color": "white",
+                    "on_click_command":{
+                        "verb": "menu_set",
+                        "payload": "game_settings"
+                    }
+                },
+                {
+                    "type": "button",
+                    "text": "Back",
+                    "font_size": 16,
+                    "font_color": "white",
+                    "on_click_command":{
+                        "verb": "menu_back"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "menu",
+            "id": "audio_settings",
+            "flow_h": "centered",
+            "flow_v": "centered",
+            "on_sleep_command": {
+                "verb": "save_settings"
+            },
+            "children": [
+                {
+                    "type": "text",
+                    "text": "Audio Settings",
+                    "text_justify": "centered",
+                    "font_size": 24,
+                    "font_color": "white"
+                },
+                {
+                    "type": "slider",
+                    "mode": "percent",
+                    "text": "Main Volume",
+                    "font_size": 24,
+                    "font_color": "white",
+                    "setting_name": "volume/main",
+                    "step_size": 5,
+                    "min_value": 0,
+                    "max_value": 200
+                },
+                {
+                    "type": "slider",
+                    "mode": "percent",
+                    "text": "Music Volume",
+                    "font_size": 24,
+                    "font_color": "white",
+                    "setting_name": "volume/music",
+                    "step_size": 5,
+                    "min_value": 0,
+                    "max_value": 200
+                },
+                {
+                    "type": "slider",
+                    "mode": "percent",
+                    "text": "Sfx Volume",
+                    "font_size": 24,
+                    "font_color": "white",
+                    "setting_name": "volume/sfx",
+                    "step_size": 5,
+                    "min_value": 0,
+                    "max_value": 200
+                },
+                {
+                    "type": "button",
+                    "text": "Back",
+                    "font_size": 16,
+                    "font_color": "white",
+                    "on_click_command":{
+                        "verb": "menu_back"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "menu",
+            "id": "game_settings",
+            "flow_h": "centered",
+            "flow_v": "centered",
+            "on_sleep_command": {
+                "verb": "save_settings"
+            },
+            "children": [
+                {
+                    "type": "text",
+                    "text": "Game Settings",
+                    "text_justify": "centered",
+                    "font_size": 24,
+                    "font_color": "white"
+                },
+                {
+                    "type": "slider",
+                    "mode": "percent",
+                    "text": "Damage Dealt",
+                    "font_size": 24,
+                    "font_color": "white",
+                    "setting_name": "gameplay/damage_dealt",
+                    "step_size": 5,
+                    "min_value": 0,
+                    "max_value": 100
+                },
+                {
+                    "type": "slider",
+                    "mode": "percent",
+                    "text": "Damage Received",
+                    "font_size": 24,
+                    "font_color": "white",
+                    "setting_name": "gameplay/damage_received",
+                    "step_size": 5,
+                    "min_value": 0,
+                    "max_value": 100
+                },
+                {
+                    "type": "slider",
+                    "mode": "percent",
+                    "text": "Game Speed",
+                    "font_size": 24,
+                    "font_color": "white",
+                    "setting_name": "gameplay/game_speed",
+                    "step_size": 5,
+                    "min_value": 0,
+                    "max_value": 200
+                },
+                {
+                    "type": "toggle",
+                    "text": "Keyboard Aiming",
+                    "font_size": 24,
+                    "font_color": "white",
+                    "setting_name": "kbm/kb_aiming"
+                },
+                {
+                    "type": "toggle",
+                    "text": "Auto Charge",
+                    "font_size": 24,
+                    "font_color": "white",
+                    "setting_name": "gamepad/auto_charge"
+                },
+                {
+                    "type": "button",
+                    "text": "Back",
+                    "font_size": 16,
+                    "font_color": "white",
+                    "on_click_command":{
+                        "verb": "menu_back"
+                    }
+                }
+            ]
+        }
+
+    ]
+}

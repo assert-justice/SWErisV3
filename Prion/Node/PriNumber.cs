@@ -14,23 +14,26 @@ public class PriNumber: PriNode
         Hex,
         Binary,
     }
-    private static readonly Dictionary<Type,Func<PriNumber, PriNode>> Converters = [];
-    static PriNumber(){
-        Converters.Add(typeof(double), (n)=> new PriVariant<double>(n.ToF64()));
-        Converters.Add(typeof(float), (n)=> new PriVariant<float>(n.ToF32()));
-        Converters.Add(typeof(sbyte), (n)=> new PriVariant<sbyte>(n.ToI8()));
-        Converters.Add(typeof(short), (n)=> new PriVariant<short>(n.ToI16()));
-        Converters.Add(typeof(int), (n)=> new PriVariant<int>(n.ToI32()));
-        Converters.Add(typeof(long), (n)=> new PriVariant<long>(n.ToI64()));
-        Converters.Add(typeof(byte), (n)=> new PriVariant<byte>(n.ToU8()));
-        Converters.Add(typeof(ushort), (n)=> new PriVariant<ushort>(n.ToU16()));
-        Converters.Add(typeof(uint), (n)=> new PriVariant<uint>(n.ToU32()));
-        Converters.Add(typeof(ulong), (n)=> new PriVariant<ulong>(n.ToU64()));
-    }
+    // private static readonly Dictionary<Type,Func<PriNumber, PriNode>> PriNodeToVariantConverters = [];
+    // private static readonly Dictionary<Type,Func<object,PriNumber>> NumberToPriNumberConverters = [];
+    // static PriNumber(){
+    //     PriNodeToVariantConverters.Add(typeof(double), (n)=> new PriVariant<double>(n.ToF64()));
+    //     NumberToPriNumberConverters.Add(typeof)
+    //     PriNodeToVariantConverters.Add(typeof(float), (n)=> new PriVariant<float>(n.ToF32()));
+    //     PriNodeToVariantConverters.Add(typeof(sbyte), (n)=> new PriVariant<sbyte>(n.ToI8()));
+    //     PriNodeToVariantConverters.Add(typeof(short), (n)=> new PriVariant<short>(n.ToI16()));
+    //     PriNodeToVariantConverters.Add(typeof(int), (n)=> new PriVariant<int>(n.ToI32()));
+    //     PriNodeToVariantConverters.Add(typeof(long), (n)=> new PriVariant<long>(n.ToI64()));
+    //     PriNodeToVariantConverters.Add(typeof(byte), (n)=> new PriVariant<byte>(n.ToU8()));
+    //     PriNodeToVariantConverters.Add(typeof(ushort), (n)=> new PriVariant<ushort>(n.ToU16()));
+    //     PriNodeToVariantConverters.Add(typeof(uint), (n)=> new PriVariant<uint>(n.ToU32()));
+    //     PriNodeToVariantConverters.Add(typeof(ulong), (n)=> new PriVariant<ulong>(n.ToU64()));
+    // }
     public readonly NumberMode Mode;
     public readonly byte[] Data;
     public readonly NumberRadix Radix;
     public override PriNodeKind Kind => PriNodeKind.Number;
+    public override bool IsTruthy => Data.Any(b => b != 0);
     private PriNumber(byte[] data, NumberMode mode = NumberMode.SignedInt, NumberRadix radix = NumberRadix.Decimal)
     {
         Data = data;
@@ -118,12 +121,19 @@ public class PriNumber: PriNode
         }
         throw new Exception("bad data size");
     }
-    public override bool TryAs<T>(out T value)
-    {
-        if(base.TryAs(out value)) return true;
-        if(!Converters.TryGetValue(typeof(T), out var fn)) return false;
-        return fn(this).TryAs(out value);
-    }
+    // public override bool TryAs<T>(out T value)
+    // {
+    //     if(base.TryAs(out value)) return true;
+    //     return PriConverter.TryFromPri(this, out value);
+    //     // if(!PriNodeToVariantConverters.TryGetValue(typeof(T), out var fn)) return false;
+    //     // return fn(this).TryAs(out value);
+    // }
+    // public static bool TryAsNumber<T>(T number, out PriNode priNode)
+    // {
+    //     priNode = PriNull.Null;
+    //     if(!PriNodeToVariantConverters.TryGetValue(typeof(T), out var fn)) return false;
+    //     priNode = fn(number)
+    // }
     public override string ToString()
     {
         Sb.Clear();

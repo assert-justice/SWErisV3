@@ -17,8 +17,7 @@ public class SwCamera
     public bool UseBounds = false;
     private ErVec2 TargetPos;
     private ErVec2 CurrentPos;
-    public ErVec2 Position => CurrentPos;//+ Half;
-    // public ErVec2 Corner => CurrentPos - Half;
+    public ErVec2 Position => CurrentPos;
     private ErVec2 NextPos;
     public ErVec2 Size => Texture.Size;
     public SwCamera()
@@ -59,19 +58,19 @@ public class SwCamera
         }
         var diff = TargetPos - CurrentPos;
         // Note, if diff has length 0 normalizing it doesn't work, so we check the length first
-        double speed = Speed * SwGame.DeltaTimeRaw;
+        double speed = Speed * SwGame.DeltaTime;
         if(diff.GetLengthSquared() < speed){NextPos = TargetPos;}
         else NextPos = CurrentPos + diff.Normalized() * speed;
     }
     public void Draw()
     {
-        var pos = ErMath.Lerp(CurrentPos,NextPos,SwGame.FrameProgress);
+        var pos = ErMath.Lerp(CurrentPos,NextPos,SwGame.FrameWeight);
         ErEngine.Renderer.PushViewport(pos-Half, Texture);
         ErEngine.Renderer.SetClearColor(CamColor);
         ErEngine.Renderer.Clear();
+        ErEngine.Renderer.SetClearColor(ClearColor);
         DrawFn();
         ErEngine.Renderer.PopViewport();
         Texture.Draw(Offset);
-        ErEngine.Renderer.SetClearColor(ClearColor);
     }
 }

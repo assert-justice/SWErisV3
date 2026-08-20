@@ -19,15 +19,16 @@ public class SwStateMachine: SwComponent
         for (int idx = 0; idx < States.Length; idx++)
         {
             if(!StateLookup.TryAdd(States[idx].Name, idx)) throw new Exception($"duplicate state name '{States[idx]}'");
+            States[idx].Init(this);
         }
     }
     public void SetState(string state)
     {
-        if (!string.IsNullOrEmpty(NextState))
-        {
-            ErEngine.LogWarning("attempted to set state '", state, "' while state '", NextState, "' was already queued.");
-            return;
-        }
+        // if (!string.IsNullOrEmpty(NextState))
+        // {
+        //     ErEngine.LogWarning("attempted to set state '", state, "' while state '", NextState, "' was already queued.");
+        //     return;
+        // }
         if(state == CurrentState.Name) return;
         if(!StateLookup.ContainsKey(state))
         {

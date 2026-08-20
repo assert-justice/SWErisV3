@@ -7,11 +7,26 @@ public class ErTexture
 {
     public readonly nint Handle;
     public readonly ErVec2 Size;
-    private ErTexture(nint handle)
+    public readonly string? Filepath;
+    private ErTexture(nint handle, string? filepath = null)
     {
         Handle = handle;
+        Filepath = filepath;
         SDL.GetTextureSize(Handle, out float w, out float h);
         Size = new(w, h);
+    }
+    public static bool TryGetPaletteHandles(out nint[] palletHandles, string filepath)
+    {
+        return ErEngine.Renderer.TextureManager.TryGetPalettes(filepath, out palletHandles);
+    }
+    public static bool TryGetUnmanagedTexture(nint surfaceHandle, out ErTexture texture)
+    {
+        texture = default!;
+        if(surfaceHandle == 0) return false;
+        nint textureHandle = SDL.CreateTextureFromSurface(ErEngine.Renderer.Handle, surfaceHandle);
+        if(textureHandle == 0) return false;
+        texture = new(textureHandle);
+        return true;
     }
     public static ErTexture GetRenderTexture(int width, int height)
     {
@@ -43,7 +58,7 @@ public class ErTexture
         texture = default!;
         if(ErEngine.Renderer is null) return false;
         if(!ErEngine.Renderer.TextureManager.TryGetTexture(filepath, out nint handle)) return false;
-        texture = new(handle);
+        texture = new(handle, filepath);
         return true;
     }
     public static bool TryFromPath(string filepath, out ErTexture texture, out nint surfaceHandle)
@@ -52,16 +67,20 @@ public class ErTexture
         surfaceHandle = default;
         if(ErEngine.Renderer is null) return false;
         if(!ErEngine.Renderer.TextureManager.TryGetTexture(filepath, out nint textureHandle, out surfaceHandle)) return false;
-        texture = new(textureHandle);
+        texture = new(textureHandle, filepath);
         return true;
     }
-    public static bool TryFromPath(string filepath, nint palletHandle, out ErTexture texture)
+    public static bool TryFromPath(string filepath, nint paletteHandle, out ErTexture texture)
     {
         texture = default!;
         if(ErEngine.Renderer is null) return false;
-        if(!ErEngine.Renderer.TextureManager.TryGetTextureWithPallet(filepath, palletHandle, out nint handle)) return false;
-        texture = new(handle);
+        if(!ErEngine.Renderer.TextureManager.TryGetTextureWithPalette(filepath, paletteHandle, out nint handle)) return false;
+        texture = new(handle, filepath);
         return true;
+    }
+    public void Cleanup()
+    {
+        SDL.DestroyTexture(Handle);
     }
     public void Draw(ErVec2 position,
         ErVec2? size = null,
@@ -73,14 +92,9 @@ public class ErTexture
     {
         size ??= Size;
         ErRect2 destRect = new(position, size.Value);
-        sourceRect ??= new(ErVec2.Zero, size.Value);
+        sourceRect ??= new(ErVec2.Zero, Size);
         origin ??= ErVec2.Zero;
-        // if(origin is null) origin = ErVec2.Zero;
-        // else origin *= ErEngine.Renderer.ViewportTransform.Size;
-        // destRect = destRect.TranslateAndScale(ErEngine.Renderer.ViewportTransform).Translate(-origin.Value);
         destRect = destRect.Translate(-ErEngine.Renderer.ViewportTransform.Position-origin.Value);
-        // ErEngine.Log("dest rect: ", destRect);
-        // ErEngine.Log("src rect: ", sourceRect);
         SDL.FlipMode flipMode = SDL.FlipMode.None;
         if(hFlip) flipMode |= SDL.FlipMode.Horizontal;
         if(vFlip) flipMode |= SDL.FlipMode.Vertical;

@@ -1,21 +1,26 @@
 {
+    "background_color": "8320b9",
     "base":{
-        "base_filename": "hsm_bars_base.png",
+        "base_filepath": "hsm_bars_base.png",
         "x": 36,
         "y": 0
     },
     "item_slot":{
         "x": 0,
         "y": 2,
-        "frame_filename": "item_slot.png",
-        "icons_filename": "icons.png",
-        "digits_filename": "digits_sheet.png",
-        "icon_x": 2,
-        "icon_y": 2,
+        "frame_filepath": "item_slot.png",
+        "icons_filepath": "inventory_icon_sheet.png",
+        "digits_filepath": "digits_sheet.png",
+        "icon_x": 4,
+        "icon_y": 4,
+        "icon_width": 26,
+        "icon_height": 27,
         "tens_digit_x": 24,
         "tens_digit_y": 27,
         "ones_digit_x": 29,
-        "ones_digit_y": 27
+        "ones_digit_y": 27,
+        "digit_width": 4,
+        "digit_height": 7
     },
     "bar_common":{
         "fill_x": 0,
@@ -28,25 +33,53 @@
     },
     "bars":{
         "health":{
-            "fill_filename": "health_bar_fill.png",
-            "cap_filename": "health_bar_cap.png",
-            "segment_filename": "health_bar_segment.png",
+            "fill_filepath": "health_bar_fill.png",
+            "cap_filepath": "health_bar_cap.png",
+            "segment_filepath": "health_bar_segment.png",
             "x": 52,
             "y": 3
         },
         "stamina":{
-            "fill_filename": "stam_bar_fill.png",
-            "cap_filename": "stam_bar_cap.png",
-            "segment_filename": "stam_bar_segment.png",
+            "fill_filepath": "stam_bar_fill.png",
+            "cap_filepath": "stam_bar_cap.png",
+            "segment_filepath": "stam_bar_segment.png",
             "x": 52,
             "y": 15
         },
         "mana":{
-            "fill_filename": "mana_bar_fill.png",
-            "cap_filename": "mana_bar_cap.png",
-            "segment_filename": "mana_bar_segment.png",
+            "fill_filepath": "mana_bar_fill.png",
+            "cap_filepath": "mana_bar_cap.png",
+            "segment_filepath": "mana_bar_segment.png",
             "x": 52,
             "y": 27
         }
+    },
+    "roots":{
+        "texture_filepath": "vitality_root_slot.png",
+        "width": 10,
+        "height": 24,
+        "slots":[
+            {"x": 156, "y": 0},
+            {"x": 162, "y": 14},
+            {"x": 172, "y": 0},
+            {"x": 178, "y": 14}
+        ]
+    },
+    "ammo":{
+        "texture_filepath": "sling_ammo_slot.png",
+        "width": 12,
+        "height": 11,
+        "slots":[
+            {"x": 188, "y": 8},
+            {"x": 188, "y": 22},
+            {"x": 202, "y": 8},
+            {"x": 202, "y": 22},
+            {"x": 216, "y": 8},
+            {"x": 216, "y": 22},
+            {"x": 230, "y": 8},
+            {"x": 230, "y": 22},
+            {"x": 244, "y": 8},
+            {"x": 244, "y": 22}
+        ]
     }
 }

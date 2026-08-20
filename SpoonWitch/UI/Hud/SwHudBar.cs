@@ -22,12 +22,12 @@ public class SwHudBar
     {
         if(!node.Get("bar_common").TryAs(out PriNode common)) throw new("bad common bar");
         if(!node.Get("bars").Get(name).TryAs(out PriNode data)) throw new("bad bars");
-        if(!data.Get("fill_filename").TryAs(out string fill_filename)) throw new("bad fill_filename");
-        if(!ErTexture.TryFromPath(Path.Join(dirpath, fill_filename), out Fill)) throw new("bad fill_filename");
-        if(!data.Get("cap_filename").TryAs(out string cap_filename)) throw new("bad cap_filename");
-        if(!ErTexture.TryFromPath(Path.Join(dirpath, cap_filename), out Cap)) throw new("bad cap_filename");
-        if(!data.Get("segment_filename").TryAs(out string segment_filename)) throw new("bad segment_filename");
-        if(!ErTexture.TryFromPath(Path.Join(dirpath, segment_filename), out Seg)) throw new("bad segment_filename");
+        if(!data.Get("fill_filepath").TryAs(out string fill_filename)) throw new("bad fill_filepath");
+        if(!ErTexture.TryFromPath(Path.Join(dirpath, fill_filename), out Fill)) throw new("bad fill_filepath");
+        if(!data.Get("cap_filepath").TryAs(out string cap_filename)) throw new("bad cap_filepath");
+        if(!ErTexture.TryFromPath(Path.Join(dirpath, cap_filename), out Cap)) throw new("bad cap_filepath");
+        if(!data.Get("segment_filepath").TryAs(out string segment_filename)) throw new("bad segment_filepath");
+        if(!ErTexture.TryFromPath(Path.Join(dirpath, segment_filename), out Seg)) throw new("bad segment_filepath");
         if(!data.Get("x").TryAs(out double ox)) ox = 0;
         if(!data.Get("y").TryAs(out double oy)) oy = 0;
         Offset = new ErVec2(ox, oy) + offset;

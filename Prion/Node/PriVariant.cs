@@ -14,12 +14,11 @@ public class PriVariant<T>: PriNode
     }
     public override bool TryAs<U>(out U value)
     {
-        if(base.TryAs(out value)) return true;
         if(this is PriVariant<U> variant)
         {
             value = variant.Value;
             return true;
         }
-        return false;
+        return base.TryAs(out value);
     }
 }

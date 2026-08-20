@@ -1,25 +1,22 @@
 using Eris;
 using Eris.Utils;
 using ErisMath;
-using Prion.Node;
-using SpoonWitch.ByteStream;
-using SpoonWitch.Game.Entity.Component.Sprite;
+using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
+using SpoonWitch.Game.Entity.Projectile;
+using SpoonWitch.Rendering;
 
 namespace SpoonWitch.Game.Entity.Actor.Player;
 
-public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
+public abstract class SwPlayerState : SwEntState<SwPlayer>
 {
-    protected readonly SwPlayer Player = parent;
-    protected ErWrapper<SwSprite> BodySprite = new(() => parent.GetComponent<SwSprite>("body")!);
-    protected ErWrapper<SwSprite> SpoonSprite = new(() => parent.GetComponent<SwSprite>("spoon")!);
-    protected ErWrapper<SwSprite> SlingSprite = new(() => parent.GetComponent<SwSprite>("sling")!);
-    protected ErWrapper<SwSprite> ReticleSprite = new(() => parent.GetComponent<SwSprite>("reticle")!);
-    protected ErWrapper<SwStateMachine> StateMachine = new(() => parent.GetComponent<SwStateMachine>("state_machine")!);
-    protected ErWrapper<SwPlayerControls> Controls = new(() => parent.GetComponent<SwPlayerControls>("controls")!);
-    // private static readonly string[] Dirs = ["dr", "d", "dl", "u"];
+    private SwSprite BodySprite = null!;
+    private SwSprite SpoonSprite = null!;
+    private SwSprite SlingSprite = null!;
+    private SwSprite ReticleSprite = null!;
+    private SwPlayerControls Controls = null!;
+    private SwAreaComponent SpoonHurtbox = null!;
     // name, hands, facing
-    // Todo: make this less dumb. Or not, I dgaf
     private static readonly string[][][] BodyAnims = [
         [
             [
@@ -62,138 +59,211 @@ public abstract class SwPlayerState(SwPlayer parent) : SwState(parent)
             ],
         ],
     ];
+    public string[] DodgeAnims = [
+        "dodge_dr",
+        "dodge_d",
+        "dodge_dl",
+        "dodge_u",
+    ];
+    private static readonly string[] ReticleAnims = [
+        "charge_0",
+        "charge_1",
+        "charge_2",
+        "charge_3",
+    ];
+    private bool CanDodge()
+    {
+        if(Entity.DodgeCooldownClock > 0) return false;
+        if(!Controls.Move.IsNonzero()) return false;
+        return true;
+    }
+    public override void Init(SwStateMachine stateMachine)
+    {
+        base.Init(stateMachine);
+        BodySprite = Entity.GetComponent<SwSpriteComponent>("body")?.Sprite!;
+        SpoonSprite = Entity.GetComponent<SwSpriteComponent>("spoon")?.Sprite!;
+        SlingSprite = Entity.GetComponent<SwSpriteComponent>("sling")?.Sprite!;
+        ReticleSprite = Entity.GetComponent<SwSpriteComponent>("reticle")?.Sprite!;
+        Controls = Entity.GetComponent<SwPlayerControls>("controls")!;
+        SpoonHurtbox = Entity.GetComponent<SwAreaComponent>("spoon_hurtbox")!;
+    }
+    // public override void BeginState(string lastState)
+    // {
+    //     base.BeginState(lastState);
+    //     ErEngine.Log(Name);
+    // }
     public override void Update()
     {
         base.Update();
-        ReticleSprite.Value.Visible = Controls.Value.ReticleVisible;
-        switch (StateMachine.Value.CurrentState.Name)
-        {
-            case "charging":
-            case "charged":
-            ReticleSprite.Value.Play("aiming");
-            break;
-            default:
-            ReticleSprite.Value.Play("still");
-            break;
-        }
-        ReticleSprite.Value.Offset = Controls.Value.ReticlePosition;
+        ReticleSprite.Visible = Controls.ReticleVisible;
+        ReticleSprite.Offset = Controls.ReticlePosition;
     }
-    public class Default(SwPlayer parent) : SwPlayerState(parent)
+    public class Default: SwPlayerState
     {
         public override string Name => "default";
         public override void Update()
         {
             base.Update();
-            int animIdx = Player.Velocity.IsNonzero() ? 1 : 0;
-            BodySprite.Value.Play(BodyAnims[animIdx][2][Controls.Value.LastFacingIdx]);
-            Player.Velocity = Controls.Value.Move * Player.BaseSpeed;
-            if(Controls.Value.AttackJustPressed) StateMachine.Value.SetState("attack");
-            else if(Controls.Value.IsCharging) StateMachine.Value.SetState("charging");
+            int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
+            BodySprite.Play(BodyAnims[animIdx][2][Controls.LastFacingIdx]);
+            Entity.Velocity = Controls.Move * Entity.BaseSpeed;
+            if(Controls.AttackJustPressed) StateMachine.SetState("attack");
+            else if(Controls.IsCharging) StateMachine.SetState("charging");
+            else if(Controls.DodgeJustPressed && CanDodge()) StateMachine.SetState("dodging");
         }
     }
-    public class Attack(SwPlayer parent) : SwPlayerState(parent)
+    public class Attack: SwPlayerState
     {
         public override string Name => "attack";
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
-            SpoonSprite.Value.Visible = true;
-            SpoonSprite.Value.Angle = (Controls.Value.LastFacingIdx - 1) * ErMath.HALF_PI;
-            SpoonSprite.Value.Play();
-            BodySprite.Value.Play(BodyAnims[0][0][Controls.Value.LastFacingIdx]);
-            foreach (int id in SwGame.GetRectIds(GetHurtbox()))
-            {
-                ErEngine.Log("hit ent ", id);
-            }
-            Player.Velocity = ErVec2.Zero;
+            SpoonSprite.Visible = true;
+            SpoonSprite.Angle = (Controls.LastFacingIdx - 1) * ErMath.HALF_PI;
+            SpoonSprite.Play();
+            BodySprite.Play(BodyAnims[0][0][Controls.LastFacingIdx]);
+            Entity.Velocity = ErVec2.Zero;
+            SetHurtbox();
+            // SpoonHurtbox.Enabled = true;
+            // SwDamage damage = new(10, Entity.Position);
+            // SwGame.EnqueueCommandRect(4, GetHurtbox(), damage.ToPri());
+            BodySprite.SetPallet(1);
         }
         public override void Update()
         {
             base.Update();
-            if(!SpoonSprite.Value.IsPlaying) StateMachine.Value.SetState("default");
+            if(!SpoonSprite.IsPlaying) StateMachine.SetState("default");
         }
         public override void EndState(string nextState)
         {
             base.EndState(nextState);
-            SpoonSprite.Value.Visible = false;
+            SpoonSprite.Visible = false;
+            BodySprite.SetPallet(0);
+            SpoonHurtbox.Enabled = false;
         }
-        private ErRect2 GetHurtbox()
+        private void SetHurtbox()
         {
-            var dir = Controls.Value.LastFacing;
+            var dir = ErVec2.FromAngle(Controls.LastFacingIdx * ErMath.HALF_PI);
             double dis = 32;
-            ErVec2 size = new(32, 32);
-            var pos = Parent.Position + dir * dis;
-            return ErRect2.Centered(pos, size);
+            SpoonHurtbox.Offset = dir * dis;
+            SpoonHurtbox.Enabled = true;
         }
     }
-    public class Charging(SwPlayer parent) : SwPlayerState(parent)
+    public class Charging: SwPlayerState
     {
-        private double ChargeTime;
-
         public override string Name => "charging";
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
-            SlingSprite.Value.Visible = true;
-            SlingSprite.Value.Play("charging");
-            ChargeTime = 1;
+            SlingSprite.Visible = true;
+            SlingSprite.Play("charging");
+            ReticleSprite.Play(ReticleAnims[0]);
+            Entity.Clock0 = 0;
         }
         public override void Update()
         {
             base.Update();
-            int animIdx = Player.Velocity.IsNonzero() ? 1 : 0;
-            BodySprite.Value.Play(BodyAnims[animIdx][1][Controls.Value.LastFacingIdx]);
-            Player.Velocity = Controls.Value.Move * Player.BaseSpeed * Player.ChargeSpeedMul;
-            if (!Controls.Value.IsCharging)
+            int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
+            BodySprite.Play(BodyAnims[animIdx][1][Controls.LastFacingIdx]);
+            Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.ChargeSpeedMul;
+            if (!Controls.IsCharging)
             {
-                SlingSprite.Value.Visible = false;
-                SlingSprite.Value.Stop();
-                StateMachine.Value.SetState("default");
+                SlingSprite.Visible = false;
+                SlingSprite.Stop();
+                ReticleSprite.Play("still");
+                StateMachine.SetState("default");
                 return;
             }
-            if(ChargeTime > 0) ChargeTime -= SwGame.DeltaTime;
-            else StateMachine.Value.SetState("charged");
-        }
-        public override void Read(SwByteStream byteStream)
-        {
-            base.Read(byteStream);
-            if(!byteStream.TryReadF64(out ChargeTime)) throw new("bad charge time");
-        }
-        public override void Write(SwByteStream byteStream)
-        {
-            base.Write(byteStream);
-            byteStream.WriteF64(ChargeTime);
+            int lastThresh = ErMath.FloorToInt(Entity.Clock0 * 3 / Entity.ChargeTime);
+            Entity.Clock0 += SwGame.DeltaTime;
+            int nextThresh = ErMath.FloorToInt(Entity.Clock0 * 3 / Entity.ChargeTime);
+            if(lastThresh == nextThresh) return;
+            int frame = ReticleSprite.FrameIdx;
+            double progress = ReticleSprite.FrameProgress;
+            ReticleSprite.Play(ReticleAnims[nextThresh]);
+            ReticleSprite.FrameIdx = frame;
+            ReticleSprite.FrameProgress = progress;
+            // ErEngine.Log("charge level ", nextThresh);
+            if(nextThresh == 3) StateMachine.SetState("charged");
         }
     }
-    public class Charged(SwPlayer parent) : SwPlayerState(parent)
+    public class Charged: SwPlayerState
     {
         public override string Name => "charged";
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
-            SlingSprite.Value.Play("charged");
+            SlingSprite.Play("charged");
+        }
+        private bool CanFire()
+        {
+            if(!Controls.FireJustPressed) return false;
+            if(!Controls.Aim.IsNonzero()) return false;
+            return true;
         }
         public override void Update()
         {
             base.Update();
-            int animIdx = Player.Velocity.IsNonzero() ? 1 : 0;
-            BodySprite.Value.Play(BodyAnims[animIdx][1][Controls.Value.LastFacingIdx]);
-            Player.Velocity = Controls.Value.Move * Player.BaseSpeed * Player.ChargeSpeedMul;
-            if (!Controls.Value.IsCharging)
+            int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
+            BodySprite.Play(BodyAnims[animIdx][1][Controls.LastFacingIdx]);
+            Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.ChargeSpeedMul;
+            if (!Controls.IsCharging) StateMachine.SetState("default");
+            else if (CanFire())
             {
-                SlingSprite.Value.Visible = false;
-                SlingSprite.Value.Stop();
-                StateMachine.Value.SetState("default");
+                // fire!
+                var pos = Entity.Position;// - Entity.Size * 0.5;
+                Entity.EntProps.Props.TrySet("bullet/x", pos.X);
+                Entity.EntProps.Props.TrySet("bullet/y", pos.Y);
+                Entity.EntProps.Props.TrySet("bullet/x_velocity", Controls.Aim.X * Entity.BulletSpeed);
+                Entity.EntProps.Props.TrySet("bullet/y_velocity", Controls.Aim.Y * Entity.BulletSpeed);
+                SwGame.Game.AddEntity<SwProjectile>(Entity.EntProps.Props.Get("bullet"));
+                StateMachine.SetState("default");
             }
+        }
+        public override void EndState(string nextState)
+        {
+            base.EndState(nextState);
+            SlingSprite.Visible = false;
+            SlingSprite.Stop();
+            ReticleSprite.Play("still");
+        }
+    }
+    public class Dodging: SwPlayerState
+    {
+        public override string Name => "dodging";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            BodySprite.Stop();
+            BodySprite.Play(DodgeAnims[Controls.LastFacingIdx]);
+            Entity.Clock0 = 0;
+            // set and lock in velocity
+            Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.DodgeSpeedMul;
+            // ErEngine.Log("start dodge");
+        }
+        public override void Update()
+        {
+            base.Update();
+            double elapsed = Entity.Clock0;
+            Entity.Clock0 += SwGame.DeltaTime;
+            if(Entity.Clock0 > Entity.DodgeDuration) StateMachine.SetState("default");
+            // Note: edge detection. fires when the clock is now past invuln delay
+            else if(Entity.Clock0 >= Entity.DodgeInvulnDelay && elapsed < Entity.DodgeInvulnDelay) Entity.InvulnClock = Entity.DodgeInvulnWindow;
+        }
+        public override void EndState(string nextState)
+        {
+            base.EndState(nextState);
+            Entity.DodgeCooldownClock = Entity.DodgeCooldown;
         }
     }
     public static SwStateMachine GetStateMachine(SwPlayer parent, string name)
     {
         return new(parent, name, [
-            new Default(parent),
-            new Attack(parent),
-            new Charging(parent),
-            new Charged(parent),
+            new Default(),
+            new Attack(),
+            new Charging(),
+            new Charged(),
+            new Dodging(),
         ]);
     }
 }

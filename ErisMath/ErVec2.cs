@@ -1,11 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
-using Prion.Node;
-using Prion.Validator;
 using SDL3;
 
 namespace ErisMath;
 
-public readonly struct ErVec2: IPriSchema<ErVec2>
+public readonly struct ErVec2: IEquatable<ErVec2>
 {
     public double X{get; init;}
     public double Y{get; init;}
@@ -34,6 +32,10 @@ public readonly struct ErVec2: IPriSchema<ErVec2>
         double x = Math.Cos(angle);
         return new(x,y);
     }
+    public double GetArea()
+    {
+        return Math.Abs(X * Y);
+    }
     public double GetLengthSquared()
     {
         return X * X + Y * Y;
@@ -41,6 +43,10 @@ public readonly struct ErVec2: IPriSchema<ErVec2>
     public double GetLength()
     {
         return Math.Sqrt(GetLengthSquared());
+    }
+    public double GetManhattan()
+    {
+        return Math.Abs(X) + Math.Abs(Y);
     }
     public double GetAngle()
     {
@@ -72,9 +78,13 @@ public readonly struct ErVec2: IPriSchema<ErVec2>
     {
         return new(){X = (float)X, Y = (float)Y};
     }
+    private bool IsEqual(ErVec2 other)
+    {
+        return X == other.X && Y == other.Y;
+    }
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
-        return obj is ErVec2I vec && X == vec.X && Y == vec.Y;
+        return obj is ErVec2 vec && IsEqual(vec);
     }
     public override string ToString()
     {
@@ -84,28 +94,8 @@ public readonly struct ErVec2: IPriSchema<ErVec2>
     {
         return ToString().GetHashCode();
     }
-
-    public static bool TryFromPrion(PriNode priNode, out ErVec2 value)
+    public bool Equals(ErVec2 other)
     {
-        value = default;
-        if(priNode is not PriDict dict) return false;
-
-        // PriValidData dict = new("Vec2", priNode);
-        // dict.TryGet("x", out double x);
-        // dict.TryGet("y", out double y);
-        // if(dict.HasError) return dict.GetError(out error);
-        // if(priNode is not PriDict dict) return ErisEngine.LogError("not a dict");
-        if(!dict.TryGet("x", out double x)) return false;// ErisEngine.LogError("x missing");
-        if(!dict.TryGet("y", out double y)) return false;// ErisEngine.LogError("y missing");
-        value = new(x,y);
-        return true;
-    }
-
-    public PriNode ToPrion()
-    {
-        PriDict dict = new();
-        dict.TrySet("x",new PriNumber(X));
-        dict.TrySet("y",new PriNumber(Y));
-        return dict;
+        return IsEqual(other);
     }
 }
