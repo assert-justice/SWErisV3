@@ -111,7 +111,11 @@ public class SwGame
         {
             entity.Update();
             if(!entity.IsFreeQueued) entity.Write(NextStream);
-            else PropsLookup.RemoveEntProps(entity);
+            else
+            {
+                PropsLookup.RemoveEntProps(entity);
+                entity.GameCleanup();
+            }
         }
         if(NewEntities.Head > 0)
         {
