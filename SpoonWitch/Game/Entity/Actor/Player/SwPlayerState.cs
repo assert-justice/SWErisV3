@@ -20,50 +20,50 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     private static readonly string[][][] BodyAnims = [
         [
             [
-                "idle_0h_dr",
-                "idle_0h_d",
-                "idle_0h_dl",
-                "idle_0h_u",
+                "idle_dr_0h",
+                "idle_d_0h",
+                "idle_dl_0h",
+                "idle_u_0h",
             ],
             [
-                "idle_1h_dr",
-                "idle_1h_d",
-                "idle_1h_dl",
-                "idle_1h_u",
+                "idle_dr_1h",
+                "idle_d_1h",
+                "idle_dl_1h",
+                "idle_u_1h",
             ],
             [
-                "idle_2h_dr",
-                "idle_2h_d",
-                "idle_2h_dl",
-                "idle_2h_u",
+                "idle_dr_2h",
+                "idle_d_2h",
+                "idle_dl_2h",
+                "idle_u_2h",
             ],
         ],
         [
             [
-                "run_0h_dr",
-                "run_0h_d",
-                "run_0h_dl",
-                "run_0h_u",
+                "move_dr_0h",
+                "move_d_0h",
+                "move_dl_0h",
+                "move_u_0h",
             ],
             [
-                "run_1h_dr",
-                "run_1h_d",
-                "run_1h_dl",
-                "run_1h_u",
+                "move_dr_1h",
+                "move_d_1h",
+                "move_dl_1h",
+                "move_u_1h",
             ],
             [
-                "run_2h_dr",
-                "run_2h_d",
-                "run_2h_dl",
-                "run_2h_u",
+                "move_dr_2h",
+                "move_d_2h",
+                "move_dl_2h",
+                "move_u_2h",
             ],
         ],
     ];
     public string[] DodgeAnims = [
-        "dodge_dr",
-        "dodge_d",
-        "dodge_dl",
-        "dodge_u",
+        "def_dodge_dr",
+        "def_dodge_d",
+        "def_dodge_dl",
+        "def_dodge_u",
     ];
     private static readonly string[] ReticleAnims = [
         "charge_0",
@@ -75,6 +75,11 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     {
         if(Entity.DodgeCooldownClock > 0) return false;
         if(!Controls.Move.IsNonzero()) return false;
+        return true;
+    }
+    private bool CanAttack()
+    {
+        if(Entity.AttackCooldownClock > 0) return false;
         return true;
     }
     public override void Init(SwStateMachine stateMachine)
@@ -107,7 +112,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
             BodySprite.Play(BodyAnims[animIdx][2][Controls.LastFacingIdx]);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed;
-            if(Controls.AttackJustPressed) StateMachine.SetState("attack");
+            if(Controls.AttackJustPressed && CanAttack()) StateMachine.SetState("attack");
             else if(Controls.IsCharging) StateMachine.SetState("charging");
             else if(Controls.DodgeJustPressed && CanDodge()) StateMachine.SetState("dodging");
         }
@@ -218,6 +223,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
                 Entity.EntProps.Props.TrySet("bullet/y_velocity", Controls.Aim.Y * Entity.BulletSpeed);
                 SwGame.Game.AddEntity<SwProjectile>(Entity.EntProps.Props.Get("bullet"));
                 StateMachine.SetState("default");
+                Entity.AttackCooldownClock = 0.1;
             }
         }
         public override void EndState(string nextState)

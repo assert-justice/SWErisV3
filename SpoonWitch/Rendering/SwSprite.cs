@@ -159,7 +159,6 @@ public class SwSprite(string name)
     public static bool TryFromData(out SwSprite sprite, string name, string dirpath, PriNode priNode)
     {
         sprite = default!;
-        if(!priNode.TryGet("animations", out PriDict dict)) return ErEngine.LogWarning("no animations");
         if(!priNode.TryGet("visible", out bool visible)) visible = true;
         var offset = SwPrion.GetVec2(priNode, "offset_x", "offset_y");
         if(!priNode.TryGet("centered", out bool centered)) centered = true;
@@ -169,10 +168,29 @@ public class SwSprite(string name)
             Offset = offset,
             Centered = centered,
         };
-        foreach (var animName in dict.Data.Keys)
+        List<SwAnimation> animations = [];
+        if(priNode.TryGet("animations", out PriDict dict))
         {
-            if(!SwAnimation.TryFromPri(out var animation, animName, dirpath, priNode)) ErEngine.LogWarning("bad animation '", animName, "'");
-            else sprite.AddAnimation(animation);
+            foreach (var animName in dict.Data.Keys)
+            {
+                if(!SwAnimation.TryFromPri(out var animation, animName, dirpath, priNode)) ErEngine.LogWarning("bad animation '", animName, "'");
+                else animations.Add(animation); // sprite.AddAnimation(animation);
+            }
+        }
+        if (priNode.TryGet("ase_animations", out PriNode aseAnim))
+        {
+            foreach (var item in aseAnim.Values)
+            {
+                if(!SwAnimation.TryFromPriAse(ref animations, dirpath, item))
+                {
+                    ErEngine.LogWarning("failed to read ase animation for sprite ", name);
+                    continue;
+                }
+            }
+        }
+        foreach (var item in animations)
+        {
+            sprite.AddAnimation(item);
         }
         return true;
     }

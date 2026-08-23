@@ -16,22 +16,6 @@ public enum PriNodeKind
 }
 public abstract class PriNode
 {
-    // private static readonly Dictionary<Type,Func<object, PriNode>> Converters;
-    // static PriNode()
-    // {
-
-    //     (Type,Func<object,PriNode>)[] converters = [
-    //         // Todo: make truthy method for bool
-    //         // (typeof(bool), (o)=> (o is bool b && b) ? PriBool.True: PriBool.False),
-    //         (typeof(string), (o) => o is string s ? new PriString(s) : PriNull.Null),
-    //         (typeof(int), (o) => o is int s ? new PriNumber(s) : PriNull.Null),
-    //     ];
-    //     Converters = new(converters.Length);
-    //     foreach (var (key,value) in converters)
-    //     {
-    //         Converters.Add(key, value);
-    //     }
-    // }
     private static readonly Queue<object> ObjectQueue = [];
     protected static readonly StringBuilder Sb = new();
     protected static readonly PriSbPool SbPool = new();
@@ -56,6 +40,26 @@ public abstract class PriNode
         }
         return PriConverter.TryFromPri(this, out value);
     }
+    // public virtual bool TryAsList<T>(out List<T> values)
+    // {
+    //     values = [];
+    //     if(!TryExtend)
+    //     // foreach (var item in Values)
+    //     // {
+    //     //     if(!item.TryAs(out T value)) return false;
+    //     //     values.Add(value);
+    //     // }
+    //     return true;
+    // }
+    // public virtual bool TryExtend<T>(in ICollection<T> values)
+    // {
+    //     foreach (var item in Values)
+    //     {
+    //         if(!item.TryAs(out T value)) return false;
+    //         values.Add(value);
+    //     }
+    //     return true;
+    // }
     private static IEnumerable<T> DrainQueue<T>()
     {
         while(ObjectQueue.TryDequeue(out var obj))

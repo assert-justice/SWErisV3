@@ -68,7 +68,7 @@ public readonly struct SwTileSplitter
         {
             if(!TryGetTile(out var tileRect, item))
             {
-                ErEngine.LogWarning("bad tile: ", item);
+                ErEngine.LogWarning("bad tile: ", item, " idx ", GridSize.X * item.Y + item.X, " size ", GridSize);
                 TileQueue.Clear();
                 return false;
             }

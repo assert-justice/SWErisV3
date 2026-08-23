@@ -30,9 +30,10 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     public double DodgeCooldown => 0.15;
     public double DodgeSpeedMul => 1.5;
     public double BulletSpeed => 100;
-    protected override int NumClocks => base.NumClocks + 2;
+    protected override int NumClocks => base.NumClocks + 3;
     public double Clock0{get => Clocks[base.NumClocks+0]; set {Clocks[base.NumClocks+0] = value;}}
     public double DodgeCooldownClock{get => Clocks[base.NumClocks+1]; set {Clocks[base.NumClocks+1] = value;}}
+    public double AttackCooldownClock{get => Clocks[base.NumClocks+2]; set {Clocks[base.NumClocks+2] = value;}}
     private readonly SwStateMachine StateMachine;
     private readonly SwPlayerControls Controls;
     public SwPlayer()
@@ -86,6 +87,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     {
         base.Update();
         if(DodgeCooldownClock > 0) DodgeCooldownClock -= SwGame.DeltaTime;
+        if(AttackCooldownClock > 0) AttackCooldownClock -= SwGame.DeltaTime;
         SwGame.SetPlayerPos(Position);
         EntProps.Props.TrySet("spoon_damage/source_pos_x", Position.X);
         EntProps.Props.TrySet("spoon_damage/source_pos_y", Position.Y);
