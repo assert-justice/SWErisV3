@@ -3,7 +3,7 @@ using Prion.Node;
 using SpoonWitch.ByteStream;
 
 namespace SpoonWitch.Game.Entity;
-
+// Todo: pool ent props so they can be reused without allocation
 public abstract class SwEntPropsBase
 {
     public readonly int Id;
