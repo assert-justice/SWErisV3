@@ -15,15 +15,10 @@ public abstract class SwEnemy: SwActor
         base.Ready();
         IsPassive = EntProps.Props.TryGet("property_overrides_json/is_passive", out bool isPassive) && isPassive;
     }
-    public bool CanSeeTarget()
-    {
-        return false;
-        // return !SwGame.GetMap().CollisionLayer.Raycast(2, Position, TargetPosition);
-    }
     public bool CanSeePoint(ErVec2 point)
     {
-        return false;
-        // return !SwGame.GetMap().CollisionLayer.Raycast(2, Position, point);
+        if(SwApp.Debug) return !SwGame.Map.PhysicsWorld.RaycastDebug(2, Position, point);
+        else return !SwGame.Map.PhysicsWorld.Raycast(2, Position, point);
     }
     public bool CanSeePlayer()
     {

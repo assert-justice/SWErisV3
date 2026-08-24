@@ -4,7 +4,6 @@ A cool video game for cool people
 
 Short term todos:
 
-- Particle effects
 - Implement dodge
 - Implement player death
 - Sfx/music
@@ -15,6 +14,7 @@ Short term todos:
 - read entity settings and use them at runtime
 
 Medium term todos:
+
 - Room loading and and saving
 - Save game Loading and saving
 - Fix cursor lag
@@ -27,7 +27,12 @@ Medium term todos:
 - implement hitstop
 - screen shake (possibly native resolution)
 
+Long term todos:
+- Level editor
+- Online coop
+
 Done
+- Particle effects (done ish)
 - Update cursor animation
 - Add knight enemy
 - Fix knight ai

@@ -1791,53 +1791,7 @@
 					"seed": 3332835,
 					"overrideTilesetUid": null,
 					"gridTiles": [],
-					"entityInstances": [
-						{
-							"__identifier": "spawner",
-							"__grid": [12,3],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#FF0044",
-							"iid": "d630d320-96d0-11f1-b54e-e3cf1593aae0",
-							"width": 32,
-							"height": 32,
-							"defUid": 8,
-							"px": [384,96],
-							"fieldInstances": [
-								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "none", "__tile": null, "defUid": 49, "realEditorValues": [{
-									"id": "V_String",
-									"params": ["none"]
-								}] },
-								{ "__identifier": "trigger_on_load", "__type": "Bool", "__value": false, "__tile": null, "defUid": 9, "realEditorValues": [] },
-								{ "__identifier": "property_overrides_json", "__type": "String", "__value": null, "__tile": null, "defUid": 12, "realEditorValues": [] },
-								{ "__identifier": "max_uses", "__type": "Int", "__value": null, "__tile": null, "defUid": 50, "realEditorValues": [] }
-							],
-							"__worldX": 384,
-							"__worldY": 96
-						},
-						{
-							"__identifier": "spawner",
-							"__grid": [14,4],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#FF0044",
-							"iid": "b8aed990-96d0-11f1-b54e-f145a24e2d52",
-							"width": 32,
-							"height": 32,
-							"defUid": 8,
-							"px": [448,128],
-							"fieldInstances": [
-								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "none", "__tile": null, "defUid": 49, "realEditorValues": [] },
-								{ "__identifier": "trigger_on_load", "__type": "Bool", "__value": false, "__tile": null, "defUid": 9, "realEditorValues": [] },
-								{ "__identifier": "property_overrides_json", "__type": "String", "__value": null, "__tile": null, "defUid": 12, "realEditorValues": [] },
-								{ "__identifier": "max_uses", "__type": "Int", "__value": null, "__tile": null, "defUid": 50, "realEditorValues": [] }
-							],
-							"__worldX": 448,
-							"__worldY": 128
-						}
-					]
+					"entityInstances": []
 				},
 				{
 					"__identifier": "entities",
@@ -1895,17 +1849,17 @@
 							"defUid": 8,
 							"px": [448,128],
 							"fieldInstances": [
-								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "slume", "__tile": null, "defUid": 49, "realEditorValues": [{
+								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "knight", "__tile": null, "defUid": 49, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["slume"]
+									"params": ["knight"]
 								}] },
 								{ "__identifier": "trigger_on_load", "__type": "Bool", "__value": true, "__tile": null, "defUid": 9, "realEditorValues": [{
 									"id": "V_Bool",
 									"params": [ true ]
 								}] },
-								{ "__identifier": "property_overrides_json", "__type": "String", "__value": "{\n \"is_passive\": true\n}", "__tile": null, "defUid": 12, "realEditorValues": [{
+								{ "__identifier": "property_overrides_json", "__type": "String", "__value": "{\n \"is_passive\": false\n}", "__tile": null, "defUid": 12, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["{\\n \"is_passive\": true\\n}"]
+									"params": ["{\\n \"is_passive\": false\\n}"]
 								}] },
 								{ "__identifier": "max_uses", "__type": "Int", "__value": null, "__tile": null, "defUid": 50, "realEditorValues": [] }
 							],
@@ -2017,26 +1971,6 @@
 							],
 							"__worldX": 224,
 							"__worldY": 144
-						},
-						{
-							"__identifier": "grass_prop",
-							"__grid": [28,24],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 85, "x": 0, "y": 0, "w": 7, "h": 7 },
-							"__smartColor": "#733E39",
-							"iid": "294c6110-96d0-11f1-b54e-77ddeeb4d1b6",
-							"width": 8,
-							"height": 8,
-							"defUid": 79,
-							"px": [224,192],
-							"fieldInstances": [
-								{ "__identifier": "texture_filepath", "__type": "String", "__value": "props/grass_tufts.png", "__tile": null, "defUid": 88, "realEditorValues": [] },
-								{ "__identifier": "properties_json", "__type": "String", "__value": "{\n\"tile_width\": 7,\n\"tile_height\": 7,\n\"randomize\": true\n}", "__tile": null, "defUid": 89, "realEditorValues": [] },
-								{ "__identifier": "class", "__type": "String", "__value": "prop", "__tile": null, "defUid": 90, "realEditorValues": [] }
-							],
-							"__worldX": 224,
-							"__worldY": 192
 						}
 					]
 				},

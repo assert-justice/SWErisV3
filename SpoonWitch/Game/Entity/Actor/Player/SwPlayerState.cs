@@ -153,6 +153,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         {
             base.Update();
             if(!SpoonSprite.IsPlaying) StateMachine.SetState("default");
+            SpoonHurtbox.Enabled = SpoonSprite.FrameIdx == 0;
         }
         public override void EndState(string nextState)
         {
