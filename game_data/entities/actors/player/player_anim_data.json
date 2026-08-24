@@ -25,6 +25,17 @@
                 }
             ]
         },
+        "hat": {
+            "ase_animations": [
+                {
+                    "filepath": "images/bella_def_hat_sheet.json",
+                    "blacklist": [
+                        "swipe_d",
+                        "spin_sling"
+                    ]
+                }
+            ]
+        },
         "sling": {
             "visible": false,
             "animations": {

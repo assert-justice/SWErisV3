@@ -11,6 +11,7 @@ namespace SpoonWitch.Game.Entity.Actor.Player;
 public abstract class SwPlayerState : SwEntState<SwPlayer>
 {
     private SwSprite BodySprite = null!;
+    private SwSprite HatSprite = null!;
     private SwSprite SpoonSprite = null!;
     private SwSprite SlingSprite = null!;
     private SwSprite ReticleSprite = null!;
@@ -86,11 +87,24 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     {
         base.Init(stateMachine);
         BodySprite = Entity.GetComponent<SwSpriteComponent>("body")?.Sprite!;
+        HatSprite = Entity.GetComponent<SwSpriteComponent>("hat")?.Sprite!;
         SpoonSprite = Entity.GetComponent<SwSpriteComponent>("spoon")?.Sprite!;
         SlingSprite = Entity.GetComponent<SwSpriteComponent>("sling")?.Sprite!;
         ReticleSprite = Entity.GetComponent<SwSpriteComponent>("reticle")?.Sprite!;
         Controls = Entity.GetComponent<SwPlayerControls>("controls")!;
         SpoonHurtbox = Entity.GetComponent<SwAreaComponent>("spoon_hurtbox")!;
+    }
+    private void SetBodyHandedAnim(int animIdx, int hands, int facing)
+    {
+        string animName = BodyAnims[animIdx][hands][facing];
+        BodySprite.Play(animName);
+        HatSprite.Play(animName);
+    }
+    private void SetBodyDodgeAnim(int facing)
+    {
+        string animName = DodgeAnims[Controls.LastFacingIdx];
+        BodySprite.Play(animName);
+        HatSprite.Play(animName);
     }
     // public override void BeginState(string lastState)
     // {
@@ -110,7 +124,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         {
             base.Update();
             int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
-            BodySprite.Play(BodyAnims[animIdx][2][Controls.LastFacingIdx]);
+            SetBodyHandedAnim(animIdx, 2, Controls.LastFacingIdx);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed;
             if(Controls.AttackJustPressed && CanAttack()) StateMachine.SetState("attack");
             else if(Controls.IsCharging) StateMachine.SetState("charging");
@@ -126,13 +140,14 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             SpoonSprite.Visible = true;
             SpoonSprite.Angle = (Controls.LastFacingIdx - 1) * ErMath.HALF_PI;
             SpoonSprite.Play();
-            BodySprite.Play(BodyAnims[0][0][Controls.LastFacingIdx]);
+            // BodySprite.Play(BodyAnims[0][0][Controls.LastFacingIdx]);
+            SetBodyHandedAnim(0, 0, Controls.LastFacingIdx);
             Entity.Velocity = ErVec2.Zero;
             SetHurtbox();
             // SpoonHurtbox.Enabled = true;
             // SwDamage damage = new(10, Entity.Position);
             // SwGame.EnqueueCommandRect(4, GetHurtbox(), damage.ToPri());
-            BodySprite.SetPallet(1);
+            // BodySprite.SetPallet(1);
         }
         public override void Update()
         {
@@ -143,7 +158,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         {
             base.EndState(nextState);
             SpoonSprite.Visible = false;
-            BodySprite.SetPallet(0);
+            // BodySprite.SetPallet(0);
             SpoonHurtbox.Enabled = false;
         }
         private void SetHurtbox()
@@ -169,7 +184,9 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         {
             base.Update();
             int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
-            BodySprite.Play(BodyAnims[animIdx][1][Controls.LastFacingIdx]);
+            
+            // BodySprite.Play(BodyAnims[animIdx][1][Controls.LastFacingIdx]);
+            SetBodyHandedAnim(animIdx, 1, Controls.LastFacingIdx);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.ChargeSpeedMul;
             if (!Controls.IsCharging)
             {
@@ -214,7 +231,8 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         {
             base.Update();
             int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
-            BodySprite.Play(BodyAnims[animIdx][1][Controls.LastFacingIdx]);
+            // BodySprite.Play(BodyAnims[animIdx][1][Controls.LastFacingIdx]);
+            SetBodyHandedAnim(animIdx, 1, Controls.LastFacingIdx);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.ChargeSpeedMul;
             if (!Controls.IsCharging) StateMachine.SetState("default");
             else if (CanFire())
@@ -249,7 +267,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         {
             base.BeginState(lastState);
             BodySprite.Stop();
-            BodySprite.Play(DodgeAnims[Controls.LastFacingIdx]);
+            SetBodyDodgeAnim(Controls.LastFacingIdx);
             Entity.Clock0 = 0;
             // set and lock in velocity
             Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.DodgeSpeedMul;
