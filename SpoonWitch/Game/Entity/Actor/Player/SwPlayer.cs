@@ -1,4 +1,5 @@
 using Eris;
+using Eris.Renderer;
 using ErisMath;
 using ErisPhysics2D.Collider;
 using Prion.Node;
@@ -7,6 +8,7 @@ using SpoonWitch.Command;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
 using SpoonWitch.Game.Map.Collision;
+using SpoonWitch.Rendering;
 using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Entity.Actor.Player;
@@ -68,20 +70,14 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     public override void Ready()
     {
         base.Ready();
+        // Add particle effect emitter
+        SwParticles2D particles = new(ErTexture.GetColoredTexture(4, 4, ErColor.Green))
+        {
+            Lifetime = 0.1,
+        };
+        if(!SwGame.ParticleEmitters.TryAdd(Id, particles)) throw new("emitter id already exists");
         SwDamage spoonDamage = new([(SwDamageType.Untyped, 10)]);
-        // PriDict spoonDamage = [];
-        // PriList damageList = [];
-        // PriDict dict = [];
-        // dict.TrySet("value", 10);
-        // dict.TrySet("type", (byte)0);
-        // damageList.Add(dict);
-        // spoonDamage.TrySet("verb", "damage");
-        // SwPrion.TrySetVec2(spoonDamage, ErVec2.Zero, "source_pos_x", "source_pos_y");
-        // spoonDamage.TrySet("damage", damageList);
         EntProps.Props.TrySet("spoon_damage", spoonDamage.ToPri());
-        // PriDict bulletData = [];
-        // SwPrion.TrySetVec2(bulletData, )
-        // EntProps.Props.TrySet("bullet", bulletData);
     }
     public override void Update()
     {
@@ -91,6 +87,19 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         SwGame.SetPlayerPos(Position);
         EntProps.Props.TrySet("spoon_damage/source_pos_x", Position.X);
         EntProps.Props.TrySet("spoon_damage/source_pos_y", Position.Y);
+        if(SwGame.ParticleEmitters.TryGetValue(Id, out var emitter))
+        {
+            emitter.Origin = Position;
+            emitter.Update(SwGame.DeltaTime);
+        }
+    }
+    protected override void DrawImplLate(SwEntity nextState)
+    {
+        base.DrawImplLate(nextState);
+        if(SwGame.ParticleEmitters.TryGetValue(Id, out var emitter))
+        {
+            emitter.Draw(SwGame.FrameDuration * SwGame.FrameWeight);
+        }
     }
     protected override double Damage(SwDamage damage)
     {
@@ -100,5 +109,10 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
             SetHud("health", Health);
         }
         return value;
+    }
+    public override void GameCleanup()
+    {
+        base.GameCleanup();
+        SwGame.ParticleEmitters.Remove(Id);
     }
 }

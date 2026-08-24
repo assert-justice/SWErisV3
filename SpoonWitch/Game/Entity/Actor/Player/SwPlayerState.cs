@@ -199,6 +199,10 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         {
             base.BeginState(lastState);
             SlingSprite.Play("charged");
+            if(SwGame.ParticleEmitters.TryGetValue(Entity.Id, out var emitter))
+            {
+                emitter.Emitting = true;
+            }
         }
         private bool CanFire()
         {
@@ -232,6 +236,10 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             SlingSprite.Visible = false;
             SlingSprite.Stop();
             ReticleSprite.Play("still");
+            if(SwGame.ParticleEmitters.TryGetValue(Entity.Id, out var emitter))
+            {
+                emitter.Emitting = false;
+            }
         }
     }
     public class Dodging: SwPlayerState

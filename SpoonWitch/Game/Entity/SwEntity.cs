@@ -143,8 +143,10 @@ public abstract class SwEntity
             var nextComp = nextState.Components[idx];
             comp.Draw(nextComp);
         }
+        DrawImplLate(nextState);
     }
     protected virtual void DrawImpl(SwEntity nextState){}
+    protected virtual void DrawImplLate(SwEntity nextState){}
     public bool TryGetComponent<T>(string name, out T component) where T: SwComponent
     {
         component = null!;
