@@ -12,7 +12,6 @@ public abstract class SwMapObject
     public readonly ErRect2 RectPx;
     public readonly PriNode Fields;
     public readonly PriNode Data;
-    // private readonly string Dirpath;
     public virtual bool IsGlobal => Data.TryGet("is_global", out bool isGlobal) && isGlobal;
     public SwMapObject(PriNode data)
     {
@@ -37,23 +36,6 @@ public abstract class SwMapObject
     }
     public virtual void Trigger(){}
     public virtual void Update(){}
-    // public PriNode GetData()
-    // {
-    //     PriDict dict = new();
-    //     dict.Data["id"] = new PriString(Id);
-    //     dict.Data["type"] = new PriString(Type);
-    //     dict.TrySet("dirpath")
-    //     dict.Data["x_px"] = new PriNumber(RectPx.Position.X);
-    //     dict.Data["y_px"] = new PriNumber(RectPx.Position.Y);
-    //     dict.Data["width_px"] = new PriNumber(RectPx.Size.X);
-    //     dict.Data["height_px"] = new PriNumber(RectPx.Size.Y);
-    //     dict.Data["x_t"] = new PriNumber(RectTiles.Position.X);
-    //     dict.Data["y_t"] = new PriNumber(RectTiles.Position.Y);
-    //     dict.Data["width_t"] = new PriNumber(RectTiles.Size.X);
-    //     dict.Data["height_t"] = new PriNumber(RectTiles.Size.Y);
-    //     dict.Data["fields"] = Fields;
-    //     return dict;
-    // }
     public virtual void Load()
     {
         // ErEngine.Log("loaded ", Type, " with id ", Id);
@@ -91,6 +73,8 @@ public abstract class SwMapObject
             }
             fields.Add(fieldName, value);
         }
+        // Note: this is a hack for prop prototypes. maybe it'll be useful for something else
+        if(fields.TryGet("class", out string className)) type = className;
         data.TrySet("dirpath", dirpath);
         data.TrySet("id", id);
         data.TrySet("type", type);
