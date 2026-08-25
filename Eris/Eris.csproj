@@ -7,6 +7,7 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <PackageReference Include="JAJ.Packages.MiniAudioEx" Version="3.3.6" />
     <PackageReference Include="SDL3-CS" Version="3.4.2" />
     <PackageReference Include="SDL3-CS.Native" Version="3.4.2" />
     <PackageReference Include="SDL3-CS.Native.Image" Version="3.5.0" />

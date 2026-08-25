@@ -1,4 +1,5 @@
 ﻿using Eris.App;
+using Eris.Audio;
 using Eris.Input;
 using Eris.Logging;
 using Eris.Renderer;
@@ -24,6 +25,7 @@ public static class ErEngine
     private static readonly Stack<Action> CleanupStack = new();
     public static int Tickrate{get; private set;} = 90;
     public static ErRenderer Renderer{get; private set;} = new ErRenderer();
+    public static ErAudioApp AudioApp{get; private set;} = new();
     public static void SetRenderer(ErRenderer renderer){
         if(!IsRunning) Renderer = renderer;
         else LogError("Cannot change renderer while engine is running");
@@ -39,7 +41,8 @@ public static class ErEngine
         List<Action> initList = [
             Renderer.Init,
             ()=>CleanupStack.Push(Renderer.Cleanup),
-            // ()=>Input = ErisInput.New(out _),
+            AudioApp.Init,
+            ()=>CleanupStack.Push(AudioApp.Cleanup),
             app.Init,
             ()=>CleanupStack.Push(app.Cleanup),
         ];
@@ -52,6 +55,7 @@ public static class ErEngine
                 return false;
             }
         }
+        // AudioApp.Init();
         return true;
     }
     private static void Cleanup()
@@ -79,6 +83,7 @@ public static class ErEngine
                 CurrentTime = GetCurrentTime();
                 Input.Poll();
                 app.Update();
+                AudioApp.Update();
                 FrameTimeRemaining -= DeltaTime;
             }
             Renderer.BeginRender();

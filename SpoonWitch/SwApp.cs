@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Nodes;
 using Eris;
 using Eris.App;
+using Eris.Audio;
 using Eris.Renderer;
 using ErisMath;
 using Prion.Db;
@@ -29,6 +30,7 @@ public class SwApp : IErApp
     public static readonly PriDb Settings = new();
     public static readonly PriDb SaveData = new();
     public static readonly PriDb Manifest = new();
+    private ErAudioSource Source = null!;
     // public static double GameSpeed => IsPaused ? GameSpeedMul : 0;
     // public static double GameSpeedMul => 1;
     // public static bool IsPaused{get; private set;} = false;
@@ -62,6 +64,8 @@ public class SwApp : IErApp
         }
         if(!TryLoadDb(Settings, "game_data/settings/example_settings.json", "game_data/settings/default_settings.json")) ErEngine.LogWarning("bad settings");
         TryInitMenu();
+        Source = new(ErEngine.AudioApp);
+        Source.PlayFile("game_data/entities/actors/player/sfx/SW SFX Player Death.mp3");
         Launch();
     }
     private bool TryInitMenu()
@@ -78,6 +82,7 @@ public class SwApp : IErApp
     }
     public void Update()
     {
+        // if(!ErEngine.AudioApp.Loaded) ErEngine.Log("audio engine not yet loaded");
         CommandStore.Flush();
         Game?.Update();
     }
