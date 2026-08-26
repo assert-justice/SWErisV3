@@ -55,4 +55,9 @@ public class SwAreaComponent(SwEntity parent, string name, uint mask, ErVec2 siz
         byteStream.WriteVec2(Offset);
         byteStream.WriteVec2(Size);
     }
+    public override void Cleanup()
+    {
+        base.Cleanup();
+        SwGame.GetMap().PhysicsWorld.RemoveArea(_Id);
+    }
 }

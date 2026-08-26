@@ -2424,7 +2424,7 @@
  "meta": {
   "app": "https://www.aseprite.org/",
   "version": "1.3.18.2-x64",
-  "image": "belladonna_def_hat_sheet.png",
+  "image": "bella_def_hat_sheet.png",
   "format": "I8",
   "size": { "w": 704, "h": 640 },
   "scale": "1",

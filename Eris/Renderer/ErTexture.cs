@@ -117,4 +117,10 @@ public class ErTexture
         ErRect2 srcRect = new(ErVec2.Zero,Size);
         SDL.RenderTexture(ErEngine.Renderer.Handle, Handle, srcRect.ToSdlRect(), destRect.ToSdlRect());
     }
+    public void DrawQuick(ErVec2 position, ErVec2? size = null, ErVec2? srcPos = null, ErVec2? srcSize = null)
+    {
+        ErRect2 destRect = new(position - ErEngine.Renderer.ViewportTransform.Position, size ?? Size);
+        ErRect2 srcRect = new(srcPos ?? ErVec2.Zero, srcSize ?? Size);
+        SDL.RenderTexture(ErEngine.Renderer.Handle, Handle, srcRect.ToSdlRect(), destRect.ToSdlRect());
+    }
 }

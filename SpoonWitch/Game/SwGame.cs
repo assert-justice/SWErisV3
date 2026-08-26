@@ -12,6 +12,7 @@ using SpoonWitch.Game.Entity.Actor.Enemy.Slume;
 using SpoonWitch.Game.Entity.Actor.Player;
 using SpoonWitch.Game.Map;
 using SpoonWitch.Game.Map.Collision;
+using SpoonWitch.Rendering;
 using SpoonWitch.UI.Hud;
 
 namespace SpoonWitch.Game;
@@ -23,6 +24,7 @@ public class SwGame
     // The factor to blend between the last state and the next state with
     public static double FrameWeight{get; private set;}
     private static ErTexture[] RenderTextures = [];
+    public static readonly Dictionary<int, SwParticles2D> ParticleEmitters = [];
     public static double GameSpeed => 1;
     private static int _RenderLayer;
     public static int RenderLayer
@@ -111,7 +113,11 @@ public class SwGame
         {
             entity.Update();
             if(!entity.IsFreeQueued) entity.Write(NextStream);
-            else PropsLookup.RemoveEntProps(entity);
+            else
+            {
+                PropsLookup.RemoveEntProps(entity);
+                entity.GameCleanup();
+            }
         }
         if(NewEntities.Head > 0)
         {

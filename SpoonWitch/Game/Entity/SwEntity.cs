@@ -92,7 +92,7 @@ public abstract class SwEntity
     protected virtual void HandleCommands(){}
     public virtual void Write(SwByteStream byteStream)
     {
-        if(IsFreeQueued) return; // Todo: prevent child classes from writing as well
+        // if(IsFreeQueued) return; // Game does not call Write on entities with queue free set
         int head = byteStream.Head;
         // write type byte
         byteStream.WriteByte(GetTypeId);
@@ -102,17 +102,8 @@ public abstract class SwEntity
         // write current head index as last head index
         // Note: if it is negative, that means there is no valid last head index. this is relevant for drawing.
         byteStream.WriteI32(_CurrentHeadIndex);
-        // if(BodyEnabled != WasBodyEnabled)
-        // {
-        //     WasBodyEnabled = BodyEnabled;
-        //     if(!BodyEnabled) SwGame.Map.PhysicsWorld.RemoveBody(Id);
-        // }
-        // if (BodyEnabled)
-        // {
         Body.ParentId = Id;
         Body.Rect = ErRect2.Centered(Position, Size);
-        // Body.Position = Position - Size * 0.5;
-        // Body.Size = Size;
         Body.Velocity = Velocity;
         Body.Mask = Mask;
         Body.Head = byteStream.Head;
@@ -121,8 +112,6 @@ public abstract class SwEntity
         byteStream.WriteVec2(Position);
         byteStream.WriteVec2(Velocity);
         byteStream.WriteBool(Visible);
-        // byteStream.WriteBool(WasBodyEnabled);
-        // byteStream.WriteBool(BodyEnabled);
         // clocks
         byteStream.WriteF64s(in Clocks);
         // write components
@@ -154,8 +143,10 @@ public abstract class SwEntity
             var nextComp = nextState.Components[idx];
             comp.Draw(nextComp);
         }
+        DrawImplLate(nextState);
     }
     protected virtual void DrawImpl(SwEntity nextState){}
+    protected virtual void DrawImplLate(SwEntity nextState){}
     public bool TryGetComponent<T>(string name, out T component) where T: SwComponent
     {
         component = null!;
@@ -181,5 +172,14 @@ public abstract class SwEntity
             else RegisterComponent(new SwSpriteComponent(this, sprite));
         }
         return true;
+    }
+    public virtual void GameCleanup()
+    {
+        // Note: this method should only be called by game
+        SwGame.Map.PhysicsWorld.RemoveBody(Id);
+        foreach (var item in Components)
+        {
+            item.Cleanup();
+        }
     }
 }

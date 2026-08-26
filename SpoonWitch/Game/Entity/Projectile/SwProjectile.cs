@@ -35,10 +35,10 @@ public class SwProjectile : SwEntity, ISwEntity<SwProjectile>
     public override void Update()
     {
         base.Update();
-        // var tileCoord = SwGame.Map.PhysicsWorld.PointToTileCoord(Position);
-        // var tileId = SwGame.Map.PhysicsWorld.GetTile(tileCoord);
-        // var tileData = SwGame.Map.GetTileData(tileId);
-        // if(tileData.IsOpaque) QueueFree();
+        var tileCoord = SwGame.Map.PhysicsWorld.PointToTileCoord(Position);
+        var tileId = SwGame.Map.PhysicsWorld.GetTile(tileCoord);
+        var tileData = SwGame.Map.GetTileData(tileId);
+        if(tileData.IsOpaque) QueueFree();
         // EntProps.Props.TryGet("x_velocity", out double xVel);
         // EntProps.Props.TryGet("y_velocity", out double yVel);
         // Velocity = new(xVel, yVel);
@@ -50,5 +50,10 @@ public class SwProjectile : SwEntity, ISwEntity<SwProjectile>
         base.DrawImpl(nextState);
         var pos = ErMath.Lerp(Position, nextState.Position, SwGame.FrameWeight) - Texture.Size * 0.5;
         Texture.Draw(pos);
+    }
+    public override void GameCleanup()
+    {
+        base.GameCleanup();
+        
     }
 }

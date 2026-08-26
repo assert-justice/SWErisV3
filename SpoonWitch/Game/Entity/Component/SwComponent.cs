@@ -27,4 +27,8 @@ public abstract class SwComponent(SwEntity parent, string name)
     {
         //
     }
+    public virtual void Cleanup()
+    {
+        //
+    }
 }
