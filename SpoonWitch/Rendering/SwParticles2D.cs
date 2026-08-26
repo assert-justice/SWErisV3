@@ -23,8 +23,12 @@ public class SwParticles2D
     public double Lifetime = 1;
     public double LifetimeRandomness;
     public double Speed = 300;
+    public double Angle = 0;
+    public double AngleRandomness = ErMath.PI * 0.25;
     public double Explosiveness = 0;
-    public bool Emitting = false;
+    public bool OneShot = false;
+    public bool UseLocalCoords = true;
+    public bool Emitting;
     public SwParticles2D(ErTexture texture)
     {
         Texture = texture;
@@ -32,13 +36,14 @@ public class SwParticles2D
     private void AddParticle()
     {
         // create new particle
-        Positions.Add(ErVec2.Zero);
+        if(UseLocalCoords) Positions.Add(ErVec2.Zero);
+        else Positions.Add(Origin);
         // calc expiration
         double lifetimeMul = Random.Shared.NextDouble() * 2 - 1;// * LifetimeRandomness * 0.5;
         double lifetime = Lifetime + Lifetime * lifetimeMul * LifetimeRandomness;
         double expires = CurrentTime + lifetime;
         // calc random velocity
-        double angle = Random.Shared.NextDouble() * ErMath.TAU;
+        double angle = Angle + (Random.Shared.NextDouble() * 2 -1) * AngleRandomness;
         ErVec2 vel = ErVec2.FromAngle(angle) * Speed;
         DataEntries.Add(new(){Velocity = vel, Expires = expires});
     }
@@ -82,7 +87,6 @@ public class SwParticles2D
         if(SpawnQueue.Count == 0 && particlesNeeded > 0)
         {
             QueueParticles(particlesNeeded);
-            
         }
         // add new particles
         if(SpawnDelay <= 0 && SpawnQueue.Count == 0) return;
@@ -100,13 +104,25 @@ public class SwParticles2D
             }
             AddParticle();
         }
+        if(Emitting && OneShot && SpawnDelay <= 0 && SpawnQueue.Count == 0) Emitting = false;
     }
     public void Draw(double dt)
     {
-        for (int idx = 0; idx < Positions.Count; idx++)
+        if (UseLocalCoords)
         {
-            var pos = Positions[idx] + DataEntries[idx].Velocity * dt + Origin;
-            Texture.DrawQuick(pos);
+            for (int idx = 0; idx < Positions.Count; idx++)
+            {
+                var pos = Positions[idx] + DataEntries[idx].Velocity * dt + Origin;
+                Texture.DrawQuick(pos);
+            }
+        }
+        else
+        {
+            for (int idx = 0; idx < Positions.Count; idx++)
+            {
+                var pos = Positions[idx] + DataEntries[idx].Velocity * dt;
+                Texture.DrawQuick(pos);
+            }
         }
     }
 }

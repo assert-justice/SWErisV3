@@ -30,13 +30,13 @@ public class SwApp : IErApp
     public static readonly PriDb Settings = new();
     public static readonly PriDb SaveData = new();
     public static readonly PriDb Manifest = new();
-    private ErAudioSource Source = null!;
+    // private ErAudioSource Source = null!;
     // public static double GameSpeed => IsPaused ? GameSpeedMul : 0;
     // public static double GameSpeedMul => 1;
     // public static bool IsPaused{get; private set;} = false;
     public const string GAME_DATA_PATH = "game_data";
     // public static bool Debug{get; private set;} = ;
-    public static bool Debug => true;// Settings.TryGet("debug/debug", out bool debug) && debug;
+    public static bool Debug => false;// Settings.TryGet("debug/debug", out bool debug) && debug;
     public static int Main()
     {
         SwApp app = new();
@@ -64,8 +64,8 @@ public class SwApp : IErApp
         }
         if(!TryLoadDb(Settings, "game_data/settings/example_settings.json", "game_data/settings/default_settings.json")) ErEngine.LogWarning("bad settings");
         TryInitMenu();
-        Source = new(ErEngine.AudioApp);
-        Source.PlayFile("game_data/entities/actors/player/sfx/SW SFX Player Death.mp3");
+        // Source = new(ErEngine.AudioApp);
+        // Source.PlayFile("game_data/entities/actors/player/sfx/SW SFX Player Death.mp3");
         Launch();
     }
     private bool TryInitMenu()
