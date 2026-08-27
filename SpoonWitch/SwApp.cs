@@ -36,7 +36,7 @@ public class SwApp : IErApp
     // public static bool IsPaused{get; private set;} = false;
     public const string GAME_DATA_PATH = "game_data";
     // public static bool Debug{get; private set;} = ;
-    public static bool Debug => false;// Settings.TryGet("debug/debug", out bool debug) && debug;
+    public static bool Debug => true;// Settings.TryGet("debug/debug", out bool debug) && debug;
     public static int Main()
     {
         SwApp app = new();

@@ -169,6 +169,15 @@ public class SwGame
                     break;
             }
         }
+        foreach (var command in SwApp.CommandStore.GetGlobalCommands("set_collision_tile_rect"))
+        {
+            if(!command.TryGet("tile_id", out int tileId)) continue;
+            if(!command.TryGet("x", out int x)) continue;
+            if(!command.TryGet("y", out int y)) continue;
+            if(!command.TryGet("w", out int w)) continue;
+            if(!command.TryGet("h", out int h)) continue;
+            Map.PhysicsWorld.SetTileRect(new(x,y,w,h), tileId);
+        }
     }
     private void HandleRooms()
     {

@@ -285,6 +285,17 @@ public partial class ErPhysicsWorld2D
         }
         cell.SetTileId(tileCoord, tileId);
     }
+    public void SetTileRect(ErRect2I tileRect, int tileId)
+    {
+        for(int xi = 0; xi < tileRect.Size.X; xi++)
+        {
+            for(int yi = 0; yi < tileRect.Size.Y; yi++)
+            {
+                ErVec2I tileCoord = tileRect.Position + new ErVec2I(xi,yi);
+                SetTile(tileCoord, tileId);
+            }
+        }
+    }
     // public IEnumerable<int> GetTiles(IEnumerable<ErVec2I> tileCoords)
     // {
     //     var currentCellCoord = ErVec2I.Max;

@@ -1408,7 +1408,7 @@
 					"acceptFileTypes": null,
 					"defaultOverride": {
 						"id": "V_String",
-						"params": ["none"]
+						"params": ["tile_aligned"]
 					},
 					"textLanguageMode": null,
 					"symmetricalRef": false,
@@ -1926,7 +1926,7 @@
 							"px": [32,32],
 							"fieldInstances": [
 								{ "__identifier": "texture_filepath", "__type": "String", "__value": "props/willow_tree_3x4.png", "__tile": null, "defUid": 83, "realEditorValues": [] },
-								{ "__identifier": "prop_collision_mode", "__type": "LocalEnum.prop_collision_mode", "__value": "none", "__tile": null, "defUid": 84, "realEditorValues": [] },
+								{ "__identifier": "prop_collision_mode", "__type": "LocalEnum.prop_collision_mode", "__value": "tile_aligned", "__tile": null, "defUid": 84, "realEditorValues": [] },
 								{ "__identifier": "class", "__type": "String", "__value": "prop", "__tile": null, "defUid": 87, "realEditorValues": [] }
 							],
 							"__worldX": 32,
