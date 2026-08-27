@@ -17,6 +17,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     private SwSprite ReticleSprite = null!;
     private SwPlayerControls Controls = null!;
     private SwAreaComponent SpoonHurtbox = null!;
+    private SwParticleComponent DustParticles = null!;
     // name, hands, facing
     private static readonly string[][][] BodyAnims = [
         [
@@ -93,6 +94,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         ReticleSprite = Entity.GetComponent<SwSpriteComponent>("reticle")?.Sprite!;
         Controls = Entity.GetComponent<SwPlayerControls>("controls")!;
         SpoonHurtbox = Entity.GetComponent<SwAreaComponent>("spoon_hurtbox")!;
+        DustParticles = Entity.GetComponent<SwParticleComponent>("dust_1")!;
     }
     private void SetBodyHandedAnim(int animIdx, int hands, int facing)
     {
@@ -102,7 +104,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     }
     private void SetBodyDodgeAnim(int facing)
     {
-        string animName = DodgeAnims[Controls.LastFacingIdx];
+        string animName = DodgeAnims[facing];
         BodySprite.Play(animName);
         HatSprite.Play(animName);
     }
@@ -140,14 +142,9 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             SpoonSprite.Visible = true;
             SpoonSprite.Angle = (Controls.LastFacingIdx - 1) * ErMath.HALF_PI;
             SpoonSprite.Play();
-            // BodySprite.Play(BodyAnims[0][0][Controls.LastFacingIdx]);
             SetBodyHandedAnim(0, 0, Controls.LastFacingIdx);
             Entity.Velocity = ErVec2.Zero;
             SetHurtbox();
-            // SpoonHurtbox.Enabled = true;
-            // SwDamage damage = new(10, Entity.Position);
-            // SwGame.EnqueueCommandRect(4, GetHurtbox(), damage.ToPri());
-            // BodySprite.SetPallet(1);
         }
         public override void Update()
         {
@@ -159,7 +156,6 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         {
             base.EndState(nextState);
             SpoonSprite.Visible = false;
-            // BodySprite.SetPallet(0);
             SpoonHurtbox.Enabled = false;
         }
         private void SetHurtbox()
@@ -186,7 +182,6 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             base.Update();
             int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
             
-            // BodySprite.Play(BodyAnims[animIdx][1][Controls.LastFacingIdx]);
             SetBodyHandedAnim(animIdx, 1, Controls.LastFacingIdx);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.ChargeSpeedMul;
             if (!Controls.IsCharging)
@@ -206,7 +201,6 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             ReticleSprite.Play(ReticleAnims[nextThresh]);
             ReticleSprite.FrameIdx = frame;
             ReticleSprite.FrameProgress = progress;
-            // ErEngine.Log("charge level ", nextThresh);
             if(nextThresh == 3) StateMachine.SetState("charged");
         }
     }
@@ -217,10 +211,6 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         {
             base.BeginState(lastState);
             SlingSprite.Play("charged");
-            if(SwGame.ParticleEmitters.TryGetValue(Entity.Id, out var emitter))
-            {
-                emitter.Emitting = true;
-            }
         }
         private bool CanFire()
         {
@@ -232,14 +222,13 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         {
             base.Update();
             int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
-            // BodySprite.Play(BodyAnims[animIdx][1][Controls.LastFacingIdx]);
             SetBodyHandedAnim(animIdx, 1, Controls.LastFacingIdx);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.ChargeSpeedMul;
             if (!Controls.IsCharging) StateMachine.SetState("default");
             else if (CanFire())
             {
                 // fire!
-                var pos = Entity.Position;// - Entity.Size * 0.5;
+                var pos = Entity.Position;
                 Entity.EntProps.Props.TrySet("bullet/x", pos.X);
                 Entity.EntProps.Props.TrySet("bullet/y", pos.Y);
                 Entity.EntProps.Props.TrySet("bullet/x_velocity", Controls.Aim.X * Entity.BulletSpeed);
@@ -255,10 +244,6 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             SlingSprite.Visible = false;
             SlingSprite.Stop();
             ReticleSprite.Play("still");
-            if(SwGame.ParticleEmitters.TryGetValue(Entity.Id, out var emitter))
-            {
-                emitter.Emitting = false;
-            }
         }
     }
     public class Dodging: SwPlayerState
@@ -272,7 +257,15 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             Entity.Clock0 = 0;
             // set and lock in velocity
             Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.DodgeSpeedMul;
-            // ErEngine.Log("start dodge");
+            if(DustParticles.Particles is SwParticles2D particles)
+            {
+                particles.Emitting = true;
+                particles.Speed = 30;
+                particles.Amount = 80;
+                particles.UseLocalCoords = false;
+                particles.Lifetime = 5 * 0.125;
+                particles.OneShot = true;
+            }
         }
         public override void Update()
         {

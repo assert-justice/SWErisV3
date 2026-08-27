@@ -26,6 +26,38 @@ public readonly struct SwAnimation(string name, SwFrame[] frames, ErVec2 size, S
         return true;
     }
     private static readonly ErVec2 DefaultSize = new(64,64);
+    public static bool TryFromPriAse(out SwAnimation animation, string name, string dirpath, PriNode aseData)
+    {
+        animation = default!;
+        if(!aseData.Get("meta").TryGet("image", out string textureFilepath)) return ErEngine.LogWarning("ase animation missing image filepath");
+        if(!ErTexture.TryFromPath(Path.Join(dirpath, textureFilepath), out var texture)) return ErEngine.LogWarning("ase animation could not read texture");
+        if(!aseData.Get("meta").TryGet("frameTags", out PriList frameTags)) return ErEngine.LogWarning("ase animation missing image filepath");
+        if(!aseData.TryGet("frames", out PriList frames)) return ErEngine.LogWarning("ase animation missing frames");
+        var item = frameTags.Data.Find(tag => tag.TryGet("name", out string animName) && animName == name);
+        if(item is null) return false;
+        if(!item.TryGet("from", out int first_frame)) return false;
+        if(!item.TryGet("to", out int last_frame)) return false;
+        bool loops = item.TryGet("repeats", out string _);
+        bool hFlip = item.TryGet("data", out string tagData) && tagData == "fliph";
+        SwAnimationState defaultState = new();
+        SwAnimationState.Set(ref defaultState, fps: 8, hFlip:hFlip, isLooping: loops);
+        SwTextureStore textureStore = new(texture);
+        SwFrame[] fs = new SwFrame[last_frame - first_frame + 1];
+        for (int idx = 0; idx < fs.Length; idx++)
+        {
+            var frame = frames.Data[idx + first_frame];
+            var frameRect = frame.Get("frame");
+            if(!frameRect.TryGet("x", out double x)) return false;
+            if(!frameRect.TryGet("y", out double y)) return false;
+            if(!frameRect.TryGet("w", out double w)) return false;
+            if(!frameRect.TryGet("h", out double h)) return false;
+            if(!frame.TryGet("duration", out double duration)) return false;
+            fs[idx] = new(textureStore, new(x,y,w,h), duration);
+        }
+        var size = fs.Length > 0 ? fs[0].SourceRect.Size : DefaultSize;
+        animation = new(name, fs, size, defaultState);
+        return true;
+    }
     public static bool TryFromPriAse(ref List<SwAnimation> animations, string dirpath, PriNode spriteData)
     {
         if(!spriteData.TryGet("filepath", out string aseFilepath)) return ErEngine.LogWarning("ase animation missing filepath");

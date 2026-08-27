@@ -5,6 +5,7 @@ using ErisPhysics2D.Collider;
 using Prion.Node;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Command;
+using SpoonWitch.Data;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
 using SpoonWitch.Game.Map.Collision;
@@ -42,6 +43,13 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     {
         Controls = new SwPlayerControls(this);
         RegisterComponent(Controls);
+        if(!SwApp.TryLoadPrion("game_data/particles/particles.json", out var animData)) throw new("bad");
+        SwAnimation.TryFromPriAse(out var animation, "dust_1", "game_data/particles", animData);
+        SwParticleComponent particles = new(this, "dust_1", animation)
+        {
+            Offset = new(0, 9)
+        };
+        RegisterComponent(particles);
         string path = "game_data/entities/actors/player/player_anim_data.json";
         if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load player sprites");
         SwAreaComponent spoonHurtbox = new(this, "spoon_hurtbox", 4, new(32,32));
@@ -63,19 +71,11 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         if(!SwGame.TryGetEntProps(area.ParentId, out var playerProps)) return;
         if(!SwGame.TryGetEntProps(body.ParentId, out var targetProps)) return;
         if(!playerProps.Props.TryGet("spoon_damage", out PriNode spoonDamage)) return;
-        // var areaCenter = area.Rect.Center;
-        // SwPrion.TrySetVec2(spoonDamage, areaCenter, "source_pos_x", "source_pos_y");
         targetProps.AddCommand(spoonDamage);
     }
     public override void Ready()
     {
         base.Ready();
-        // Add particle effect emitter
-        SwParticles2D particles = new(ErTexture.GetColoredTexture(4, 4, ErColor.Green))
-        {
-            Lifetime = 0.1,
-        };
-        if(!SwGame.ParticleEmitters.TryAdd(Id, particles)) throw new("emitter id already exists");
         SwDamage spoonDamage = new([(SwDamageType.Untyped, 10)]);
         EntProps.Props.TrySet("spoon_damage", spoonDamage.ToPri());
     }
@@ -87,19 +87,10 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         SwGame.SetPlayerPos(Position);
         EntProps.Props.TrySet("spoon_damage/source_pos_x", Position.X);
         EntProps.Props.TrySet("spoon_damage/source_pos_y", Position.Y);
-        if(SwGame.ParticleEmitters.TryGetValue(Id, out var emitter))
-        {
-            emitter.Origin = Position;
-            emitter.Update(SwGame.DeltaTime);
-        }
     }
     protected override void DrawImplLate(SwEntity nextState)
     {
         base.DrawImplLate(nextState);
-        if(SwGame.ParticleEmitters.TryGetValue(Id, out var emitter))
-        {
-            emitter.Draw(SwGame.FrameDuration * SwGame.FrameWeight);
-        }
     }
     protected override double Damage(SwDamage damage)
     {
@@ -113,6 +104,5 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     public override void GameCleanup()
     {
         base.GameCleanup();
-        SwGame.ParticleEmitters.Remove(Id);
     }
 }
