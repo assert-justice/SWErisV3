@@ -51,8 +51,8 @@ public readonly struct SwAnimation(string name, SwFrame[] frames, ErVec2 size, S
             if(!frameRect.TryGet("y", out double y)) return false;
             if(!frameRect.TryGet("w", out double w)) return false;
             if(!frameRect.TryGet("h", out double h)) return false;
-            if(!frame.TryGet("duration", out double duration)) return false;
-            fs[idx] = new(textureStore, new(x,y,w,h), duration);
+            // if(!frame.TryGet("duration", out double duration)) return false;
+            fs[idx] = new(textureStore, new(x,y,w,h));
         }
         var size = fs.Length > 0 ? fs[0].SourceRect.Size : DefaultSize;
         animation = new(name, fs, size, defaultState);
@@ -86,8 +86,8 @@ public readonly struct SwAnimation(string name, SwFrame[] frames, ErVec2 size, S
             if(!frame.TryGet("y", out double y)) return false;
             if(!frame.TryGet("w", out double w)) return false;
             if(!frame.TryGet("h", out double h)) return false;
-            if(!frames.Data[idx].TryGet("duration", out double duration)) return false;
-            fs[idx] = new(textureStore, new(x,y,w,h), duration);
+            // if(!frames.Data[idx].TryGet("duration", out double duration)) return false;
+            fs[idx] = new(textureStore, new(x,y,w,h));
         }
         foreach (var item in frameTags.Data)
         {

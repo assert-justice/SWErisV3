@@ -4,11 +4,10 @@ using SpoonWitch.Utils;
 
 namespace SpoonWitch.Rendering;
 
-public readonly struct SwFrame(SwTextureStore texture, ErRect2 sourceRect, double duration = 0.125)
+public readonly struct SwFrame(SwTextureStore texture, ErRect2 sourceRect)
 {
     public readonly SwTextureStore Texture = texture;
     public readonly ErRect2 SourceRect = sourceRect;
-    public readonly double Duration = duration;
     public void Draw(ErVec2 position, ErVec2? origin = null, double angle = 0, bool hFlip = false, bool vFlip = false)
     {
         Texture.DefaultTexture.Draw(position, SourceRect.Size, SourceRect, origin, angle, hFlip, vFlip);
