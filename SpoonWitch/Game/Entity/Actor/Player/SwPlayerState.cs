@@ -1,6 +1,7 @@
 using Eris;
 using Eris.Utils;
 using ErisMath;
+using Prion.Node;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
 using SpoonWitch.Game.Entity.Projectile;
@@ -236,6 +237,12 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
                 SwGame.Game.AddEntity<SwProjectile>(Entity.EntProps.Props.Get("bullet"));
                 StateMachine.SetState("default");
                 Entity.AttackCooldownClock = 0.1;
+                Entity.Ammo--;
+                PriDict command = [];
+                command.TrySet("verb", "hud_set");
+                command.TrySet("key", "ammo");
+                command.TrySet("value", Entity.Ammo);
+                SwApp.CommandStore.AddGlobalCommand(command);
             }
         }
         public override void EndState(string nextState)

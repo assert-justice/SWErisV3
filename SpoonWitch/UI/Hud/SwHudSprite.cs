@@ -14,6 +14,7 @@ public class SwHudSprite
     private double Clock;
     private readonly ErVec2 Offset;
     public int FrameIdx;
+    public bool Visible = true;
     private SwHudSprite(ErVec2 offset, string dirpath, PriNode node)
     {
         Offset = offset;
@@ -37,6 +38,7 @@ public class SwHudSprite
     }
     public void Draw()
     {
+        if(!Visible) return;
         Frames[FrameIdx].Draw(Offset);
     }
     public static bool TryLoad(ErVec2 offset, string dirpath, PriNode node, out SwHudSprite hudSprite)
@@ -54,6 +56,7 @@ public class SwHudSprite
     }
     public static bool TryLoadList(string dirpath, PriNode node, in List<SwHudSprite> sprites)
     {
+        // Todo: add origin to arguments
         if(!node.TryGet("slots", out PriList list)) return ErEngine.LogWarning("no slots found");
         foreach (var item in list.Values)
         {

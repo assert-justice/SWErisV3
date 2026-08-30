@@ -15,7 +15,8 @@ public class SwHud
     public readonly SwHudBar StaminaBar;
     private readonly ErVec2 Offset;
     private readonly List<SwHudSprite> RootSlots = [];
-    private readonly List<SwHudSprite> AmmoSlots = [];
+    // private readonly List<SwHudSprite> AmmoSlots = [];
+    private readonly SwHudSlots AmmoSlots;
     private SwHud(ErVec2 offset)
     {
         Offset = offset;
@@ -30,7 +31,7 @@ public class SwHud
         if(!SwHudBar.TryLoad(offset, dirpath, "mana", node, out ManaBar)) throw new("no mana bar");
         if(!SwHudBar.TryLoad(offset, dirpath, "stamina", node, out StaminaBar)) throw new("no stamina bar");
         if(!SwHudSprite.TryLoadList(dirpath, node.Get("roots"), RootSlots)) throw new("no roots");
-        if(!SwHudSprite.TryLoadList(dirpath, node.Get("ammo"), AmmoSlots)) throw new("no ammo");
+        if(!SwHudSlots.TryLoad(out AmmoSlots, dirpath, node.Get("ammo"))) throw new("no ammo");
     }
     public void Update()
     {
@@ -38,14 +39,14 @@ public class SwHud
         {
             TryHandleSet(item);
         }
+        HealthBar.Update();
+        ManaBar.Update();
+        StaminaBar.Update();
         foreach (var item in RootSlots)
         {
             item.Update();
         }
-        foreach (var item in AmmoSlots)
-        {
-            item.Update();
-        }
+        AmmoSlots.Update();
     }
     private bool TryHandleSet(PriNode node)
     {
@@ -55,10 +56,13 @@ public class SwHud
         switch (key)
         {
             case "health":
-            HealthBar.Value = value;
-            break;
+                HealthBar.Value = value;
+                break;
+            case "ammo":
+                AmmoSlots.Value = (int)value;
+                break;
             default:
-            return ErEngine.LogWarning("invalid hud key '", key, "'");
+                return ErEngine.LogWarning("invalid hud key '", key, "'");
         }
         return true;
     }
@@ -73,10 +77,7 @@ public class SwHud
         {
             item.Draw();
         }
-        foreach (var item in AmmoSlots)
-        {
-            item.Draw();
-        }
+        AmmoSlots.Draw();
     }
     public static bool TryLoad(ErVec2 offset, out SwHud hud)
     {

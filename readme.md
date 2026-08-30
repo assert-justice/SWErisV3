@@ -4,6 +4,7 @@ A cool video game for cool people
 
 Short term todos:
 
+- Make enemies do damage again
 - Implement dodge
 - Implement player death
 - Sfx/music

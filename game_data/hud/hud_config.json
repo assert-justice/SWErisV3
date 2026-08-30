@@ -36,6 +36,7 @@
             "fill_filepath": "health_bar_fill.png",
             "cap_filepath": "health_bar_cap.png",
             "segment_filepath": "health_bar_segment.png",
+            "bg_filepath": "health_bar_bg.png",
             "x": 52,
             "y": 3
         },
@@ -43,6 +44,7 @@
             "fill_filepath": "stam_bar_fill.png",
             "cap_filepath": "stam_bar_cap.png",
             "segment_filepath": "stam_bar_segment.png",
+            "bg_filepath": "stam_bar_bg.png",
             "x": 52,
             "y": 15
         },
@@ -50,6 +52,7 @@
             "fill_filepath": "mana_bar_fill.png",
             "cap_filepath": "mana_bar_cap.png",
             "segment_filepath": "mana_bar_segment.png",
+            "bg_filepath": "mana_bar_bg.png",
             "x": 52,
             "y": 27
         }

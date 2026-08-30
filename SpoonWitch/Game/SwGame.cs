@@ -45,7 +45,7 @@ public class SwGame
     private SwByteStream LastStream = new();
     private SwByteStream NextStream = new();
     private readonly SwByteStream NewEntities = new();
-    private readonly ErTexture HudBg = ErTexture.GetColoredTexture(SwApp.INTERNAL_WIDTH,SwApp.HUD_HEIGHT, new(131, 32, 185));
+    // private readonly ErTexture HudBg = ErTexture.GetColoredTexture(SwApp.INTERNAL_WIDTH,SwApp.HUD_HEIGHT, new(131, 32, 185));
     private SwRoom? CurrentRoom;
     private readonly SwHud Hud;
     public static readonly SwCamera Camera = new();
@@ -137,7 +137,7 @@ public class SwGame
     {
         CalculateFrameWeight();
         Camera.Draw();
-        HudBg.Draw(ErVec2.Zero);
+        // HudBg.Draw(ErVec2.Zero);
         Hud.Draw();
     }
     private void HandleCommands()

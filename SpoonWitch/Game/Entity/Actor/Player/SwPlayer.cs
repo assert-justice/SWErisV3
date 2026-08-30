@@ -33,6 +33,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     public double DodgeCooldown => 0.15;
     public double DodgeSpeedMul => 1.5;
     public double BulletSpeed => 100;
+    public int Ammo = 4;
     protected override int NumClocks => base.NumClocks + 3;
     public double Clock0{get => Clocks[base.NumClocks+0]; set {Clocks[base.NumClocks+0] = value;}}
     public double DodgeCooldownClock{get => Clocks[base.NumClocks+1]; set {Clocks[base.NumClocks+1] = value;}}
@@ -104,5 +105,10 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     public override void GameCleanup()
     {
         base.GameCleanup();
+    }
+    public void TestDamage(double value)
+    {
+        SwDamage damage = new([(SwDamageType.Untyped,value)]);
+        Damage(damage);
     }
 }
