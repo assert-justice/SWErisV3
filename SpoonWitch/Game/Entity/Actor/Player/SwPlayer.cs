@@ -44,6 +44,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     {
         Controls = new SwPlayerControls(this);
         RegisterComponent(Controls);
+        RegisterComponent(new SwInventoryComponent(this, "inventory"));
         if(!SwApp.TryLoadPrion("game_data/particles/particles.json", out var animData)) throw new("bad");
         SwAnimation.TryFromPriAse(out var animation, "dust_1", "game_data/particles", animData);
         SwParticleComponent particles = new(this, "dust_1", animation)

@@ -4,13 +4,10 @@ A cool video game for cool people
 
 Short term todos:
 
-- Make enemies do damage again
-- Implement dodge
+- basic inventory & pickups
+- Make bullets and enemies do damage again
 - Implement player death
-- Sfx/music
 - (Basic) menus/text rendering
-- Animate hud
-- basic inventory
 - Coop lol
 - read entity settings and use them at runtime
 
@@ -32,8 +29,13 @@ Long term todos:
 - Level editor
 - Online coop
 
+Done ish
+- Animate hud
+- Sfx/music
+- Implement dodge
+- Particle effects
+
 Done
-- Particle effects (done ish)
 - Update cursor animation
 - Add knight enemy
 - Fix knight ai

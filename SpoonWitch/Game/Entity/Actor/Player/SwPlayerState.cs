@@ -5,6 +5,7 @@ using Prion.Node;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
 using SpoonWitch.Game.Entity.Projectile;
+using SpoonWitch.Game.Inventory;
 using SpoonWitch.Rendering;
 
 namespace SpoonWitch.Game.Entity.Actor.Player;
@@ -19,6 +20,8 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     private SwPlayerControls Controls = null!;
     private SwAreaComponent SpoonHurtbox = null!;
     private SwParticleComponent DustParticles = null!;
+    private SwInventoryComponent _Inventory = null!;
+    private SwInventory Inventory => _Inventory.Entries!;
     // name, hands, facing
     private static readonly string[][][] BodyAnims = [
         [
@@ -96,6 +99,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         Controls = Entity.GetComponent<SwPlayerControls>("controls")!;
         SpoonHurtbox = Entity.GetComponent<SwAreaComponent>("spoon_hurtbox")!;
         DustParticles = Entity.GetComponent<SwParticleComponent>("dust_1")!;
+        _Inventory = Entity.GetComponent<SwInventoryComponent>("inventory")!;
     }
     private void SetBodyHandedAnim(int animIdx, int hands, int facing)
     {
@@ -130,7 +134,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             SetBodyHandedAnim(animIdx, 2, Controls.LastFacingIdx);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed;
             if(Controls.AttackJustPressed && CanAttack()) StateMachine.SetState("attack");
-            else if(Controls.IsCharging) StateMachine.SetState("charging");
+            else if(Controls.IsCharging && Inventory.GetCount("ammo") > 0) StateMachine.SetState("charging");
             else if(Controls.DodgeJustPressed && CanDodge()) StateMachine.SetState("dodging");
         }
     }

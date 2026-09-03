@@ -113,6 +113,9 @@ public abstract class SwMapObject
                 case "prop":
                     mapObject = new SwMapProp(data);
                     return true;
+                case "pickup":
+                    mapObject = new SwMapPickup(data);
+                    return true;
                 default:
                     return ErEngine.LogWarning("invalid type for map object '", type, "'");
             }

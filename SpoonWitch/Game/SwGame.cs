@@ -10,6 +10,7 @@ using SpoonWitch.Game.Entity;
 using SpoonWitch.Game.Entity.Actor.Enemy.Knight;
 using SpoonWitch.Game.Entity.Actor.Enemy.Slume;
 using SpoonWitch.Game.Entity.Actor.Player;
+using SpoonWitch.Game.Inventory;
 using SpoonWitch.Game.Map;
 using SpoonWitch.Game.Map.Collision;
 using SpoonWitch.Rendering;
@@ -25,6 +26,7 @@ public class SwGame
     public static double FrameWeight{get; private set;}
     private static ErTexture[] RenderTextures = [];
     public static readonly Dictionary<int, SwParticles2D> ParticleEmitters = [];
+    public static readonly Dictionary<int, SwInventory> InventoryLookup = [];
     public static double GameSpeed => 1;
     private static int _RenderLayer;
     public static int RenderLayer
@@ -200,17 +202,15 @@ public class SwGame
         Map.Draw();
         if (SwApp.Debug)
         {
-            // ErEngine.Log("here");
             Map.PhysicsWorld.DebugDrawTiles();
             Map.PhysicsWorld.DebugDrawBodies();
             Map.PhysicsWorld.DebugDrawAreas();
-            ErEngine.Renderer.FlushDebug();
         }
+        ErEngine.Renderer.FlushDebug();
         _RenderLayer = 0;
         ErEngine.Renderer.PushViewport(ErVec2.Zero, RenderTextures[RenderLayer]);
         for (int idx = 0; idx < RenderTextures.Length; idx++)
         {
-            // RenderTextures[idx].Draw(ErVec2.Zero);
             RenderLayer = idx;
             ErEngine.Renderer.Clear();
         }
