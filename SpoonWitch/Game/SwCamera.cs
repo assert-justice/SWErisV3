@@ -20,6 +20,7 @@ public class SwCamera
     public ErVec2 Position => CurrentPos;
     private ErVec2 NextPos;
     public ErVec2 Size => Texture.Size;
+    public ErVec2 DrawPos;
     public SwCamera()
     {
         Texture = ErTexture.GetRenderTexture(SwApp.INTERNAL_WIDTH,SwApp.INTERNAL_HEIGHT-SwApp.HUD_HEIGHT);
@@ -64,8 +65,8 @@ public class SwCamera
     }
     public void Draw()
     {
-        var pos = ErMath.Lerp(CurrentPos,NextPos,SwGame.FrameWeight);
-        ErEngine.Renderer.PushViewport(pos-Half, Texture);
+        DrawPos = ErMath.Lerp(CurrentPos,NextPos,SwGame.FrameWeight)-Half;
+        ErEngine.Renderer.PushViewport(ErVec2.Zero, Texture);
         ErEngine.Renderer.SetClearColor(CamColor);
         ErEngine.Renderer.Clear();
         ErEngine.Renderer.SetClearColor(ClearColor);

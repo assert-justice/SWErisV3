@@ -37,7 +37,7 @@ public class SwGame
             if(value == _RenderLayer) return;
             ErEngine.Renderer.PopViewport();
             _RenderLayer = value;
-            ErEngine.Renderer.PushViewport(ErVec2.Zero, RenderTextures[value]);
+            ErEngine.Renderer.PushViewport(Camera.DrawPos, RenderTextures[value]);
         }
     }
     private static readonly SwEntPropsLookup PropsLookup = new();
@@ -199,6 +199,14 @@ public class SwGame
     }
     private void DrawScene()
     {
+        _RenderLayer = 0;
+        ErEngine.Renderer.PushViewport(ErVec2.Zero, RenderTextures[RenderLayer]);
+        for (int idx = 0; idx < RenderTextures.Length; idx++)
+        {
+            RenderLayer = idx;
+            ErEngine.Renderer.Clear();
+        }
+        RenderLayer = 0;
         Map.Draw();
         if (SwApp.Debug)
         {
@@ -207,13 +215,6 @@ public class SwGame
             Map.PhysicsWorld.DebugDrawAreas();
         }
         ErEngine.Renderer.FlushDebug();
-        _RenderLayer = 0;
-        ErEngine.Renderer.PushViewport(ErVec2.Zero, RenderTextures[RenderLayer]);
-        for (int idx = 0; idx < RenderTextures.Length; idx++)
-        {
-            RenderLayer = idx;
-            ErEngine.Renderer.Clear();
-        }
         LastStream.Reset();
         NextStream.Reset();
         while(NextStream.BytesRemaining() > 0)

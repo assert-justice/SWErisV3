@@ -40,6 +40,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     public double AttackCooldownClock{get => Clocks[base.NumClocks+2]; set {Clocks[base.NumClocks+2] = value;}}
     private readonly SwStateMachine StateMachine;
     private readonly SwPlayerControls Controls;
+    public override ErVec2 Size => new(28,28);
     public SwPlayer()
     {
         Controls = new SwPlayerControls(this);
