@@ -1,0 +1,41 @@
+[
+    {
+        "name": "empty",
+        "source": "tilesets/wall_tileset.png",
+        "is_solid": true,
+        "move_speed_mul": 0
+    },
+    {
+        "name": "water",
+        "source": "tilesets/sea_tileset.png",
+        "is_solid": true,
+        "move_speed_mul": 0,
+        "animated": true,
+        "fps": 4
+    },
+    {
+        "name": "sand",
+        "source": "tilesets/beach_tileset.png",
+        "move_speed_mul": 0.5
+    },
+    {
+        "name": "dirt",
+        "source": "tilesets/demo_dirt_tiles.png",
+        "is_arable": true
+    },
+    {
+        "name": "grass",
+        "source": "tilesets/grassland_tileset.png",
+        "is_arable": true
+    },
+    {
+        "name": "wood",
+        "source": "tilesets/floor_wooden_tileset.png"
+    },
+    {
+        "name": "wall",
+        "source": "tilesets/wall_tileset.png",
+        "is_solid": true,
+        "is_opaque": true
+    }
+]

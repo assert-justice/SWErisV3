@@ -23,6 +23,7 @@ public class SwTileData
     public readonly double MoveSpeedMul;
     public readonly uint CollisionMask;
     public readonly bool IsAnimated;
+    public readonly bool IsArable;
     public const int ATLAS_WIDTH = 4;
     public const int ATLAS_HEIGHT = 4;
     public double Fps = 4;
@@ -78,15 +79,14 @@ public class SwTileData
     }
     private SwTileData(string filepath, PriNode priNode, ErVec2I tileSize)
     {
-        // TileSize = tileSize;
         if(!priNode.Get("source").TryAs(out string texPath)) throw new("no source field provided");
         string? dirpath = Path.GetDirectoryName(filepath);
         texPath = Path.Join(dirpath, texPath);
-        // if(!ErEngine.Renderer.TryGetSurface(texPath, out nint surface)) throw new("source path invalid");
         if(!ErTexture.TryFromPath(texPath, out Texture, out nint surfaceHandle)) throw new("source path invalid2");
         IsSolid = priNode.TryGet("is_solid", out bool is_solid) && is_solid;
         IsOpaque = priNode.TryGet("is_opaque", out bool is_opaque) && is_opaque;
         MoveSpeedMul = priNode.TryGet("move_speed_mul", out double mul) ? mul : 1;
+        IsArable = priNode.TryGet("is_arable", out bool b) && b;
         IsAnimated = priNode.TryGet("is_animated", out bool is_animated) && is_animated;
         if (IsAnimated)
         {
@@ -95,7 +95,6 @@ public class SwTileData
         ErVec2I texSizeTiles = (ErVec2I)Texture.Size / tileSize;
         int numVariants = texSizeTiles.X / ATLAS_WIDTH;
         int numFrames = texSizeTiles.Y / ATLAS_HEIGHT;
-        // ErEngine.Log("num frames: ", numFrames);
         Frames = new ErRect2[numFrames][][];
         List<ErRect2> variants = new(numVariants);
         for (int frameIdx = 0; frameIdx < numFrames; frameIdx++)

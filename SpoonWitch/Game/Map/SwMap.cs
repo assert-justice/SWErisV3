@@ -1,11 +1,10 @@
-using System.Text.Json.Nodes;
 using Eris;
 using Eris.Renderer;
 using ErisMath;
 using ErisPhysics2D;
 using Prion.Node;
-using Prion.Parser;
 using SpoonWitch.Game.Map.Collision;
+using SpoonWitch.Game.Map.Foliage;
 using SpoonWitch.Game.Map.MapObject;
 
 namespace SpoonWitch.Game.Map;
@@ -18,8 +17,8 @@ public class SwMap
     private readonly SwTileData[] TileData;
     private readonly SwDisplayLayer[] DisplayLayers;
     public readonly int NumTileLayers;
-    // public readonly SwCollisionLayer CollisionLayer;
     public readonly ErPhysicsWorld2D PhysicsWorld;
+    public readonly SwFoliage Foliage;
     public readonly string Id;
     public readonly ErVec2I TileSize;
     public readonly ErVec2I SectorSizeTiles;
@@ -39,7 +38,6 @@ public class SwMap
         TileSize = tileSize ?? new(32, 32);
         SectorSizePx = sectorSizePx ?? new(640, 320);
         SectorSizeTiles = SectorSizePx / TileSize;
-        // CollisionLayer = new(this);
         TileData = tileData ?? [];
         uint[] tileMaskLookup = [..TileData.Select(t => t.CollisionMask)];
         static void debugDrawRect(ErRect2 rect, bool overlap, uint mask)
@@ -64,6 +62,7 @@ public class SwMap
             Mask = uint.MaxValue,
         };
         PhysicsWorld.SetArea(0, area);
+        Foliage = new();
     }
     public void AddGlobalObject(SwMapObject mapObject)
     {
@@ -75,7 +74,7 @@ public class SwMap
     }
     public void SetTile(int layer, ErVec2I coord, int tileId)
     {
-        // CollisionLayer.SetTile(coord, tileId);
+        Foliage.SetArable(coord, TileData[tileId].IsArable);
         PhysicsWorld.SetTile(coord, tileId);
         DisplayLayers[layer].SetTile(coord, tileId);
     }
@@ -104,16 +103,12 @@ public class SwMap
         {
             layer.Draw();
         }
+        Foliage.Draw();
         foreach (var room in LoadedRooms.Values)
         {
             room.Draw();
         }
-        // if (SwApp.Debug)
-        // {
-        //     CollisionLayer.DebugDraw();
-        // }
     }
-    public void DebugDraw(){}
     public bool TryGetDefaultCheckpoint(out SwMapCheckpoint checkpoint)
     {
         checkpoint = null!;
@@ -159,7 +154,7 @@ public class SwMap
     //     room.Unload();
     //     LoadedRooms.Remove(roomId);
     // }
-    public static bool TryFromData(string filepath, PriNode data, out SwMap map)
+    public static bool TryFromData(string filepath, PriNode data, SwTileData[] tileData, out SwMap map)
     {
         map = null!;
         if(!data.Get("iid").TryAs(out string id)) return false;
@@ -176,35 +171,13 @@ public class SwMap
             if(!layerData.Get("type").TryAs(out string layerType)) return ErEngine.LogWarning("malformed layer: ", layerData);
             if(layerType == "Tiles") numTileLayers++;
         }
-        List<SwTileData> tileDataEntries = [];
-        foreach (var tileset in tilesetList.Values)
-        {
-            if(!tileset.Get("identifier").TryAs(out string ident)) continue;
-            if(ident != "tile_pallet") continue;
-            if(!tileset.Get("customData").TryAs(out PriList tiles)) return ErEngine.LogWarning("no custom data");
-            foreach (var t in tiles.Values)
-            {
-                if(!t.Get("data").TryAs(out string dataStr)) return false;
-                try
-                {
-                    var json = JsonNode.Parse(dataStr);
-                    var prion = PriJsonConverter.JsonToPrion(json);
-                    if(!SwTileData.TryFromData(filepath, prion, tileSize, out var tileData)) return ErEngine.LogWarning("corrupt tile data");
-                    tileDataEntries.Add(tileData);
-                }
-                catch(Exception e)
-                {
-                    return ErEngine.LogWarning("json parse failed with error: ", e, " ", dataStr);
-                }
-            }
-            break;
-        }
-        map = new(Path.GetDirectoryName(filepath)!, id, numTileLayers, tileSize, new(sectorWidthPx,sectorHeightPx), [..tileDataEntries]);
+        map = new(Path.GetDirectoryName(filepath)!, id, numTileLayers, tileSize, new(sectorWidthPx,sectorHeightPx), tileData);
         foreach (var roomData in rooms.Values)
         {
             if(SwRoom.TryFromData(map, roomData, out var room)) map.AddRoom(room);
             else return ErEngine.LogWarning("malformed room");
         }
+        map.Foliage.LifeSim();
         return true;
     }
 }

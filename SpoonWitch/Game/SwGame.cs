@@ -53,6 +53,7 @@ public class SwGame
     public static readonly SwCamera Camera = new();
     public static ErVec2 PlayerPos{get; private set;} = new(32,32);
     public static SwGame Game{get; private set;} = null!;
+    public static SwTileData[] TileData = null!;
     public static void SetPlayerPos(ErVec2 position)
     {
         PlayerPos = position;
@@ -79,9 +80,30 @@ public class SwGame
         Camera.DrawFn = DrawScene;
         Game = this;
         RenderTextures = new ErTexture[5];
-        for (int idx = 0; idx < RenderTextures.Length; idx++)
+        int idx;
+        for (idx = 0; idx < RenderTextures.Length; idx++)
         {
             RenderTextures[idx] = ErTexture.GetRenderTexture((int)SwApp.CameraSize.X, (int)SwApp.CameraSize.Y);
+        }
+        // try load tile data
+        string filepath = "game_data/map/tile_data.json";
+        if(!SwApp.TryLoadPrion(filepath, out var tileData))
+        {
+            ErEngine.LogError("bad tile data");
+            return;
+        }
+        TileData = new SwTileData[tileData.Count];
+        idx = 0;
+        ErVec2I tileSize = new(32,32);
+        foreach (var item in tileData.Values)
+        {
+            if(!SwTileData.TryFromData(filepath, item, tileSize, out var data))
+            {
+                ErEngine.LogError("bad tile data at idx ", idx);
+                return;
+            }
+            TileData[idx] = data;
+            idx++;
         }
     }
     public static bool TryGetEntProps(int id, out SwEntPropsBase entProps)
@@ -283,7 +305,7 @@ public class SwGame
         {
             return false;
         }
-        if(!SwMap.TryFromData(filepath, data, out var map)) return ErEngine.LogWarning("failed to load map '", filepath, "'.");
+        if(!SwMap.TryFromData(filepath, data, TileData, out var map)) return ErEngine.LogWarning("failed to load map '", filepath, "'.");
         Map = map;
         map.LoadGlobals();
         if(!map.TryGetDefaultCheckpoint(out var checkpoint)) return ErEngine.LogWarning("failed to find default checkpoint");
