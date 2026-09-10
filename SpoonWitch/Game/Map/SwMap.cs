@@ -55,13 +55,6 @@ public class SwMap
             DebugDrawRect = debugDrawRect,
             DebugDrawLine = debugDrawLine,
         };
-        SwColliderArea area = new()
-        {
-            Size = new(32, 32),
-            Position = new(128, 128),
-            Mask = uint.MaxValue,
-        };
-        PhysicsWorld.SetArea(0, area);
         Foliage = new();
     }
     public void AddGlobalObject(SwMapObject mapObject)

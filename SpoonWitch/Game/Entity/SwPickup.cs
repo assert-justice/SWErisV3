@@ -27,14 +27,16 @@ public class SwPickup : SwEntity, ISwEntity<SwPickup>
     {
         base.Ready();
         PriDict command = [];
+        command.TrySet("verb", "ent_offer_item");
+        command.TrySet("pickup_type", EntProps.Props.Get("pickup_type"));
+        command.TrySet("count", EntProps.Props.Get("count"));
         EntProps.Props.TrySet("ent_offer_item", command);
-        ErEngine.Log(EntProps.Props);
     }
     private static void OnEnter(SwColliderArea area, int bodyId, ErColliderBody body)
     {
         if(!SwGame.TryGetEntProps(area.ParentId, out var pickupProps)) return;
         if(!SwGame.TryGetEntProps(body.ParentId, out var targetProps)) return;
-        if(!pickupProps.Props.TryGet("spoon_damage", out PriNode spoonDamage)) return;
-        targetProps.AddCommand(spoonDamage);
+        if(!pickupProps.Props.TryGet("ent_offer_item", out PriNode command)) return;
+        targetProps.AddCommand(command);
     }
 }

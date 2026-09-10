@@ -42,12 +42,10 @@ public class SwGame
     }
     private static readonly SwEntPropsLookup PropsLookup = new();
     public static SwMap Map{get; private set;} = new();
-    // private static readonly Queue<SwMove> MoveQueue = [];
     private readonly Dictionary<byte, (SwEntity,SwEntity)> Prototypes = [];
     private SwByteStream LastStream = new();
     private SwByteStream NextStream = new();
     private readonly SwByteStream NewEntities = new();
-    // private readonly ErTexture HudBg = ErTexture.GetColoredTexture(SwApp.INTERNAL_WIDTH,SwApp.HUD_HEIGHT, new(131, 32, 185));
     private SwRoom? CurrentRoom;
     private readonly SwHud Hud;
     public static readonly SwCamera Camera = new();
@@ -63,13 +61,6 @@ public class SwGame
     {
         return Map;
     }
-    // private readonly struct SwMove
-    // {
-    //     public int Id{get; init;}
-    //     public uint Mask{get; init;}
-    //     public ErVec2 Size{get; init;}
-    //     public int Head{get; init;}
-    // }
     public SwGame()
     {
         if(!SwHud.TryLoad(ErVec2.Zero, out Hud))
@@ -161,7 +152,6 @@ public class SwGame
     {
         CalculateFrameWeight();
         Camera.Draw();
-        // HudBg.Draw(ErVec2.Zero);
         Hud.Draw();
     }
     private void HandleCommands()

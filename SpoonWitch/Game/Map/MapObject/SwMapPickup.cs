@@ -38,7 +38,7 @@ public class SwMapPickup : SwMapObject
     public override void Load()
     {
         base.Load();
-        SwGame.Game.AddEntity<SwPickup>(Data);
+        SwGame.Game.AddEntity<SwPickup>(GetProps());
     }
     // {
         // if(Fields.TryGet("pickup_type", out string pickup_type)) PickupType = pickup_type;
