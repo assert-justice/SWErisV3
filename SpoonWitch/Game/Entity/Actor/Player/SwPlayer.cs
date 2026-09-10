@@ -41,11 +41,13 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     private readonly SwStateMachine StateMachine;
     private readonly SwPlayerControls Controls;
     public override ErVec2 Size => new(28,28);
+    private SwInventoryComponent InventoryComp;
     public SwPlayer()
     {
         Controls = new SwPlayerControls(this);
         RegisterComponent(Controls);
-        RegisterComponent(new SwInventoryComponent(this, "inventory"));
+        InventoryComp = new SwInventoryComponent(this, "inventory");
+        RegisterComponent(InventoryComp);
         if(!SwApp.TryLoadPrion("game_data/particles/particles.json", out var animData)) throw new("bad");
         SwAnimation.TryFromPriAse(out var animation, "dust_1", "game_data/particles", animData);
         SwParticleComponent particles = new(this, "dust_1", animation)
@@ -60,6 +62,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         RegisterComponent(spoonHurtbox);
         StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
+        AddHandler("ent_offer_item", EntOfferItem);
     }
     private static void SetHud(string key, double value)
     {
@@ -81,6 +84,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         base.Ready();
         SwDamage spoonDamage = new([(SwDamageType.Untyped, 10)]);
         EntProps.Props.TrySet("spoon_damage", spoonDamage.ToPri());
+        InventoryComp.Entries.SetCount("sling_ammo", 0, 10);
     }
     public override void Update()
     {
@@ -112,5 +116,18 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     {
         SwDamage damage = new([(SwDamageType.Untyped,value)]);
         Damage(damage);
+    }
+    private void EntOfferItem(PriNode command)
+    {
+        if(!command.TryGet("ent_id", out int id)) return;
+        if(!SwGame.TryGetEntProps(id, out var props)) return;
+        if(!command.TryGet("count", out int count)) return;
+        if(!command.TryGet("pickup_type", out string pickup_type)) return;
+        if(!InventoryComp.Entries.TryAdd(pickup_type, count, out int rem)) return;
+        SetHud(pickup_type, InventoryComp.Entries.GetCount(pickup_type));
+        PriDict com = [];
+        com.TrySet("verb", "pickup_set_rem");
+        com.TrySet("rem", rem);
+        props.AddCommand(com);
     }
 }

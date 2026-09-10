@@ -17,7 +17,7 @@ public class SwColliderArea: ErColliderArea
     public override void OnBodyExit(int bodyId, ErColliderBody body)
     {
         base.OnBodyExit(bodyId, body);
-        if(OnBodyEnterFn is not null) OnBodyEnterFn(this, bodyId, body);
+        if(OnBodyExitFn is not null) OnBodyExitFn(this, bodyId, body);
     }
     public override void Copy<T>(ref T value)
     {

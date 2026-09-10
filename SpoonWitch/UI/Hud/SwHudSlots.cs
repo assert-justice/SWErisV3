@@ -9,8 +9,8 @@ public class SwHudSlots
     private readonly List<SwHudSprite> Sprites = [];
     private readonly double FrameDuration = 1/16.0;
     private double FrameProgress = 0;
-    private int FrameIdx;
-    private int TargetFrameIdx;
+    private int FrameIdx = int.MaxValue;
+    private int TargetFrameIdx = 0;
     private const int NUM_FRAMES = 3;
     private int _Value;
     public int Value
@@ -59,7 +59,6 @@ public class SwHudSlots
         slots = new();
         if(!SwHudSprite.TryLoadList(dirpath, priNode, slots.Sprites)) return false;
         slots.MaxValue = slots.Sprites.Count;
-        slots.Value = slots.MaxValue;
         return true;
     }
 }

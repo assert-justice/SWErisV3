@@ -58,7 +58,7 @@ public class SwHud
             case "health":
                 HealthBar.Value = value;
                 break;
-            case "ammo":
+            case "sling_ammo":
                 AmmoSlots.Value = (int)value;
                 break;
             default:

@@ -30,12 +30,17 @@ public abstract class SwEntity
     public bool IsFreeQueued{get; private set;}
     protected virtual int NumClocks => 0;
     protected readonly double[] Clocks;
+    private readonly Dictionary<string,Action<PriNode>> Handlers = [];
     // private bool WasBodyEnabled = false;
     // public bool BodyEnabled = true;
     private readonly SwColliderBody Body = new();
     public SwEntity()
     {
         Clocks = new double[NumClocks];
+    }
+    protected void AddHandler(string verb, Action<PriNode> action)
+    {
+        if(!Handlers.TryAdd(verb, action)) ErEngine.LogWarning("tried to add duplicate command: ", verb);
     }
     protected SwComponent RegisterComponent(SwComponent component)
     {
@@ -89,7 +94,19 @@ public abstract class SwEntity
     {
         IsFreeQueued = true;
     }
-    protected virtual void HandleCommands(){}
+    protected void HandleCommands()
+    {
+        foreach(var command in EntProps.GetCommands())
+        {
+            if(!command.TryGet("verb", out string verb))
+            {
+                ErEngine.LogWarning("bad command, no verb");
+                return;
+            }
+            if(!Handlers.TryGetValue(verb, out var action)) continue;
+            action(command);
+        }
+    }
     public virtual void Write(SwByteStream byteStream)
     {
         // if(IsFreeQueued) return; // Game does not call Write on entities with queue free set

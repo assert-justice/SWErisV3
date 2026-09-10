@@ -54,4 +54,16 @@ public class SwInventory
         }
         else Data[key] = new(count, max);
     }
+    public bool TryAdd(string key, int count, out int rem)
+    {
+        rem = default;
+        if(!Data.TryGetValue(key, out var entry)) return false;
+        int room = entry.Max - entry.Count;
+        if(room <= 0) return false;
+        int newCount = entry.Count + count;
+        if(newCount > entry.Max) rem = newCount - entry.Max;
+        entry.Count = newCount - rem;
+        Data[key] = entry;
+        return true;
+    }
 }

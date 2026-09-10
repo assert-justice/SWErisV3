@@ -6,7 +6,7 @@ namespace SpoonWitch.Game.Entity.Component;
 public class SwInventoryComponent: SwComponent
 {
     private int Id;
-    public SwInventory? Entries;
+    public SwInventory Entries = null!;
     public SwInventoryComponent(SwEntity parent, string name) : base(parent, name)
     {
     }
@@ -28,6 +28,6 @@ public class SwInventoryComponent: SwComponent
     {
         base.Write(byteStream);
         byteStream.WriteI32(Id);
-        Entries = null;
+        Entries = null!;
     }
 }

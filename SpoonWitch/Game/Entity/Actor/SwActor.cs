@@ -25,6 +25,10 @@ public abstract class SwActor: SwEntity
     private bool _IsAlive = true;
     public bool IsAlive => _IsAlive;
     protected override int NumClocks => base.NumClocks + 4;
+    public SwActor()
+    {
+        AddHandler("damage", DamageHandler);
+    }
     public override void Ready()
     {
         base.Ready();
@@ -63,34 +67,43 @@ public abstract class SwActor: SwEntity
         if(KnockbackClock > 0)KnockbackClock -= SwGame.DeltaTime;
         HandleFlicker();
     }
-    protected override void HandleCommands()
-    {
-        base.HandleCommands();
-        foreach (var item in EntProps.GetCommands())
-        {
-            if(!item.TryGet("verb", out string verb))
-            {
-                ErEngine.LogWarning("bad command");
-                return;
-            }
-            switch (verb)
-            {
-                case "damage":
-                if(!SwDamage.TryFromPri(item, out var damage))
-                {
-                    ErEngine.LogWarning("bad damage");
-                    return;
-                }
-                Damage(damage);
-                break;
-                default:
-                break;
-            }
-        }
-    }
+    // protected override void HandleCommands()
+    // {
+    //     base.HandleCommands();
+    //     foreach (var item in EntProps.GetCommands())
+    //     {
+    //         if(!item.TryGet("verb", out string verb))
+    //         {
+    //             ErEngine.LogWarning("bad command");
+    //             return;
+    //         }
+    //         switch (verb)
+    //         {
+    //             case "damage":
+    //             if(!SwDamage.TryFromPri(item, out var damage))
+    //             {
+    //                 ErEngine.LogWarning("bad damage");
+    //                 return;
+    //             }
+    //             Damage(damage);
+    //             break;
+    //             default:
+    //             break;
+    //         }
+    //     }
+    // }
     private string GetTypeName()
     {
         return GetType().ToString().Split('.')[^1];
+    }
+    private void DamageHandler(PriNode command)
+    {
+        if(!SwDamage.TryFromPri(command, out var damage))
+        {
+            ErEngine.LogWarning("bad damage");
+            return;
+        }
+        Damage(damage);
     }
     protected virtual double Damage(SwDamage damage)
     {
