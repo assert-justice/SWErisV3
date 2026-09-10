@@ -68,14 +68,24 @@ public class SwFoliage
             frame?.Draw(pos);
         }
     }
-    public void LifeSim()
+    public void LifeSimTrim()
     {
         Update();
         foreach (var (coord, value) in FoliageLookup)
         {
             int tileId = value.typeId;
             int nextId = tileId;
-            int adjLiving = CountLivingNeighbors(coord);
+            int adjLiving = 0;// CountLivingNeighbors(coord);
+            var neighbors = GetNeighbors(coord);
+            foreach (var item in neighbors)
+            {
+                if(!FoliageLookup.TryGetValue(item, out var val))
+                {
+                    adjLiving = 0;
+                    break;
+                }
+                if(val.typeId >= 0) adjLiving++;
+            }
             if(tileId < 0)
             {
                 if(adjLiving == 3) nextId = 0;
@@ -88,17 +98,23 @@ public class SwFoliage
     private int CountLivingNeighbors(ErVec2I fTileCoord)
     {
         int living = 0;
-        for (int xi = -1; xi < 2; xi++)
+        foreach (var coord in GetNeighbors(fTileCoord))
         {
-            for (int yi = -1; yi < 2; yi++)
-            {
-                if(xi == 0 && yi == 0) continue;
-                ErVec2I coord = new ErVec2I(xi,yi) + fTileCoord;
-                if(!FoliageLookup.TryGetValue(coord, out var value)) continue;
-                if(value.typeId < 0) continue;
-                living++;
-            }
+            if(!FoliageLookup.TryGetValue(coord, out var value)) continue;
+            if(value.typeId < 0) continue;
+            living++;
         }
+        // for (int xi = -1; xi < 2; xi++)
+        // {
+        //     for (int yi = -1; yi < 2; yi++)
+        //     {
+        //         if(xi == 0 && yi == 0) continue;
+        //         ErVec2I coord = new ErVec2I(xi,yi) + fTileCoord;
+        //         if(!FoliageLookup.TryGetValue(coord, out var value)) continue;
+        //         if(value.typeId < 0) continue;
+        //         living++;
+        //     }
+        // }
         return living;
     }
     private static bool IsAliveInit(ErVec2I fTileCoord)
@@ -114,6 +130,18 @@ public class SwFoliage
             for (int yi = 0; yi < TileSizeFTiles.Y; yi++)
             {
                 ErVec2I coord = fTileCoord + new ErVec2I(xi,yi);
+                yield return coord;
+            }
+        }
+    }
+    private static IEnumerable<ErVec2I> GetNeighbors(ErVec2I fTileCoord)
+    {
+        for (int xi = -1; xi < 2; xi++)
+        {
+            for (int yi = -1; yi < 2; yi++)
+            {
+                if(xi == 0 && yi == 0) continue;
+                ErVec2I coord = new ErVec2I(xi,yi) + fTileCoord;
                 yield return coord;
             }
         }

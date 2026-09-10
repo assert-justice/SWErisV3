@@ -177,7 +177,7 @@ public class SwMap
             if(SwRoom.TryFromData(map, roomData, out var room)) map.AddRoom(room);
             else return ErEngine.LogWarning("malformed room");
         }
-        map.Foliage.LifeSim();
+        map.Foliage.LifeSimTrim();
         return true;
     }
 }
