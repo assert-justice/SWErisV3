@@ -42,7 +42,9 @@ public abstract class SwMapObject
     }
     protected PriNode GetProps()
     {
-        return Fields.DeepCopy();
+        var props = Fields.DeepCopy();
+        props.TrySet("dirpath", Data.Get("dirpath"));
+        return props;
     }
     public virtual void Unload(){}
     public virtual void Draw(){}

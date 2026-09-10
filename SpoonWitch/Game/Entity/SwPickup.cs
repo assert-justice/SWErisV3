@@ -1,4 +1,6 @@
 using Eris;
+using Eris.Renderer;
+using ErisMath;
 using ErisPhysics2D.Collider;
 using Prion.Node;
 using SpoonWitch.Game.Entity.Component;
@@ -16,6 +18,10 @@ public class SwPickup : SwEntity, ISwEntity<SwPickup>
     public static SwPickup Secondary => _Secondary ??= new();
     protected override byte GetTypeId => TypeId;
     private readonly SwAreaComponent Area;
+    private readonly List<ErTexture> Textures = [];
+    private readonly Dictionary<string,int> TextureLookup = [];
+    private int Count;
+    private int TexId;
     public SwPickup()
     {
         Area = new(this, "spoon_hurtbox", 2, new(32, 32))
@@ -35,6 +41,31 @@ public class SwPickup : SwEntity, ISwEntity<SwPickup>
         command.TrySet("count", EntProps.Props.Get("count"));
         command.TrySet("ent_id", Id);
         EntProps.Props.TrySet("ent_offer_item", command);
+        if(!EntProps.Props.TryGet("texture_filepath", out string texture_filepath)) return;
+        if(!EntProps.Props.TryGet("dirpath", out string dirpath)) return;
+        if(!TextureLookup.TryGetValue(texture_filepath, out TexId))
+        {
+            TexId = Textures.Count;
+            if(!ErTexture.TryFromPath(Path.Join(dirpath, texture_filepath), out var texture)) return;
+            Textures.Add(texture);
+            TextureLookup[texture_filepath] = TexId;
+        }
+        EntProps.Props.TrySet("tex_id", TexId);
+    }
+    protected override void DrawImpl(SwEntity nextState)
+    {
+        base.DrawImpl(nextState);
+        if(!SwGame.TryGetEntProps(Id, out var entProps)) return;
+        if(!entProps.Props.TryGet("count", out int count)) return;
+        if(!entProps.Props.TryGet("tex_id", out TexId)) return;
+        var center = Textures[TexId].Size * 0.5;
+        for (int idx = 0; idx < count; idx++)
+        {
+            double dis = idx * center.X;
+            double angle = idx * ErMath.TAU / 6;
+            ErVec2 vec = ErVec2.FromAngle(angle) * dis;
+            Textures[TexId].Draw(Position + vec - center);
+        }
     }
     private void SetRem(PriNode command)
     {
