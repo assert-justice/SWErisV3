@@ -29,10 +29,10 @@ public class SwSlume : SwEnemy, ISwEntity<SwSlume>
     {
         string path = "game_data/entities/actors/slume/slume_anim_data.json";
         if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load slume sprites");
-        SwAreaComponent hurtbox = new(this, "hurtbox", 2, new(18, 18))
-        {
-            Enabled = true,
-        };
+        SwAreaComponent hurtbox = new(this, "hurtbox", 2, new(18, 18));
+        // {
+        //     Enabled = true,
+        // };
         hurtbox.Area.OnBodyEnterFn = OnEnterHurtbox;
         RegisterComponent(hurtbox);
         StateMachine = SwSlumeState.GetStateMachine(this, "state_machine");

@@ -11,6 +11,7 @@ namespace SpoonWitch.Game.Entity.Actor.Enemy.Slume;
 public abstract class SwSlumeState: SwEntState<SwSlume>
 {
     private SwSprite BodySprite = null!;
+    private SwAreaComponent Hurtbox = null!;
     private static readonly string[] DirStrings = [
         "move_dr",
         "move_d",
@@ -21,6 +22,7 @@ public abstract class SwSlumeState: SwEntState<SwSlume>
     {
         base.Init(stateMachine);
         BodySprite = Entity.GetComponent<SwSpriteComponent>("body")?.Sprite!;
+        Hurtbox = Entity.GetComponent<SwAreaComponent>("hurtbox")!;
     }
     private void PlayBodyAnim()
     {
@@ -112,6 +114,7 @@ public abstract class SwSlumeState: SwEntState<SwSlume>
         {
             base.BeginState(lastState);
             SetNewWander();
+            Hurtbox.Enabled = true;
         }
         public override void Update()
         {
@@ -140,6 +143,7 @@ public abstract class SwSlumeState: SwEntState<SwSlume>
             BodySprite.Play("death");
             Entity.TimeoutClock = 1;
             Entity.Velocity = ErVec2.Zero;
+            Hurtbox.Enabled = false;
         }
         public override void EndState(string nextState)
         {
