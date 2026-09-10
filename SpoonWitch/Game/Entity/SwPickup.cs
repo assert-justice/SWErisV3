@@ -1,3 +1,4 @@
+using Eris;
 using ErisPhysics2D.Collider;
 using Prion.Node;
 using SpoonWitch.Game.Entity.Component;
@@ -15,7 +16,10 @@ public class SwPickup : SwEntity, ISwEntity<SwPickup>
     protected override byte GetTypeId => TypeId;
     public SwPickup()
     {
-        SwAreaComponent area = new(this, "spoon_hurtbox", 4, new(32,32));
+        SwAreaComponent area = new(this, "spoon_hurtbox", 2, new(32, 32))
+        {
+            Enabled = true,
+        };
         area.Area.OnBodyEnterFn = OnEnter;
         RegisterComponent(area);
     }
@@ -24,6 +28,7 @@ public class SwPickup : SwEntity, ISwEntity<SwPickup>
         base.Ready();
         PriDict command = [];
         EntProps.Props.TrySet("ent_offer_item", command);
+        ErEngine.Log(EntProps.Props);
     }
     private static void OnEnter(SwColliderArea area, int bodyId, ErColliderBody body)
     {
