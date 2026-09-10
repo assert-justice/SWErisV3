@@ -1,14 +1,15 @@
 using Eris;
+using ErisPhysics2D.Collider;
 using Prion.Node;
 using SpoonWitch.ByteStream;
-using SpoonWitch.Command;
+using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
+using SpoonWitch.Game.Map.Collision;
 
 namespace SpoonWitch.Game.Entity.Actor.Enemy.Knight;
 
 public class SwKnight : SwEnemy, ISwEntity<SwKnight>
 {
-    //
     public static byte TypeId => 2;
     private static SwKnight? _Primary;
     private static SwKnight? _Secondary;
@@ -22,6 +23,9 @@ public class SwKnight : SwEnemy, ISwEntity<SwKnight>
     {
         string path = "game_data/entities/actors/knight/knight_anim_data.json";
         if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load knight sprites");
+        SwAreaComponent hurtbox = new(this, "hurtbox", 2, new(32,32));
+        hurtbox.Area.OnBodyEnterFn = OnEnterHurtbox;
+        RegisterComponent(hurtbox);
         StateMachine = SwKnightState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
     }
@@ -29,6 +33,8 @@ public class SwKnight : SwEnemy, ISwEntity<SwKnight>
     {
         base.Ready();
         if(!IsPassive) StateMachine.SetState("wandering");
+        SwDamage damage = new([(SwDamageType.Untyped, 30)]);
+        EntProps.Props.TrySet("damage", damage.ToPri());
     }
     public override void Read(SwByteStream byteStream)
     {
@@ -50,5 +56,12 @@ public class SwKnight : SwEnemy, ISwEntity<SwKnight>
         double value = base.Damage(damage);
         if(value > 0) StateMachine.SetState("knockback");
         return value;
+    }
+    private static void OnEnterHurtbox(SwColliderArea area, int bodyId, ErColliderBody body)
+    {
+        if(!SwGame.TryGetEntProps(area.ParentId, out var sourceProps)) return;
+        if(!SwGame.TryGetEntProps(body.ParentId, out var targetProps)) return;
+        if(!sourceProps.Props.TryGet("damage", out PriNode damage)) return;
+        targetProps.AddCommand(damage);
     }
 }

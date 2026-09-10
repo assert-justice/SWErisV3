@@ -159,6 +159,11 @@ public abstract class SwEntity
     {
         if(TryGetComponent(name, out T component)) return component;
         ErEngine.LogWarning("entity does not have a valid '", name, "' component");
+        // ErEngine.LogWarning()
+        foreach (var item in ComponentLookup.Values)
+        {
+            ErEngine.Log(item.Name);
+        }
         return null;
     }
     protected bool TryLoadSprites(string filepath)

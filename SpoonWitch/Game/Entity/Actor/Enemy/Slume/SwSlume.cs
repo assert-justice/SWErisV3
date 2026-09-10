@@ -1,9 +1,11 @@
 using Eris;
 using ErisMath;
+using ErisPhysics2D.Collider;
 using Prion.Node;
 using SpoonWitch.ByteStream;
-using SpoonWitch.Command;
+using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
+using SpoonWitch.Game.Map.Collision;
 
 namespace SpoonWitch.Game.Entity.Actor.Enemy.Slume;
 
@@ -27,19 +29,25 @@ public class SwSlume : SwEnemy, ISwEntity<SwSlume>
     {
         string path = "game_data/entities/actors/slume/slume_anim_data.json";
         if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load slume sprites");
+        SwAreaComponent hurtbox = new(this, "hurtbox", 2, new(18, 18))
+        {
+            Enabled = true,
+        };
+        hurtbox.Area.OnBodyEnterFn = OnEnterHurtbox;
+        RegisterComponent(hurtbox);
         StateMachine = SwSlumeState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
-        // StateMachine.SetState("wandering");
     }
     public override void Ready()
     {
         base.Ready();
         if(!IsPassive) StateMachine.SetState("wandering");
+        SwDamage damage = new([(SwDamageType.Untyped, 10)]);
+        EntProps.Props.TrySet("damage", damage.ToPri());
     }
     protected override void Die()
     {
         base.Die();
-        // QueueFree();
         StateMachine.SetState("dead");
     }
     public override void Read(SwByteStream byteStream)
@@ -58,10 +66,11 @@ public class SwSlume : SwEnemy, ISwEntity<SwSlume>
         if(value > 0) StateMachine.SetState("knockback");
         return value;
     }
-    // public void DoDamage()
-    // {
-        // SwDamage damage = new(10, Position);
-        // SwGame.EnqueueCommandRect(2, ErRect2.Centered(Position, HurtboxSize), damage.ToPri());
-        // SwGame.EnqueueCommandRect(2, ErRect2.Centered(Position, HurtboxSize), new("damage", new PriNumber(10)));
-    // }
+    private static void OnEnterHurtbox(SwColliderArea area, int bodyId, ErColliderBody body)
+    {
+        if(!SwGame.TryGetEntProps(area.ParentId, out var sourceProps)) return;
+        if(!SwGame.TryGetEntProps(body.ParentId, out var targetProps)) return;
+        if(!sourceProps.Props.TryGet("damage", out PriNode damage)) return;
+        targetProps.AddCommand(damage);
+    }
 }

@@ -2073,9 +2073,9 @@
 									"id": "V_Bool",
 									"params": [ true ]
 								}] },
-								{ "__identifier": "property_overrides_json", "__type": "String", "__value": "{\n \"is_passive\": true\n}", "__tile": null, "defUid": 12, "realEditorValues": [{
+								{ "__identifier": "property_overrides_json", "__type": "String", "__value": "{\n \"is_passive\": false\n}", "__tile": null, "defUid": 12, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["{\n \"is_passive\": true\n}"]
+									"params": ["{\\n \"is_passive\": false\\n}"]
 								}] },
 								{ "__identifier": "max_uses", "__type": "Int", "__value": null, "__tile": null, "defUid": 50, "realEditorValues": [] }
 							],
@@ -2150,7 +2150,7 @@
 						},
 						{
 							"__identifier": "oak_tree_prop",
-							"__grid": [83,0],
+							"__grid": [80,0],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": { "tilesetUid": 75, "x": 0, "y": 0, "w": 96, "h": 96 },
@@ -2159,13 +2159,13 @@
 							"width": 96,
 							"height": 96,
 							"defUid": 74,
-							"px": [664,0],
+							"px": [640,0],
 							"fieldInstances": [
 								{ "__identifier": "texture_filepath", "__type": "String", "__value": "props/oak_tree_3x3.png", "__tile": null, "defUid": 81, "realEditorValues": [] },
 								{ "__identifier": "prop_collision_mode", "__type": "LocalEnum.prop_collision_mode", "__value": "tile_aligned", "__tile": null, "defUid": 82, "realEditorValues": [] },
 								{ "__identifier": "class", "__type": "String", "__value": "prop", "__tile": null, "defUid": 86, "realEditorValues": [] }
 							],
-							"__worldX": 24,
+							"__worldX": 0,
 							"__worldY": 0
 						}
 					]

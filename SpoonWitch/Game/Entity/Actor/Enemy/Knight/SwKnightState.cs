@@ -11,6 +11,7 @@ public abstract class SwKnightState: SwEntState<SwKnight>
 {
     private SwSprite BodySprite = null!;
     private SwSprite SwordSprite = null!;
+    private SwAreaComponent Hurtbox = null!;
     private static readonly string[][] BodyAnims = [
         [
             "move_0h_dr",
@@ -37,6 +38,7 @@ public abstract class SwKnightState: SwEntState<SwKnight>
         base.Init(stateMachine);
         BodySprite = Entity.GetComponent<SwSpriteComponent>("body")?.Sprite!;
         SwordSprite = Entity.GetComponent<SwSpriteComponent>("sword")?.Sprite!;
+        Hurtbox = Entity.GetComponent<SwAreaComponent>("hurtbox")!;
     }
     private void PlayBodyAnim(int hands, byte facing)
     {
@@ -168,13 +170,20 @@ public abstract class SwKnightState: SwEntState<SwKnight>
     private class Attacking: SwKnightState
     {
         public override string Name => "attacking";
-        private ErRect2 GetHurtbox()
+        // private ErRect2 GetHurtbox()
+        // {
+        //     var dir = ErVec2.FromAngle(Entity.FacingIdx * ErMath.HALF_PI);
+        //     double dis = 32;
+        //     ErVec2 size = new(32, 32);
+        //     var pos = Parent.Position + dir * dis;
+        //     return ErRect2.Centered(pos, size);
+        // }
+        private void SetHurtbox()
         {
             var dir = ErVec2.FromAngle(Entity.FacingIdx * ErMath.HALF_PI);
             double dis = 32;
-            ErVec2 size = new(32, 32);
-            var pos = Parent.Position + dir * dis;
-            return ErRect2.Centered(pos, size);
+            Hurtbox.Offset = dir * dis;
+            Hurtbox.Enabled = true;
         }
         private void Attack()
         {
@@ -183,20 +192,19 @@ public abstract class SwKnightState: SwEntState<SwKnight>
             SwordSprite.Visible = true;
             SwordSprite.Play();
             SwordSprite.Angle = (Entity.FacingIdx - 1) * ErMath.HALF_PI;
-            // do damage
-            // SwDamage damage = new(10, Entity.Position);
-            // SwGame.EnqueueCommandRect(2, GetHurtbox(), damage.ToPri());
         }
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
             Entity.Velocity = ErVec2.Zero;
             Attack();
+            SetHurtbox();
         }
         public override void Update()
         {
             base.Update();
             if(!SwordSprite.IsPlaying) SwordSprite.Visible = false;
+            Hurtbox.Enabled = SwordSprite.FrameIdx == 0;
             if(Entity.TimeoutClock <= 0) StateMachine.SetState("chasing");
             else Entity.TimeoutClock -= SwGame.DeltaTime;
             PlayBodyAnim();
@@ -205,6 +213,7 @@ public abstract class SwKnightState: SwEntState<SwKnight>
         {
             base.EndState(nextState);
             SwordSprite.Visible = false;
+            Hurtbox.Enabled = false;
         }
     }
     private class Dead: SwKnightState
