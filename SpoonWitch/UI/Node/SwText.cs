@@ -1,5 +1,6 @@
 using Eris;
 using Eris.Renderer;
+using ErisMath;
 using Prion.Node;
 
 namespace SpoonWitch.UI.Node;
@@ -10,6 +11,8 @@ public class SwText: SwUiNode
     public string Text{get => _Text; set{_Text = value;}}
     public ErColor FontColor = ErColor.Red;
     public float _FontSize = 16;
+    private ErVec2? _MinSize;
+    public override ErVec2 MinSize => _MinSize ??= Font?.GetStringSize(Text) ?? base.MinSize;
     public double FontSize
     {
         get => _FontSize;
@@ -17,6 +20,7 @@ public class SwText: SwUiNode
         {
             _FontSize = (float)value;
             _Font = null;
+            _MinSize = null;
         }
     }
     private ErFont? _Font;
@@ -24,6 +28,17 @@ public class SwText: SwUiNode
     {
         if(node.TryGet("text", out string s)) Text = s;
     }
+    // private ErVec2 GetMinSize()
+    // {
+    //     if(_MinSize is not null) return _MinSize.Value;
+    //     if(Font is null)
+    //     {
+    //         ErEngine.Log("dumb");
+    //         return base.MinSize;
+    //     }
+    //     ErEngine.Log("text size", Font.GetStringSize(Text));
+    //     return _MinSize ??= Font?.GetStringSize(Text) ?? base.MinSize;
+    // }
     private ErFont? Font
     {
         get

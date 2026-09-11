@@ -1,3 +1,5 @@
+using Eris;
+using ErisMath;
 using Prion.Node;
 using SpoonWitch.UI.Node;
 
@@ -13,9 +15,14 @@ public class SwMenu: SwUiNode
     protected override void SetVisible(bool isVisible)
     {
         base.SetVisible(isVisible);
-        if (isVisible)
+        if (!isVisible) return;
+        // position children
+        var pos = Position;
+        foreach (var item in Children)
         {
-            // focus first element
+            item.SetPosition(pos);
+            pos += new ErVec2(0, item.MinSize.Y);
         }
+        // focus first element
     }
 }

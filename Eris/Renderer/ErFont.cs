@@ -7,6 +7,7 @@ public class ErFont
     private readonly nint Handle;
     public readonly double FontSize;
     private readonly Dictionary<(uint, ErColor), ErTexture> GlyphCache = [];
+    // private readonly Dictionary<uint, ErVec2> GlyphSizeCache = [];
     private ErFont(nint fontHandle, double fontSize)
     {
         Handle = fontHandle;
@@ -44,8 +45,8 @@ public class ErFont
         // Todo: add unicode support
         // Todo: kerning
         double startX = position.X;
-        double x = 0;
-        double y = 0;
+        double x = startX;
+        double y = position.Y;
         foreach (char c in str)
         {
             if(c == '\n')
@@ -61,8 +62,33 @@ public class ErFont
                 continue;
             }
             texture.Draw(new(x,y));
-            x += texture.Size.Y;
+            x += texture.Size.X;
         }
+    }
+    public ErVec2 GetStringSize(string str)
+    {
+        double maxX = 0;
+        double x = 0;
+        double y = FontSize;
+        foreach (char c in str)
+        {
+            if(c == '\n')
+            {
+                if(x > maxX) maxX = x;
+                x = 0;
+                y += FontSize;
+                continue;
+            }
+            if(!TryGetGlyph(c, ErColor.Black, out var texture))
+            {
+                // Todo: handle this more gracefully
+                ErEngine.LogError($"No char '{c}' exists in this font");
+                continue;
+            }
+            x += texture.Size.X;
+        }
+        if(x > maxX) maxX = x;
+        return new(maxX,y);
     }
     public bool TryGetTexture(string text, ErColor color, out ErTexture texture)
     {

@@ -7,7 +7,7 @@ namespace SpoonWitch.UI.Node;
 
 public abstract class SwUiNode
 {
-    private readonly List<SwUiNode> Children = [];
+    public readonly List<SwUiNode> Children = [];
     public SwUiNode? Parent{get; private set;}
     public virtual ErVec2 MinSize => ErVec2.Zero;
     public ErVec2 Position{get; private set;}
@@ -36,6 +36,10 @@ public abstract class SwUiNode
     {
         _Visible = isVisible;
     }
+    public virtual void SetPosition(ErVec2 position)
+    {
+        Position = position;
+    }
     protected virtual void Clean()
     {
         IsDirty = false;
@@ -52,10 +56,10 @@ public abstract class SwUiNode
         }
     }
     public virtual void Update(){}
-    public SwUiNode[] GetChildren()
-    {
-        return [..Children];
-    }
+    // public SwUiNode[] GetChildren()
+    // {
+    //     return [..Children];
+    // }
     public IEnumerable<T> GetChildren<T>() where T: SwUiNode
     {
         foreach (var item in Children)
@@ -117,6 +121,7 @@ public abstract class SwUiNode
                     uiNode = new SwText(priNode);
                 break;
                 case "button":
+                    uiNode = new SwButton(priNode);
                 break;
                 case "slider":
                 break;
