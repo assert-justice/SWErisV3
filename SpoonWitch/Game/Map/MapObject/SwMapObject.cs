@@ -44,6 +44,8 @@ public abstract class SwMapObject
     {
         var props = Fields.DeepCopy();
         props.TrySet("dirpath", Data.Get("dirpath"));
+        props.TrySet("width_px", Data.Get("width_px"));
+        props.TrySet("height_px", Data.Get("height_px"));
         return props;
     }
     public virtual void Unload(){}

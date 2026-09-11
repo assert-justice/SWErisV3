@@ -3,8 +3,10 @@ using Eris.Renderer;
 using ErisMath;
 using ErisPhysics2D.Collider;
 using Prion.Node;
+using SpoonWitch.Data;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Map.Collision;
+using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Entity;
 
@@ -20,11 +22,9 @@ public class SwPickup : SwEntity, ISwEntity<SwPickup>
     private readonly SwAreaComponent Area;
     private readonly List<ErTexture> Textures = [];
     private readonly Dictionary<string,int> TextureLookup = [];
-    private int Count;
-    private int TexId;
     public SwPickup()
     {
-        Area = new(this, "spoon_hurtbox", 2, new(32, 32))
+        Area = new(this, "area", 2, new(32, 32))
         {
             Enabled = true,
         };
@@ -43,28 +43,31 @@ public class SwPickup : SwEntity, ISwEntity<SwPickup>
         EntProps.Props.TrySet("ent_offer_item", command);
         if(!EntProps.Props.TryGet("texture_filepath", out string texture_filepath)) return;
         if(!EntProps.Props.TryGet("dirpath", out string dirpath)) return;
-        if(!TextureLookup.TryGetValue(texture_filepath, out TexId))
+        if(!TextureLookup.TryGetValue(texture_filepath, out int texId))
         {
-            TexId = Textures.Count;
+            texId = Textures.Count;
             if(!ErTexture.TryFromPath(Path.Join(dirpath, texture_filepath), out var texture)) return;
             Textures.Add(texture);
-            TextureLookup[texture_filepath] = TexId;
+            TextureLookup[texture_filepath] = texId;
         }
-        EntProps.Props.TrySet("tex_id", TexId);
+        EntProps.Props.TrySet("tex_id", texId);
+        var size = SwPrion.GetVec2(EntProps.Props.Data, "width_px", "height_px");
+        Area.Size = size;
+        if(EntProps.Props.TryGet("mask", out uint mask)) Area.Mask = mask;
     }
     protected override void DrawImpl(SwEntity nextState)
     {
         base.DrawImpl(nextState);
         if(!SwGame.TryGetEntProps(Id, out var entProps)) return;
         if(!entProps.Props.TryGet("count", out int count)) return;
-        if(!entProps.Props.TryGet("tex_id", out TexId)) return;
-        var center = Textures[TexId].Size * 0.5;
+        if(!entProps.Props.TryGet("tex_id", out int texId)) return;
+        var center = Textures[texId].Size * 0.5;
         for (int idx = 0; idx < count; idx++)
         {
             double dis = idx * center.X;
             double angle = idx * ErMath.TAU / 6;
             ErVec2 vec = ErVec2.FromAngle(angle) * dis;
-            Textures[TexId].Draw(Position + vec - center);
+            Textures[texId].Draw(Position + vec - center);
         }
     }
     private void SetRem(PriNode command)

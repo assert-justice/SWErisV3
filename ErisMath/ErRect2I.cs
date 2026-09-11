@@ -70,6 +70,16 @@ public readonly struct ErRect2I
     {
         return Centered(center, Size);
     }
+    public IEnumerable<ErVec2I> GetInnerCoords()
+    {
+        for (int xi = Left; xi < Right; xi++)
+        {
+            for (int yi = Top; yi < Bottom; yi++)
+            {
+                yield return new ErVec2I(xi, yi);
+            }
+        }
+    }
     public static ErRect2I FromEdges(int left, int right, int top, int bottom)
     {
         int width = right - left;

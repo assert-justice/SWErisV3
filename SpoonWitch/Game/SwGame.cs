@@ -192,6 +192,7 @@ public class SwGame
             if(!command.TryGet("h", out int h)) continue;
             Map.PhysicsWorld.SetTileRect(new(x,y,w,h), tileId);
         }
+        Map.HandleCommands();
     }
     private void HandleRooms()
     {

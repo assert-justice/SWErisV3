@@ -191,6 +191,7 @@ public partial class ErPhysicsWorld2D
                 }
                 if(currentCell is null) continue;
                 int tileId = currentCell.GetTileId(tileCoord);
+                if(tileId < 0) continue;
                 uint tileMask = TileMaskLookup[tileId];
                 if((mask & tileMask) == 0) continue;
                 yield return GetTileRect(tileCoord);
@@ -365,6 +366,7 @@ public partial class ErPhysicsWorld2D
         foreach (var coord in GetLine(start, end))
         {
             int tileId = GetTile(coord);
+            if(tileId < 0) continue;
             uint tileMask = TileMaskLookup[tileId];
             if((mask & tileMask) != 0) return true;
         }
@@ -392,6 +394,7 @@ public partial class ErPhysicsWorld2D
                 {
                     var coord = new ErVec2I(xi,yi) + cell.CoordTiles;
                     int tileId = cell.GetTileId(coord);
+                    if(tileId < 0) continue;
                     var rect = GetTileRect(coord);
                     DebugDrawRect(rect, false, TileMaskLookup[tileId]);
                 }

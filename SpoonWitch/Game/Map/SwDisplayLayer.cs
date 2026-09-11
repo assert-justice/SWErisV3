@@ -23,7 +23,8 @@ public class SwDisplayLayer
     }
     public void SetTile(ErVec2I tileCoord, int tileId)
     {
-        TileGrid[tileCoord] = tileId;
+        if(tileId < 0) TileGrid.Remove(tileCoord);
+        else TileGrid[tileCoord] = tileId;
         NextTiles.Add((tileCoord,tileId));
     }
     public int GetTileId(ErVec2I tileCoord)
@@ -61,7 +62,8 @@ public class SwDisplayLayer
         }
         tile.Mask = mask;
         tile.TileId = tileId;
-        AtlasGrid[displayCoord] = tile;
+        if(tileId >= 0) AtlasGrid[displayCoord] = tile;
+        else AtlasGrid.Remove(displayCoord);
     }
     private void HandlePending()
     {

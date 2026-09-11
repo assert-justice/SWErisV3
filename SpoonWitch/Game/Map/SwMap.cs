@@ -3,7 +3,6 @@ using Eris.Renderer;
 using ErisMath;
 using ErisPhysics2D;
 using Prion.Node;
-using SpoonWitch.Game.Map.Collision;
 using SpoonWitch.Game.Map.Foliage;
 using SpoonWitch.Game.Map.MapObject;
 
@@ -65,9 +64,9 @@ public class SwMap
     {
         return TileData[tileId];
     }
-    public void SetTile(int layer, ErVec2I coord, int tileId)
+    public void SetTile(int layer, ErVec2I coord, int tileId, bool updateFoliage = false)
     {
-        Foliage.SetArable(coord, TileData[tileId].IsArable);
+        if(updateFoliage) Foliage.SetArable(coord, TileData[tileId].IsArable);
         PhysicsWorld.SetTile(coord, tileId);
         DisplayLayers[layer].SetTile(coord, tileId);
     }
@@ -100,6 +99,26 @@ public class SwMap
         foreach (var room in LoadedRooms.Values)
         {
             room.Draw();
+        }
+    }
+    private bool TryHandleFillArea(PriNode command)
+    {
+        if(!command.TryGet("area_id", out string area_id)) return ErEngine.LogWarning("missing area id");
+        if(!GlobalMapObjects.TryGetObject<SwMapArea>(area_id, out var area)) return ErEngine.LogWarning("no such area id ", area_id);
+        if(!command.TryGet("layer", out int layerIdx)) layerIdx = 0;
+        layerIdx = NumTileLayers - 1 - layerIdx;
+        if(!command.TryGet("tile_id", out int tile_id)) tile_id = -1;
+        foreach (var coord in area.RectTiles.GetInnerCoords())
+        {
+            SetTile(layerIdx, coord, tile_id);
+        }
+        return true;
+    }
+    public void HandleCommands()
+    {
+        foreach (var item in SwApp.CommandStore.GetGlobalCommands("map_fill_area"))
+        {
+            TryHandleFillArea(item);
         }
     }
     public bool TryGetDefaultCheckpoint(out SwMapCheckpoint checkpoint)
