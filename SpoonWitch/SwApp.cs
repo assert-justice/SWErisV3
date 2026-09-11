@@ -36,6 +36,7 @@ public class SwApp : IErApp
     // public static bool IsPaused{get; private set;} = false;
     public const string GAME_DATA_PATH = "game_data";
     public static bool Debug => false;// Settings.TryGet("debug/debug", out bool debug) && debug;
+    private readonly SwCommandHandler CommandHandler = new(CommandStore);
     public static int Main()
     {
         SwApp app = new();
@@ -45,6 +46,7 @@ public class SwApp : IErApp
     }
     public void Init()
     {
+        CommandHandler.AddHandler("quit", (_)=>ErEngine.Quit());
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
         if (!SwData.TryInit())
         {
@@ -75,6 +77,7 @@ public class SwApp : IErApp
     public void Update()
     {
         CommandStore.Flush();
+        CommandHandler.Dispatch();
         Game?.Update();
         MenuInput();
         MenuHolder?.Update();

@@ -11,10 +11,12 @@ public class SwButton : SwUiNode
     private ErColor DefaultColor = ErColor.Red;
     private ErColor FocusColor = ErColor.White;
     protected override bool CanFocusPro => true;
+    private readonly PriNode Command = PriNull.Null;
     public SwButton(PriNode node) : base(node)
     {
         Text = new(node);
         AddChild(Text);
+        Command = node.Get("on_click_command");
     }
     public override void SetPosition(ErVec2 position)
     {
@@ -30,5 +32,10 @@ public class SwButton : SwUiNode
     {
         base.FocusEnd();
         Text.FontColor = DefaultColor;
+    }
+    public override void Confirm()
+    {
+        base.Confirm();
+        if(Command != PriNull.Null) SwApp.CommandStore.AddGlobalCommand(Command);
     }
 }

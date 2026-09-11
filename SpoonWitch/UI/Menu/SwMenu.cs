@@ -38,7 +38,6 @@ public class SwMenu: SwUiNode
             break;
         }
         if(FocusNode is null) ErEngine.LogWarning("menu has no focus");
-        FocusNext();
     }
     public override void Up()
     {
