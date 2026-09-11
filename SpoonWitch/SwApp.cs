@@ -46,7 +46,8 @@ public class SwApp : IErApp
     }
     public void Init()
     {
-        CommandHandler.AddHandler("quit", (_)=>ErEngine.Quit());
+        CommandHandler.AddHandler("quit", ErEngine.Quit);
+        CommandHandler.AddHandler("launch", Launch);
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
         if (!SwData.TryInit())
         {
@@ -59,8 +60,8 @@ public class SwApp : IErApp
             return;
         }
         if(!TryLoadDb(Settings, "game_data/settings/example_settings.json", "game_data/settings/default_settings.json")) ErEngine.LogWarning("bad settings");
-        TryInitMenu();
-        // Launch();
+        // TryInitMenu();
+        Launch();
     }
     private bool TryInitMenu()
     {
@@ -73,6 +74,7 @@ public class SwApp : IErApp
     {
         Game = new();
         Game.TryLoadMap("game_data/map/demo_map2.ldtk");
+        MenuHolder?.Visible = false;
     }
     public void Update()
     {
@@ -80,7 +82,8 @@ public class SwApp : IErApp
         CommandHandler.Dispatch();
         Game?.Update();
         MenuInput();
-        MenuHolder?.Update();
+        // MenuHolder?.Update();
+        if(MenuHolder is not null && MenuHolder.Visible) MenuHolder.Update();
     }
     public void Draw()
     {
@@ -104,6 +107,7 @@ public class SwApp : IErApp
     private void MenuInput()
     {
         // Todo: check if we're actually in the menu
+        if(!MenuHolder?.Visible ?? true) return;
         bool pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Up);
         if(pressed && !Up) MenuHolder?.Up();
         Up = pressed;

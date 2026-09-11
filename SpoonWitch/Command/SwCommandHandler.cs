@@ -11,6 +11,14 @@ public class SwCommandHandler(SwCommandStore store)
     {
         GeneralHandlers.Add((handler, verb));
     }
+    public void AddHandler(string verb, Action handler)
+    {
+        void fn(PriNode priNode)
+        {
+            handler();
+        }
+        GeneralHandlers.Add((fn, verb));
+    }
     public void Dispatch()
     {
         foreach (var (handler, verb) in GeneralHandlers)
