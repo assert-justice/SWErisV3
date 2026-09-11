@@ -42,6 +42,12 @@ public abstract class SwUiNode
     }
     public virtual void FocusBegin(){}
     public virtual void FocusEnd(){}
+    public virtual void Up(){}
+    public virtual void Down(){}
+    public virtual void Left(){}
+    public virtual void Right(){}
+    public virtual void Confirm(){}
+    public virtual void Cancel(){}
     protected virtual void Clean()
     {
         IsDirty = false;

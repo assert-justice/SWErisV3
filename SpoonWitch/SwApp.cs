@@ -76,6 +76,7 @@ public class SwApp : IErApp
     {
         CommandStore.Flush();
         Game?.Update();
+        MenuInput();
         MenuHolder?.Update();
     }
     public void Draw()
@@ -90,6 +91,34 @@ public class SwApp : IErApp
     public void Cleanup()
     {
         //
+    }
+    private bool Up;
+    private bool Down;
+    private bool Left;
+    private bool Right;
+    private bool Confirm;
+    private bool Cancel;
+    private void MenuInput()
+    {
+        // Todo: check if we're actually in the menu
+        bool pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Up);
+        if(pressed && !Up) MenuHolder?.Up();
+        Up = pressed;
+        pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Down);
+        if(pressed && !Down) MenuHolder?.Down();
+        Down = pressed;
+        pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Left);
+        if(pressed && !Left) MenuHolder?.Left();
+        Left = pressed;
+        pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Right);
+        if(pressed && !Right) MenuHolder?.Right();
+        Right = pressed;
+        pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Space);
+        if(pressed && !Confirm) MenuHolder?.Confirm();
+        Confirm = pressed;
+        pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Escape);
+        if(pressed && !Cancel) MenuHolder?.Cancel();
+        Cancel = pressed;
     }
     public static int GetNextId()
     {

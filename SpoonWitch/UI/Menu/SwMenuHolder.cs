@@ -29,6 +29,36 @@ public class SwMenuHolder: SwUiNode
         HandleQueued();
         base.Update();
     }
+    public override void Up()
+    {
+        base.Up();
+        CurrentMenu?.Up();
+    }
+    public override void Down()
+    {
+        base.Down();
+        CurrentMenu?.Down();
+    }
+    public override void Left()
+    {
+        base.Left();
+        CurrentMenu?.Left();
+    }
+    public override void Right()
+    {
+        base.Right();
+        CurrentMenu?.Right();
+    }
+    public override void Confirm()
+    {
+        base.Confirm();
+        CurrentMenu?.Confirm();
+    }
+    public override void Cancel()
+    {
+        base.Cancel();
+        // Go back or unpause contextually
+    }
     private void HandleQueued()
     {
         if(!TryPeek(out string menuId)) return;
