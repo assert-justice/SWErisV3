@@ -36,17 +36,18 @@ public class SwPickup : SwEntity, ISwEntity<SwPickup>
     {
         base.Ready();
         PriDict command = [];
+        ErEngine.Log(EntProps.Props);
         command.TrySet("verb", "ent_offer_item");
         command.TrySet("pickup_type", EntProps.Props.Get("pickup_type"));
         command.TrySet("count", EntProps.Props.Get("count"));
         command.TrySet("ent_id", Id);
         EntProps.Props.TrySet("ent_offer_item", command);
-        if(!EntProps.Props.TryGet("texture_filepath", out string texture_filepath)) return;
-        if(!EntProps.Props.TryGet("dirpath", out string dirpath)) return;
+        // Todo: obviously don't hardcode this
+        string texture_filepath = "game_data/entities/actors/player/images/bella_sling_ammo_pickup.png";
         if(!TextureLookup.TryGetValue(texture_filepath, out int texId))
         {
             texId = Textures.Count;
-            if(!ErTexture.TryFromPath(Path.Join(dirpath, texture_filepath), out var texture)) return;
+            if(!ErTexture.TryFromPath(texture_filepath, out var texture)) return;
             Textures.Add(texture);
             TextureLookup[texture_filepath] = texId;
         }
