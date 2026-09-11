@@ -8,6 +8,8 @@ namespace SpoonWitch.UI.Menu;
 public class SwMenu: SwUiNode
 {
     public readonly string Id;
+    private readonly List<SwUiNode> FocusableNodes = [];
+    private SwUiNode? FocusNode;
     public SwMenu(PriNode node) : base(node)
     {
         if(!node.TryGet("id", out Id)) throw new("no id");
@@ -15,14 +17,52 @@ public class SwMenu: SwUiNode
     protected override void SetVisible(bool isVisible)
     {
         base.SetVisible(isVisible);
+        // Note, SetVisible is idempotent, so this is fine
+        FocusNode?.FocusEnd();
+        FocusNode = null;
         if (!isVisible) return;
         // position children
+        FocusableNodes.Clear();
         var pos = Position;
         foreach (var item in Children)
         {
             item.SetPosition(pos);
             pos += new ErVec2(0, item.MinSize.Y);
+            if(item.CanFocus) FocusableNodes.Add(item);
         }
         // focus first element
+        foreach (var item in FocusableNodes)
+        {
+            if(!item.Visible) continue;
+            SetFocus(item);
+            break;
+        }
+        if(FocusNode is null) ErEngine.LogWarning("menu has no focus");
+        FocusNext();
+    }
+    private void SetFocus(SwUiNode node)
+    {
+        FocusNode?.FocusEnd();
+        node.FocusBegin();
+        FocusNode = node;
+    }
+    private void FocusNext(int direction = 1)
+    {
+        int startIdx = FocusableNodes.IndexOf(FocusNode!);
+        int idx = startIdx;
+        if(idx == -1)
+        {
+            ErEngine.LogWarning("bad menu focus");
+            return;
+        }
+        while (true)
+        {
+            idx = ErMath.Mod(idx + direction, FocusableNodes.Count);
+            // we have looped around and failed to find another focusable element
+            if(idx == startIdx) return;
+            if(!FocusableNodes[idx].Visible) continue;
+            SetFocus(FocusableNodes[idx]);
+            break;
+        }
     }
 }

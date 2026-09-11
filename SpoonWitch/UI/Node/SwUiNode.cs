@@ -40,6 +40,8 @@ public abstract class SwUiNode
     {
         Position = position;
     }
+    public virtual void FocusBegin(){}
+    public virtual void FocusEnd(){}
     protected virtual void Clean()
     {
         IsDirty = false;
