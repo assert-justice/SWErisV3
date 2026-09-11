@@ -25,7 +25,7 @@ public class SwApp : IErApp
     private SwGame? Game;
     private SwMenuHolder? MenuHolder;
     private static int NextId;
-    private ErTexture RenderTexture;
+    private ErTexture RenderTexture = null!;
     public static readonly SwCommandStore CommandStore = new();
     public static readonly PriDb Settings = new();
     public static readonly PriDb SaveData = new();
@@ -35,7 +35,6 @@ public class SwApp : IErApp
     // public static double GameSpeedMul => 1;
     // public static bool IsPaused{get; private set;} = false;
     public const string GAME_DATA_PATH = "game_data";
-    // public static bool Debug{get; private set;} = ;
     public static bool Debug => false;// Settings.TryGet("debug/debug", out bool debug) && debug;
     public static int Main()
     {
@@ -43,11 +42,6 @@ public class SwApp : IErApp
         ErEngine.Renderer.SetWindow("Spoon Witch", new(1920, 1080));
         ErEngine.Run(app);
         return 0;
-    }
-    public SwApp()
-    {
-        // Note: I care about null safety promise
-        RenderTexture = default!;
     }
     public void Init()
     {
@@ -64,9 +58,7 @@ public class SwApp : IErApp
         }
         if(!TryLoadDb(Settings, "game_data/settings/example_settings.json", "game_data/settings/default_settings.json")) ErEngine.LogWarning("bad settings");
         TryInitMenu();
-        // Source = new(ErEngine.AudioApp);
-        // Source.PlayFile("game_data/entities/actors/player/sfx/SW SFX Player Death.mp3");
-        Launch();
+        // Launch();
     }
     private bool TryInitMenu()
     {
@@ -82,19 +74,16 @@ public class SwApp : IErApp
     }
     public void Update()
     {
-        // if(!ErEngine.AudioApp.Loaded) ErEngine.Log("audio engine not yet loaded");
         CommandStore.Flush();
         Game?.Update();
+        MenuHolder?.Update();
     }
     public void Draw()
     {
         ErEngine.Renderer.PushViewport(ErVec2.Zero, RenderTexture);
         ErEngine.Renderer.Clear();
         Game?.Draw();
-        if(MenuHolder is not null && MenuHolder.Visible)
-        {
-            MenuHolder.Draw();
-        }
+        if(MenuHolder is not null && MenuHolder.Visible) MenuHolder.Draw();
         ErEngine.Renderer.PopViewport();
         RenderTexture.DrawFullscreen();
     }

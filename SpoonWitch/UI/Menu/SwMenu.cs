@@ -6,13 +6,16 @@ namespace SpoonWitch.UI.Menu;
 public class SwMenu: SwUiNode
 {
     public readonly string Id;
-
     public SwMenu(PriNode node) : base(node)
     {
         if(!node.TryGet("id", out Id)) throw new("no id");
     }
-    // public SwMenu(string name)
-    // {
-    //     Name = name;
-    // }
+    protected override void SetVisible(bool isVisible)
+    {
+        base.SetVisible(isVisible);
+        if (isVisible)
+        {
+            // focus first element
+        }
+    }
 }

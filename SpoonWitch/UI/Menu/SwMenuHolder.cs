@@ -7,27 +7,21 @@ namespace SpoonWitch.UI.Menu;
 
 public class SwMenuHolder: SwUiNode
 {
-    private readonly List<string> MenuStack = [];
+    private readonly Stack<string> MenuStack = [];
     private readonly SwCommandHandler CommandHandler;
+    private readonly Dictionary<string,SwMenu> MenuLookup = [];
     private SwMenu? CurrentMenu;
-    private string? QueuedMenuId;
-
     public SwMenuHolder(PriNode node) : base(node)
     {
         CommandHandler = new(SwApp.CommandStore);
         CommandHandler.AddHandler("menu_set", SetMenu);
         CommandHandler.AddHandler("menu_back", (_)=>PopMenu());
-    }
-
-    // public SwMenuHolder()
-    // {
-    //     TryAddMenu(new SwMainMenu());
-    // }
-    public bool TryAddMenu(SwMenu menu)
-    {
-        AddChild(menu);
-        if(MenuStack.Count == 0) PushMenu(menu.Id);
-        return true;
+        foreach (var menu in GetChildren<SwMenu>())
+        {
+            if(MenuStack.Count == 0) MenuStack.Push(menu.Id);
+            if(!MenuLookup.TryAdd(menu.Id, menu)) ErEngine.LogWarning("duplicate menu id ", menu.Id);
+            menu.Visible = false;
+        }
     }
     public override void Update()
     {
@@ -37,47 +31,48 @@ public class SwMenuHolder: SwUiNode
     }
     private void HandleQueued()
     {
-        if(QueuedMenuId is null) return;
-        if(CurrentMenu is null || QueuedMenuId != CurrentMenu.Id)
+        if(!TryPeek(out string menuId)) return;
+        if(CurrentMenu is null || CurrentMenu.Id != menuId)
         {
-            SwMenu? nextMenu = null;
-            foreach (var item in GetChildren<SwMenu>())
+            if(!MenuLookup.TryGetValue(menuId, out var nextMenu))
             {
-                item.Visible = false;
-                if(item.Id == QueuedMenuId) nextMenu = item;
+                ErEngine.LogWarning("invalid menu name ", menuId);
+                return;
             }
-            if(nextMenu is null) ErEngine.LogWarning("no menu with id '", QueuedMenuId, "' exists");
-            else CurrentMenu = nextMenu;
+            CurrentMenu?.Visible = false;
+            CurrentMenu = nextMenu;
+            nextMenu.Visible = true;
         }
-        QueuedMenuId = null;
     }
     private void PopMenu()
     {
         if(MenuStack.Count <= 1) return;
-        MenuStack.RemoveAt(MenuStack.Count -1);
-        QueuedMenuId = PeekMenu();
+        MenuStack.Pop();
     }
-    private void PushMenu(string menuName)
+    private bool TryPeek(out string menuId)
     {
-        int idx = MenuStack.IndexOf(menuName);
-        if(idx == -1) MenuStack.Add(menuName);
-        else
-        {
-            while(idx < MenuStack.Count - 1) PopMenu();
-        }
-        QueuedMenuId = menuName;
-    }
-    private string PeekMenu()
-    {
-        return MenuStack[^1];
+        menuId = string.Empty;
+        if(!MenuStack.TryPeek(out var id)) return false;
+        menuId = id;
+        return true;
     }
     private void SetMenu(PriNode command)
     {
-        if(!command.TryAs(out string menuName))
+        if(!command.TryGet("menu_id", out string menuId))
         {
             ErEngine.LogWarning("bad set menu command");
             return;
         }
-        PushMenu(menuName);
+        if (!MenuLookup.ContainsKey(menuId))
+        {
+            ErEngine.LogWarning("invalid menu name ", menuId);
+            return;
+        }
+        if(CurrentMenu is not null && CurrentMenu.Id == menuId) return;
+        if (MenuStack.Contains(menuId))
+        {
+            while(MenuStack.TryPop(out var id) && id != menuId){}
+            MenuStack.Push(menuId);
+        }
     }
 }

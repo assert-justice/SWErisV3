@@ -1,6 +1,7 @@
 using Eris;
 using ErisMath;
 using Prion.Node;
+using SpoonWitch.UI.Menu;
 
 namespace SpoonWitch.UI.Node;
 
@@ -10,8 +11,9 @@ public abstract class SwUiNode
     public SwUiNode? Parent{get; private set;}
     public virtual ErVec2 MinSize => ErVec2.Zero;
     public ErVec2 Position{get; private set;}
-    public bool CanFocus => Visible && GetCanFocus();
-    private bool _Visible;
+    public bool CanFocus => Visible && CanFocusPro;
+    protected virtual bool CanFocusPro => false;
+    private bool _Visible = true;
     public bool IsDirty{get; private set;}
     public bool Visible
     {
@@ -21,14 +23,18 @@ public abstract class SwUiNode
             if(_Visible != value) SetVisible(value);
         }
     }
-    public SwUiNode(PriNode node){}
+    protected SwUiNode(PriNode node)
+    {
+        if(node.TryGet("visible", out bool b)) _Visible = b;
+        foreach (var item in node.Get("children").Values)
+        {
+            if(!TryFromPrion(item, out var uiNode)) continue;
+            AddChild(uiNode);
+        }
+    }
     protected virtual void SetVisible(bool isVisible)
     {
         _Visible = isVisible;
-    }
-    protected virtual bool GetCanFocus()
-    {
-        return false;
     }
     protected virtual void Clean()
     {
@@ -42,7 +48,7 @@ public abstract class SwUiNode
     {
         foreach (var item in Children)
         {
-            item.Draw();
+            if(item.Visible) item.Draw();
         }
     }
     public virtual void Update(){}
@@ -95,17 +101,20 @@ public abstract class SwUiNode
     }
     public static bool TryFromPrion(PriNode priNode, out SwUiNode uiNode)
     {
-        uiNode = default!;
+        uiNode = null!;
         if(!priNode.TryGet("type", out string type)) return ErEngine.LogWarning("no type provided");
         try
         {
             switch (type)
             {
                 case "menu_holder":
+                    uiNode = new SwMenuHolder(priNode);
                 break;
                 case "menu":
+                    uiNode = new SwMenu(priNode);
                 break;
                 case "text":
+                    uiNode = new SwText(priNode);
                 break;
                 case "button":
                 break;
@@ -114,7 +123,7 @@ public abstract class SwUiNode
                 case "toggle":
                 break;
                 default:
-                ErEngine.LogWarning("unexpected ui node type '", type, "'");
+                    ErEngine.LogWarning("unexpected ui node type '", type, "'");
                 break;
             }
         }
@@ -122,6 +131,6 @@ public abstract class SwUiNode
         {
             return ErEngine.LogWarning(e);
         }
-        return true;
+        return uiNode is not null;
     }
 }

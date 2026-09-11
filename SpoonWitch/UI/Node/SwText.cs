@@ -8,7 +8,7 @@ public class SwText: SwUiNode
 {
     private string _Text = string.Empty;
     public string Text{get => _Text; set{_Text = value;}}
-    public ErColor FontColor = ErColor.Black;
+    public ErColor FontColor = ErColor.Red;
     public float _FontSize = 16;
     public double FontSize
     {
@@ -20,11 +20,10 @@ public class SwText: SwUiNode
         }
     }
     private ErFont? _Font;
-
     public SwText(PriNode node) : base(node)
     {
+        if(node.TryGet("text", out string s)) Text = s;
     }
-
     private ErFont? Font
     {
         get

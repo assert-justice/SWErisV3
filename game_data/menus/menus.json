@@ -30,7 +30,7 @@
                     "font_color": "white",
                     "on_click_command":{
                         "verb": "menu_set",
-                        "payload": "settings"
+                        "menu_id": "settings"
                     }
                 },
                 {
@@ -40,7 +40,7 @@
                     "font_color": "white",
                     "on_click_command":{
                         "verb": "menu_set",
-                        "payload": "credits"
+                        "menu_id": "credits"
                     }
                 },
                 {
@@ -69,12 +69,7 @@
                 },
                 {
                     "type": "text",
-                    "text": [
-                        "Alexa - Writing",
-                        "GOLEM PINK - Music and Sfx",
-                        "Jaid Laidlaw/Starfishness - Art",
-                        "Riley/Etmm - Programming"
-                    ],
+                    "text": "Alexa - Writing\nGOLEM PINK - Music and Sfx\nJade Laidlaw/Starfishness - Art\nRiley/Etmm - Programming",
                     "font_size": 16,
                     "font_color": "white"
                 },
@@ -109,7 +104,7 @@
                     "font_color": "white",
                     "on_click_command":{
                         "verb": "menu_set",
-                        "payload": "audio_settings"
+                        "menu_id": "audio_settings"
                     }
                 },
                 {
@@ -119,7 +114,7 @@
                     "font_color": "white",
                     "on_click_command":{
                         "verb": "menu_set",
-                        "payload": "game_settings"
+                        "menu_id": "game_settings"
                     }
                 },
                 {
