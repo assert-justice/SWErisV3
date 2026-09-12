@@ -134,7 +134,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             SetBodyHandedAnim(animIdx, 2, Controls.LastFacingIdx);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed;
             if(Controls.AttackJustPressed && CanAttack()) StateMachine.SetState("attack");
-            else if(Controls.IsCharging && Inventory.GetCount("ammo") > 0) StateMachine.SetState("charging");
+            else if(Controls.IsCharging && Inventory.GetCount("sling_ammo") > 0) StateMachine.SetState("charging");
             else if(Controls.DodgeJustPressed && CanDodge()) StateMachine.SetState("dodging");
         }
     }
@@ -223,6 +223,24 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             if(!Controls.Aim.IsNonzero()) return false;
             return true;
         }
+        private void Fire()
+        {
+            var pos = Entity.Position;
+            PriDict bullet = [];
+            bullet.TrySet("x", pos.X);
+            bullet.TrySet("y", pos.Y);
+            bullet.TrySet("x_velocity", Controls.Aim.X * Entity.BulletSpeed);
+            bullet.TrySet("y_velocity", Controls.Aim.Y * Entity.BulletSpeed);
+            bullet.TrySet("damage", Entity.EntProps.Props.Get("bullet/damage"));
+            SwGame.Game.AddEntity<SwProjectile>(bullet);
+            Entity.AttackCooldownClock = 0.1;
+            Entity.Ammo--;
+            PriDict command = [];
+            command.TrySet("verb", "hud_set");
+            command.TrySet("key", "sling_ammo");
+            command.TrySet("value", Entity.Ammo);
+            SwApp.CommandStore.AddGlobalCommand(command);
+        }
         public override void Update()
         {
             base.Update();
@@ -233,20 +251,22 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             else if (CanFire())
             {
                 // fire!
-                var pos = Entity.Position;
-                Entity.EntProps.Props.TrySet("bullet/x", pos.X);
-                Entity.EntProps.Props.TrySet("bullet/y", pos.Y);
-                Entity.EntProps.Props.TrySet("bullet/x_velocity", Controls.Aim.X * Entity.BulletSpeed);
-                Entity.EntProps.Props.TrySet("bullet/y_velocity", Controls.Aim.Y * Entity.BulletSpeed);
-                SwGame.Game.AddEntity<SwProjectile>(Entity.EntProps.Props.Get("bullet"));
+                Fire();
                 StateMachine.SetState("default");
-                Entity.AttackCooldownClock = 0.1;
-                Entity.Ammo--;
-                PriDict command = [];
-                command.TrySet("verb", "hud_set");
-                command.TrySet("key", "ammo");
-                command.TrySet("value", Entity.Ammo);
-                SwApp.CommandStore.AddGlobalCommand(command);
+                // var pos = Entity.Position;
+                // Entity.EntProps.Props.TrySet("bullet/x", pos.X);
+                // Entity.EntProps.Props.TrySet("bullet/y", pos.Y);
+                // Entity.EntProps.Props.TrySet("bullet/x_velocity", Controls.Aim.X * Entity.BulletSpeed);
+                // Entity.EntProps.Props.TrySet("bullet/y_velocity", Controls.Aim.Y * Entity.BulletSpeed);
+                // SwGame.Game.AddEntity<SwProjectile>(Entity.EntProps.Props.Get("bullet"));
+                // StateMachine.SetState("default");
+                // Entity.AttackCooldownClock = 0.1;
+                // Entity.Ammo--;
+                // PriDict command = [];
+                // command.TrySet("verb", "hud_set");
+                // command.TrySet("key", "sling_ammo");
+                // command.TrySet("value", Entity.Ammo);
+                // SwApp.CommandStore.AddGlobalCommand(command);
             }
         }
         public override void EndState(string nextState)

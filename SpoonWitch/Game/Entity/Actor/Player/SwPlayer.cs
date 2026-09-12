@@ -85,6 +85,8 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         SwDamage spoonDamage = new([(SwDamageType.Untyped, 10)]);
         EntProps.Props.TrySet("spoon_damage", spoonDamage.ToPri());
         InventoryComp.Entries.SetCount("sling_ammo", 0, 10);
+        SwDamage slingDamage = new([(SwDamageType.Untyped,10)]);
+        EntProps.Props.TrySet("bullet/damage", slingDamage.ToPri());
     }
     public override void Update()
     {
@@ -118,14 +120,6 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         SwDamage damage = new([(SwDamageType.Untyped,value)]);
         Damage(damage);
     }
-    // public override void Read(SwByteStream byteStream)
-    // {
-    //     base.Read(byteStream);
-    // }
-    // public override void Write(SwByteStream byteStream)
-    // {
-    //     base.Write(byteStream);
-    // }
     private void EntOfferItem(PriNode command)
     {
         if(!command.TryGet("ent_id", out int id)) return;

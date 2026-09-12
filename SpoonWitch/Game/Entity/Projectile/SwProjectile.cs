@@ -1,8 +1,10 @@
 using Eris;
 using Eris.Renderer;
 using ErisMath;
-using SpoonWitch.ByteStream;
+using ErisPhysics2D.Collider;
+using Prion.Node;
 using SpoonWitch.Game.Entity.Component;
+using SpoonWitch.Game.Map.Collision;
 
 namespace SpoonWitch.Game.Entity.Projectile;
 
@@ -15,22 +17,19 @@ public class SwProjectile : SwEntity, ISwEntity<SwProjectile>
     public static SwProjectile Secondary => _Secondary ??= new();
     protected override byte GetTypeId => TypeId;
     private readonly ErTexture Texture;
-    // public override uint Mask => 0;
     public SwProjectile()
     {
         SwAreaComponent hurtbox = new(this, "hurtbox", 4, new(14,14), enabled:true);
-        // hurtbox.Area.OnBodyEnterFn = OnEnterSpoonHurtbox;
+        hurtbox.Area.OnBodyEnterFn = OnEnterHurtbox;
         RegisterComponent(hurtbox);
         if(!ErTexture.TryFromPath("game_data/entities/actors/player/images/bella_sling_ammo_shot.png", out Texture)) ErEngine.LogError("bad projectile texture path");
     }
     public override void Ready()
     {
         base.Ready();
-        // ErEngine.Log(EntProps.Props);
         EntProps.Props.TryGet("x_velocity", out double xVel);
         EntProps.Props.TryGet("y_velocity", out double yVel);
         Velocity = new(xVel, yVel);
-        // if(Position.IsNonzero() || Velocity.IsNonzero())ErEngine.Log("pos: ", Position, " vel: ", Velocity);
     }
     public override void Update()
     {
@@ -39,11 +38,6 @@ public class SwProjectile : SwEntity, ISwEntity<SwProjectile>
         var tileId = SwGame.Map.PhysicsWorld.GetTile(tileCoord);
         var tileData = SwGame.Map.GetTileData(tileId);
         if(tileData.IsOpaque) QueueFree();
-        // EntProps.Props.TryGet("x_velocity", out double xVel);
-        // EntProps.Props.TryGet("y_velocity", out double yVel);
-        // Velocity = new(xVel, yVel);
-        // if(Position.IsNonzero() || Velocity.IsNonzero())ErEngine.Log("pos: ", Position, " vel: ", Velocity);
-        // ErEngine.Log(EntProps.Props);
     }
     protected override void DrawImpl(SwEntity nextState)
     {
@@ -51,9 +45,11 @@ public class SwProjectile : SwEntity, ISwEntity<SwProjectile>
         var pos = ErMath.Lerp(Position, nextState.Position, SwGame.FrameWeight) - Texture.Size * 0.5;
         Texture.Draw(pos);
     }
-    public override void GameCleanup()
+    private static void OnEnterHurtbox(SwColliderArea area, int bodyId, ErColliderBody body)
     {
-        base.GameCleanup();
-        
+        if(!SwGame.TryGetEntProps(area.ParentId, out var myProps)) return;
+        if(!SwGame.TryGetEntProps(body.ParentId, out var targetProps)) return;
+        if(!myProps.Props.TryGet("damage", out PriNode damage)) return;
+        targetProps.AddCommand(damage);
     }
 }

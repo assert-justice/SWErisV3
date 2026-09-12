@@ -3,7 +3,6 @@ using Eris.Renderer;
 using ErisMath;
 using ErisPhysics2D.Collider;
 using Prion.Node;
-using SpoonWitch.Data;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Map.Collision;
 using SpoonWitch.Utils;
@@ -12,7 +11,7 @@ namespace SpoonWitch.Game.Entity;
 
 public class SwPickup : SwEntity, ISwEntity<SwPickup>
 {
-    public static byte TypeId => 3;
+    public static byte TypeId => 5;
     public override uint Mask => 0;
     private static SwPickup? _Primary;
     private static SwPickup? _Secondary;
@@ -36,7 +35,6 @@ public class SwPickup : SwEntity, ISwEntity<SwPickup>
     {
         base.Ready();
         PriDict command = [];
-        ErEngine.Log(EntProps.Props);
         command.TrySet("verb", "ent_offer_item");
         command.TrySet("pickup_type", EntProps.Props.Get("pickup_type"));
         command.TrySet("count", EntProps.Props.Get("count"));
