@@ -60,8 +60,8 @@ public class SwApp : IErApp
             return;
         }
         if(!TryLoadDb(Settings, "game_data/settings/example_settings.json", "game_data/settings/default_settings.json")) ErEngine.LogWarning("bad settings");
-        // TryInitMenu();
-        Launch();
+        TryInitMenu();
+        // Launch();
     }
     private bool TryInitMenu()
     {

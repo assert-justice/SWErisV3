@@ -76,7 +76,7 @@ public class SwMap
         {
             SectorLookup.Add(sector.PositionSectors,room);
         }
-        LoadRoom(room);
+        Rooms.Add(room.Id, room);
     }
     public void Update()
     {
@@ -149,6 +149,13 @@ public class SwMap
         LoadRoom(room);
         return true;
     }
+    public void DebugLoadAllRooms()
+    {
+        foreach (var room in Rooms.Values)
+        {
+            LoadRoom(room);
+        }
+    }
     public void LoadGlobals()
     {
         foreach (var item in GlobalMapObjects.GetObjects())
@@ -171,7 +178,6 @@ public class SwMap
         map = null!;
         if(!data.Get("iid").TryAs(out string id)) return false;
         if(!data.Get("levels").TryAs(out PriList rooms)) return false;
-        if(!data.Get("defs").Get("tilesets").TryAs(out PriList tilesetList)) return false;
         if(!data.Get("defs").Get("layers").TryAs(out PriList layers)) return false;
         if(!data.Get("defaultGridSize").TryAs(out int defaultGridSize)) defaultGridSize = 32;
         if(!data.Get("worldGridWidth").TryAs(out int sectorWidthPx)) sectorWidthPx = 640;

@@ -41,7 +41,9 @@ public class SwGame
         }
     }
     private static readonly SwEntPropsLookup PropsLookup = new();
-    public static SwMap Map{get; private set;} = new();
+    private SwMap? _Map = null;
+    public static SwMap Map => Game._Map!;
+    // public static SwMap Map{get; private set;} = new();
     private readonly Dictionary<byte, (SwEntity,SwEntity)> Prototypes = [];
     private SwByteStream LastStream = new();
     private SwByteStream NextStream = new();
@@ -51,7 +53,7 @@ public class SwGame
     public static readonly SwCamera Camera = new();
     public static ErVec2 PlayerPos{get; private set;} = new(32,32);
     public static SwGame Game{get; private set;} = null!;
-    public static SwTileData[] TileData = null!;
+    public static SwTileData[] TileData{get; private set;} = null!;
     public static void SetPlayerPos(ErVec2 position)
     {
         PlayerPos = position;
@@ -192,6 +194,11 @@ public class SwGame
             if(!command.TryGet("h", out int h)) continue;
             Map.PhysicsWorld.SetTileRect(new(x,y,w,h), tileId);
         }
+        foreach (var command in SwApp.CommandStore.GetGlobalCommands("game_spawn_player"))
+        {
+            if(!Map.TryGetDefaultCheckpoint(out var checkpoint)) ErEngine.LogWarning("failed to find default checkpoint");
+            else checkpoint.Trigger();
+        }
         Map.HandleCommands();
     }
     private void HandleRooms()
@@ -297,10 +304,12 @@ public class SwGame
             return false;
         }
         if(!SwMap.TryFromData(filepath, data, TileData, out var map)) return ErEngine.LogWarning("failed to load map '", filepath, "'.");
-        Map = map;
+        _Map = map;
         map.LoadGlobals();
-        if(!map.TryGetDefaultCheckpoint(out var checkpoint)) return ErEngine.LogWarning("failed to find default checkpoint");
-        checkpoint.Trigger();
+        map.DebugLoadAllRooms();
+        PriDict command = [];
+        command.TrySet("verb", "game_spawn_player");
+        SwApp.CommandStore.AddGlobalCommand(command);
         return true;
     }
 }

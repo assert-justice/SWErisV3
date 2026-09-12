@@ -94,6 +94,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         SwGame.SetPlayerPos(Position);
         EntProps.Props.TrySet("spoon_damage/source_pos_x", Position.X);
         EntProps.Props.TrySet("spoon_damage/source_pos_y", Position.Y);
+        // ErEngine.Log(Position);
     }
     protected override void DrawImplLate(SwEntity nextState)
     {
@@ -117,6 +118,14 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         SwDamage damage = new([(SwDamageType.Untyped,value)]);
         Damage(damage);
     }
+    // public override void Read(SwByteStream byteStream)
+    // {
+    //     base.Read(byteStream);
+    // }
+    // public override void Write(SwByteStream byteStream)
+    // {
+    //     base.Write(byteStream);
+    // }
     private void EntOfferItem(PriNode command)
     {
         if(!command.TryGet("ent_id", out int id)) return;
