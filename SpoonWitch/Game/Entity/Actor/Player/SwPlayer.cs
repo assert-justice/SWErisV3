@@ -97,11 +97,8 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         SwGame.SetPlayerPos(Position);
         EntProps.Props.TrySet("spoon_damage/source_pos_x", Position.X);
         EntProps.Props.TrySet("spoon_damage/source_pos_y", Position.Y);
-        // ErEngine.Log(Position);
-    }
-    protected override void DrawImplLate(SwEntity nextState)
-    {
-        base.DrawImplLate(nextState);
+        if(IsAlive && ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Semicolon)) Die();
+        if(IsAlive) SwGame.SetCameraTarget(Position);
     }
     protected override double Damage(SwDamage damage)
     {
@@ -111,6 +108,11 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
             SetHud("health", Health);
         }
         return value;
+    }
+    protected override void Die()
+    {
+        base.Die();
+        StateMachine.SetState("dead");
     }
     public override void GameCleanup()
     {

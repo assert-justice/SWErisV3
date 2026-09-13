@@ -50,40 +50,37 @@ public class SwGame
     private readonly SwByteStream NewEntities = new();
     private SwRoom? CurrentRoom;
     private readonly SwHud Hud;
-    private double _FadeState = 0;
-    public double FadeState => ErMath.Ease(_FadeState, 5);
+    public double FadeState = 0;
+    // public double FadeState => ErMath.Ease(_FadeState, 5);
+    public double FadeDelta => Math.Sign(FadeTarget - FadeState) / FadeTime * DeltaTime;
     private double FadeTarget = 0;
-    private readonly double FadeSpeed = 1.0/6;
+    private readonly double FadeTime = 1.0;
     private PriNode FadeOnFinishCommand = PriNull.Null;
     private readonly SwCommandHandler CommandHandler = new(SwApp.CommandStore);
     public static readonly SwCamera Camera = new();
-    public static ErVec2 PlayerPos{get; private set;}// = new(32,32);
+    public static ErVec2 PlayerPos{get; private set;}
     public static SwGame Game{get; private set;} = null!;
     public static SwTileData[] TileData{get; private set;} = null!;
-    public static ErVec2 CameraTarget
+    public static void SetCameraTarget(ErVec2 point, bool shouldSnap = false)
     {
-        get => Camera.TargetPos;
-        set
+        if(Game.CurrentRoom is null || !Game.CurrentRoom.RectPx.Contains(point))
         {
-            bool shouldSnap = false;
-            if(Game.CurrentRoom is null || !Game.CurrentRoom.RectPx.Contains(value))
+            if(Map.TryGetRoom(point, out var room))
             {
-                if(Map.TryGetRoom(value, out var room))
-                {
-                    shouldSnap = Game.CurrentRoom is null;
-                    Game.CurrentRoom = room;
-                    Camera.UseBounds = true;
-                    Camera.SetBounds(room.RectPx);
-                }
-                else
-                {
-                    Camera.UseBounds = false;
-                    Game.CurrentRoom = null;
-                }
-                if(shouldSnap) Camera.SnapToPosition(value);
-                else Camera.SetTargetPosition(value);
+                shouldSnap = shouldSnap || Game.CurrentRoom is null;
+                Game.CurrentRoom = room;
+                Camera.UseBounds = true;
+                Camera.SetBounds(room.RectPx);
+            }
+            else
+            {
+                ErEngine.LogWarning("shouldn't happen rn");
+                Camera.UseBounds = false;
+                Game.CurrentRoom = null;
             }
         }
+        if(shouldSnap) Camera.SnapToPosition(point);
+        else Camera.SetTargetPosition(point);
     }
     public static void SetPlayerPos(ErVec2 position)
     {
@@ -180,28 +177,27 @@ public class SwGame
     }
     private void HandleFade()
     {
-        double sign = Math.Sign(FadeTarget - _FadeState);
-        if(sign == 0) return;
-        double df = sign * FadeSpeed * DeltaTime;
-        _FadeState += df;
+        if(FadeTarget == FadeState) return;
+        double df = FadeDelta;
+        FadeState += FadeDelta;
         bool finished = false;
-        if(sign > 0 && _FadeState > FadeTarget) finished = true;
-        else if(sign < 0 && _FadeState < FadeTarget) finished = true;
+        if(df > 0 && FadeState > FadeTarget) finished = true;
+        else if(df < 0 && FadeState < FadeTarget) finished = true;
         if (finished)
         {
-            _FadeState = FadeTarget;
+            FadeState = FadeTarget;
             SwApp.CommandStore.AddCommand(FadeOnFinishCommand);
             FadeOnFinishCommand = PriNull.Null;
         }
     }
     public void FadeIn()
     {
-        _FadeState = 1;
+        FadeState = 1;
         FadeTarget = 0;
     }
     public void FadeOut()
     {
-        _FadeState = 0;
+        FadeState = 0;
         FadeTarget = 1;
     }
     private static void CalculateFrameWeight()
@@ -248,9 +244,9 @@ public class SwGame
             return;
         }
         ActiveCheckpoint = checkpoint;
-        CameraTarget = ActiveCheckpoint.RectPx.Center;
+        SetCameraTarget(ActiveCheckpoint.RectPx.Center);
     }
-    private void HandleFade(PriNode command)
+    private void HandleFadeCommand(PriNode command)
     {
         if(!command.TryGet("verb", out string verb)) throw new("should be unreachable");
         FadeOnFinishCommand = command.Get("on_finish");
@@ -264,11 +260,10 @@ public class SwGame
     }
     private void AttachHandlers()
     {
-        // CommandHandler.AddHandler("game_spawn_player", AddEntity<SwPlayer>);
         CommandHandler.AddHandler("game_respawn_player", RespawnPlayer);
         CommandHandler.AddHandler("game_spawn_entity", SpawnEnt);
-        CommandHandler.AddHandler("game_fade_in", HandleFade);
-        CommandHandler.AddHandler("game_fade_out", HandleFade);
+        CommandHandler.AddHandler("game_fade_in", HandleFadeCommand);
+        CommandHandler.AddHandler("game_fade_out", HandleFadeCommand);
     }
     private void HandleRooms()
     {
@@ -331,7 +326,7 @@ public class SwGame
     private void DrawFade()
     {
         ErRect2 rect = new(0, SwApp.HUD_HEIGHT, SwApp.INTERNAL_WIDTH, SwApp.INTERNAL_HEIGHT);
-        if(FadeState > 0) ErEngine.Renderer.DrawRect(rect, ErColor.Black, FadeState);
+        if(FadeState > 0) ErEngine.Renderer.DrawRect(rect, ErColor.Black, ErMath.Ease(FadeState, 1));
     }
     private bool TryGetPrototype(byte typeId, out (SwEntity, SwEntity) pair)
     {

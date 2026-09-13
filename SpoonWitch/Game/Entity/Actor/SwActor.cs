@@ -2,7 +2,6 @@ using Eris;
 using ErisMath;
 using Prion.Node;
 using SpoonWitch.ByteStream;
-using SpoonWitch.Command;
 
 namespace SpoonWitch.Game.Entity.Actor;
 
@@ -26,7 +25,7 @@ public abstract class SwActor: SwEntity
     public bool IsAlive
     {
         get => _IsAlive; 
-        protected set => _IsAlive = value;
+        set => _IsAlive = value;
     }
     protected override int NumClocks => base.NumClocks + 4;
     public SwActor()
@@ -71,31 +70,6 @@ public abstract class SwActor: SwEntity
         if(KnockbackClock > 0)KnockbackClock -= SwGame.DeltaTime;
         HandleFlicker();
     }
-    // protected override void HandleCommands()
-    // {
-    //     base.HandleCommands();
-    //     foreach (var item in EntProps.GetCommands())
-    //     {
-    //         if(!item.TryGet("verb", out string verb))
-    //         {
-    //             ErEngine.LogWarning("bad command");
-    //             return;
-    //         }
-    //         switch (verb)
-    //         {
-    //             case "damage":
-    //             if(!SwDamage.TryFromPri(item, out var damage))
-    //             {
-    //                 ErEngine.LogWarning("bad damage");
-    //                 return;
-    //             }
-    //             Damage(damage);
-    //             break;
-    //             default:
-    //             break;
-    //         }
-    //     }
-    // }
     private string GetTypeName()
     {
         return GetType().ToString().Split('.')[^1];
@@ -126,19 +100,33 @@ public abstract class SwActor: SwEntity
         FlickerClock = FlickerTime;
         if(Health > 0)
         {
-            ErEngine.Log("entity ", Id," '", GetTypeName(), "' took ", value, " damage. health is now ", Health);
+            if(SwApp.Debug) ErEngine.Log("entity ", Id," '", GetTypeName(), "' took ", value, " damage. health is now ", Health);
         }
         else
         {
-            ErEngine.Log("entity ", Id," '", GetTypeName(), "' took ", value, " damage and died.");
+            if(SwApp.Debug) ErEngine.Log("entity ", Id," '", GetTypeName(), "' took ", value, " damage and died.");
             Die();
-            _IsAlive = false;
         }
         return value;
     }
     protected virtual void Die()
     {
         if(!IsAlive) throw new("tried to die twice. should be unreachable");
-        ErEngine.Log("entity ", Id," died.");
+        IsAlive = false;
+        if(SwApp.Debug) ErEngine.Log("entity ", Id," died.");
+    }
+    public double MoveToward(ErVec2 point, double speed)
+    {
+        var diff = point - Position;
+        var distance = diff.GetLength();
+        double spd = speed * SwGame.DeltaTime;
+        if(distance < spd)
+        {
+            Position = point;
+            distance = 0;
+            Velocity = ErVec2.Zero;
+        }
+        else Velocity = diff.Normalized() * speed;
+        return distance;
     }
 }

@@ -46,7 +46,7 @@ public class SwCamera
     }
     public bool IsPointVisible(ErVec2 point)
     {
-        return new ErRect2(Position, Size).Contains(point);
+        return ErRect2.Centered(Position, Size).Contains(point);
     }
     public bool IsInBounds()
     {

@@ -75,6 +75,12 @@ public class SwMap
             SetTile(layerIdx, coord, tileId);
         }
     }
+    public bool InSameRoom(ErVec2 pointA, ErVec2 pointB)
+    {
+        if(!TryGetRoom(pointA, out var roomA)) return false;
+        if(!TryGetRoom(pointB, out var roomB)) return false;
+        return roomA.Id == roomB.Id;
+    }
     public void AddGlobalObject(SwMapObject mapObject)
     {
         GlobalMapObjects.AddObject(mapObject);

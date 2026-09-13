@@ -129,13 +129,54 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         ReticleSprite.Visible = Controls.ReticleVisible;
         ReticleSprite.Offset = Controls.ReticlePosition;
     }
-    public class Spawning: SwPlayerState
+    public class Dead: SwPlayerState
     {
-        public override string Name => "spawning";
+        public override string Name => "dead";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            PlayBodyAnim("die");
+            Entity.Velocity = ErVec2.Zero;
+        }
+        public override void Update()
+        {
+            base.Update();
+            if(BodySprite.IsPlaying) return;
+            if(BodySprite.CurrentAnimation.Name == "die") PlayBodyAnim("continue");
+            else if(SwGame.Map.InSameRoom(Entity.Position, SwGame.ActiveCheckpoint.RectPx.Center)) StateMachine.SetState("respawn");
+            else StateMachine.SetState("respawn_fade_out");
+        }
+    }
+    public class RespawnFadeOut: SwPlayerState
+    {
+        public override string Name => "respawn_fade_out";
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
             PlayBodyAnim("fly");
+            SwGame.Game.FadeOut();
+        }
+        public override void Update()
+        {
+            base.Update();
+            bool isVisible = SwGame.Camera.IsPointVisible(Entity.Position);
+            if (isVisible)
+            {
+                Entity.MoveToward(SwGame.ActiveCheckpoint.RectPx.Center, Entity.BaseSpeed);
+            }
+            else Entity.Velocity = ErVec2.Zero;
+            if(SwGame.Game.FadeState == 1 && !isVisible) StateMachine.SetState("respawn_fade_in");
+        }
+    }
+    public class RespawnFadeIn: SwPlayerState
+    {
+        public override string Name => "respawn_fade_in";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            PlayBodyAnim("fly");
+            SwGame.Game.FadeIn();
+            SwGame.SetCameraTarget(SwGame.ActiveCheckpoint.RectPx.Center, true);
             ErVec2 diff = Entity.Position - SwGame.ActiveCheckpoint.RectPx.Center;
             double distance = diff.GetLength();
             if(500 < distance) distance = 500;
@@ -148,7 +189,32 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             base.Update();
             if(BodySprite.CurrentAnimation.Name == "respawn")
             {
+                if (!BodySprite.IsPlaying)
+                {
+                    StateMachine.SetState("default");
+                    Entity.IsAlive = true;
+                }
+                return;
+            }
+            double distance = Entity.MoveToward(SwGame.ActiveCheckpoint.RectPx.Center, Entity.BaseSpeed);
+            if(distance == 0) PlayBodyAnim("respawn");
+        }
+    }
+    public class Respawn: SwPlayerState
+    {
+        public override string Name => "respawn";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            PlayBodyAnim("fly");
+        }
+        public override void Update()
+        {
+            base.Update();
+            if(BodySprite.CurrentAnimation.Name == "respawn")
+            {
                 if(!BodySprite.IsPlaying) StateMachine.SetState("default");
+                Entity.IsAlive = true;
                 return;
             }
             ErVec2 diff = SwGame.ActiveCheckpoint.RectPx.Center - Entity.Position;
@@ -343,12 +409,15 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     public static SwStateMachine GetStateMachine(SwPlayer parent, string name)
     {
         return new(parent, name, [
-            new Spawning(),
+            new RespawnFadeIn(),
+            new RespawnFadeOut(),
+            new Respawn(),
             new Default(),
             new Attack(),
             new Charging(),
             new Charged(),
             new Dodging(),
+            new Dead(),
         ]);
     }
 }
