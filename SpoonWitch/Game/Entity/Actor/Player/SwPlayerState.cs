@@ -396,7 +396,8 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             base.Update();
             double elapsed = Entity.Clock0;
             Entity.Clock0 += SwGame.DeltaTime;
-            if(Entity.Clock0 > Entity.DodgeDuration) StateMachine.SetState("default");
+            if(!BodySprite.IsPlaying) StateMachine.SetState("default");
+            // if(Entity.Clock0 > Entity.DodgeDuration) StateMachine.SetState("default");
             // Note: edge detection. fires when the clock is now past invuln delay
             else if(Entity.Clock0 >= Entity.DodgeInvulnDelay && elapsed < Entity.DodgeInvulnDelay) Entity.InvulnClock = Entity.DodgeInvulnWindow;
         }

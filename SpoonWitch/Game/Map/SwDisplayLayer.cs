@@ -52,14 +52,18 @@ public class SwDisplayLayer
     }
     private void UpdateDisplayTile(ErVec2I displayCoord, int tileId)
     {
-        var mask = GetMask(displayCoord, tileId);
         if(!AtlasGrid.TryGetValue(displayCoord, out var tile))
         {
             tile = new()
             {
                 Seed = (ushort)displayCoord.GetHashCode(),
+                TileId = -1,
             };
         }
+        int oldId = tile.TileId;
+        if(tileId >= 0){}
+        else if(oldId >= 0) tileId = oldId;
+        var mask = GetMask(displayCoord, tileId);
         tile.Mask = mask;
         tile.TileId = tileId;
         if(tileId >= 0) AtlasGrid[displayCoord] = tile;

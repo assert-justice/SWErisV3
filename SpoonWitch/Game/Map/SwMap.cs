@@ -193,11 +193,16 @@ public class SwMap
         foreach (var (key, tileId) in room.TileLookup)
         {
             SetTile(key.layerIdx, key.tileCoord, tileId);
-            if(tileId >= 0) Foliage.SetArable(key.tileCoord, SwGame.TileData[tileId].IsArable);
         }
         foreach (var sectorCoord in room.SectorCoords)
         {
             RoomLookup.Add(sectorCoord, room);
+            var sector = GetSector(sectorCoord * SectorSizeTiles);
+            foreach (var item in sector.RectTiles.GetInnerCoords())
+            {
+                int tileId = sector.GetTopTile(item);
+                if(tileId > 0 && SwGame.TileData[tileId].IsArable) Foliage.SetArable(item, true);
+            }
         }
         room.LoadObjects();
     }
@@ -213,6 +218,7 @@ public class SwMap
         {
             LoadRoom(room);
         }
+        Foliage.LifeSimTrim();
     }
     public void LoadGlobals()
     {
