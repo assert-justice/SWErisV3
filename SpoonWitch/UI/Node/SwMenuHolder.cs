@@ -3,7 +3,7 @@ using Prion.Node;
 using SpoonWitch.Command;
 using SpoonWitch.UI.Node;
 
-namespace SpoonWitch.UI.Menu;
+namespace SpoonWitch.UI.Node;
 
 public class SwMenuHolder: SwUiNode
 {

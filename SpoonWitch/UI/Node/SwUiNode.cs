@@ -1,7 +1,6 @@
 using Eris;
 using ErisMath;
 using Prion.Node;
-using SpoonWitch.UI.Menu;
 
 namespace SpoonWitch.UI.Node;
 

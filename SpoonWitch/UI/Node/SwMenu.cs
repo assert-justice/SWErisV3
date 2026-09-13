@@ -3,7 +3,7 @@ using ErisMath;
 using Prion.Node;
 using SpoonWitch.UI.Node;
 
-namespace SpoonWitch.UI.Menu;
+namespace SpoonWitch.UI.Node;
 
 public class SwMenu: SwUiNode
 {
