@@ -62,6 +62,7 @@ public class SwMap
         Foliage = new();
         CommandHandler.AddHandler("map_set_tile_rect", HandleSetTileRect);
         CommandHandler.AddHandler("map_fill_area", TryHandleFillArea);
+        CommandHandler.AddHandler("map_unload_object", HandleUnloadObject);
     }
     private void HandleSetTileRect(PriNode command)
     {
@@ -149,6 +150,10 @@ public class SwMap
         {
             room.Draw();
         }
+        foreach (var item in GlobalMapObjects.GetObjects())
+        {
+            item.Draw();
+        }
     }
     private void TryHandleFillArea(PriNode command)
     {
@@ -185,6 +190,11 @@ public class SwMap
     {
         ErVec2I sectorCoord = (position/(ErVec2)SectorSizePx).FloorToInt();
         return RoomLookup.TryGetValue(sectorCoord, out room!);
+    }
+    private void HandleUnloadObject(PriNode command)
+    {
+        if(!command.TryGet("id", out string id)) return;
+        GlobalMapObjects.Unload(id);
     }
     private void LoadRoom(SwRoom room)
     {

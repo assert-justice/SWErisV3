@@ -2688,18 +2688,18 @@
 							"__tile": null,
 							"__smartColor": "#FEE761",
 							"iid": "48ba3fb0-96d0-11f1-9f78-21e8e6124d1f",
-							"width": 64,
-							"height": 64,
+							"width": 32,
+							"height": 32,
 							"defUid": 13,
 							"px": [288,128],
 							"fieldInstances": [
 								{ "__identifier": "single_use", "__type": "Bool", "__value": true, "__tile": null, "defUid": 14, "realEditorValues": [] },
 								{ "__identifier": "whitelist", "__type": "String", "__value": null, "__tile": null, "defUid": 15, "realEditorValues": [] },
 								{ "__identifier": "blacklist", "__type": "String", "__value": null, "__tile": null, "defUid": 16, "realEditorValues": [] },
-								{ "__identifier": "on_enter_json", "__type": "String", "__value": "[\n  {\"verb\": \"player_add_spoon\"},\n  {\n    \"verb\": \"map_fill_area\",\n    \"area_id\": \"439a9a70-96d0-11f1-9f78-ef7fb847a63a\",\n    \"layer_idx\": 0,\n    \"tile_id\": -1\n  }\n]", "__tile": null, "defUid": 17, "realEditorValues": [{
+								{ "__identifier": "on_enter_json", "__type": "String", "__value": "[\n  {\n    \"verb\": \"player_add_item\",\n    \"pickup_type\": \"spoon\",\n    \"text\": \"You got a spoon!\"\n  },\n  {\n    \"verb\": \"map_fill_area\",\n    \"area_id\": \"439a9a70-96d0-11f1-9f78-ef7fb847a63a\",\n    \"layer_idx\": 0,\n    \"tile_id\": -1\n  },\n  {\n    \"verb\": \"map_unload_object\",\n    \"id\": \"adc4ea50-96d0-11f1-9f78-ab8de865f8f4\"\n  }\n]", "__tile": null, "defUid": 17, "realEditorValues": [{
 									"id": "V_String",
 									"params": [
-										"[\\n  {\"verb\": \"player_add_spoon\"},\\n  {\\n    \"verb\": \"map_fill_area\",\\n    \"area_id\": \"439a9a70-96d0-11f1-9f78-ef7fb847a63a\",\\n    \"layer_idx\": 0,\\n    \"tile_id\": -1\\n  }\\n]"
+										"[\\n  {\\n    \"verb\": \"player_add_item\",\\n    \"pickup_type\": \"spoon\",\\n    \"text\": \"You got a spoon!\"\\n  },\\n  {\\n    \"verb\": \"map_fill_area\",\\n    \"area_id\": \"439a9a70-96d0-11f1-9f78-ef7fb847a63a\",\\n    \"layer_idx\": 0,\\n    \"tile_id\": -1\\n  },\\n  {\\n    \"verb\": \"map_unload_object\",\\n    \"id\": \"adc4ea50-96d0-11f1-9f78-ab8de865f8f4\"\\n  }\\n]"
 									]
 								}] },
 								{ "__identifier": "mask", "__type": "Int", "__value": 2, "__tile": null, "defUid": 92, "realEditorValues": [] },
@@ -2801,6 +2801,32 @@
 							],
 							"__worldX": 736,
 							"__worldY": 64
+						},
+						{
+							"__identifier": "prop",
+							"__grid": [9,4],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#D77643",
+							"iid": "adc4ea50-96d0-11f1-9f78-ab8de865f8f4",
+							"width": 32,
+							"height": 32,
+							"defUid": 61,
+							"px": [288,128],
+							"fieldInstances": [
+								{ "__identifier": "texture_filepath", "__type": "FilePath", "__value": "../entities/actors/player/images/bella_spoon_d.png", "__tile": null, "defUid": 63, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["../entities/actors/player/images/bella_spoon_d.png"]
+								}] },
+								{ "__identifier": "properties_json", "__type": "String", "__value": "{\n  \"tile_width\": 64,\n  \"tile_height\": 64\n}", "__tile": null, "defUid": 65, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["{\\n  \"tile_width\": 64,\\n  \"tile_height\": 64\\n}"]
+								}] },
+								{ "__identifier": "prop_collision_mode", "__type": "LocalEnum.prop_collision_mode", "__value": "none", "__tile": null, "defUid": 73, "realEditorValues": [] }
+							],
+							"__worldX": 928,
+							"__worldY": 128
 						}
 					]
 				},

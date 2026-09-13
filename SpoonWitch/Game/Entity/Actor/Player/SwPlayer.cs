@@ -63,6 +63,8 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
         AddHandler("ent_offer_item", EntOfferItem);
+        // AddHandler("player_add_item", PlayerAddItem);
+
     }
     private static void SetHud(string key, double value)
     {
@@ -99,6 +101,10 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         EntProps.Props.TrySet("spoon_damage/source_pos_y", Position.Y);
         if(IsAlive && ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Semicolon)) Die();
         if(IsAlive) SwGame.SetCameraTarget(Position);
+        foreach (var item in SwApp.CommandStore.GetCommands("player_add_item"))
+        {
+            PlayerAddItem(item);
+        }
     }
     protected override double Damage(SwDamage damage)
     {
@@ -135,5 +141,11 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         com.TrySet("verb", "pickup_set_rem");
         com.TrySet("rem", rem);
         props.AddCommand(com);
+    }
+    private void PlayerAddItem(PriNode command)
+    {
+        // if(!command.TryGet("pickup_type", out string pickup_type)) pickup_type = string.Empty;
+        // if(!command.TryGet("text", out string text)) text = string.Empty;
+        StateMachine.SetState("item_get");
     }
 }

@@ -407,6 +407,21 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             Entity.DodgeCooldownClock = Entity.DodgeCooldown;
         }
     }
+    public class ItemGet: SwPlayerState
+    {
+        public override string Name => "item_get";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            PlayBodyAnim("item_found");
+            Entity.Velocity = ErVec2.Zero;
+        }
+        public override void Update()
+        {
+            base.Update();
+            if(Controls.DodgeJustPressed) StateMachine.SetState("default");
+        }
+    }
     public static SwStateMachine GetStateMachine(SwPlayer parent, string name)
     {
         return new(parent, name, [
@@ -419,6 +434,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             new Charged(),
             new Dodging(),
             new Dead(),
+            new ItemGet(),
         ]);
     }
 }

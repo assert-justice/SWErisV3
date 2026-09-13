@@ -95,8 +95,9 @@ public class SwRoom
                 ErEngine.LogWarning("malformed map object");
                 continue;
             }
-            if(mapObject.IsGlobal) Map.AddGlobalObject(mapObject);
-            else AddMapObject(mapObject);
+            Map.AddGlobalObject(mapObject);
+            // if(mapObject.IsGlobal) Map.AddGlobalObject(mapObject);
+            // else AddMapObject(mapObject);
         }
         return true;
     }
