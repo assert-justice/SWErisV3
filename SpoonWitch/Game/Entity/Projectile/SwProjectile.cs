@@ -36,7 +36,7 @@ public class SwProjectile : SwEntity, ISwEntity<SwProjectile>
         base.Update();
         var tileCoord = SwGame.Map.PhysicsWorld.PointToTileCoord(Position);
         var tileId = SwGame.Map.PhysicsWorld.GetTile(tileCoord);
-        var tileData = SwGame.Map.GetTileData(tileId);
+        var tileData = SwGame.TileData[tileId];
         if(tileData.IsOpaque) QueueFree();
     }
     protected override void DrawImpl(SwEntity nextState)

@@ -2077,7 +2077,7 @@
 			"externalRelPath": null,
 			"fieldInstances": [
 				{ "__identifier": "display_name", "__type": "String", "__value": null, "__tile": null, "defUid": 103, "realEditorValues": [] },
-				{ "__identifier": "room_auto_mode", "__type": "LocalEnum.room_auto_mode", "__value": "walled_grassy", "__tile": null, "defUid": 118, "realEditorValues": [] }
+				{ "__identifier": "room_auto_mode", "__type": "LocalEnum.room_auto_mode", "__value": "walled_grassy", "__tile": null, "defUid": 118, "realEditorValues": [null] }
 			],
 			"layerInstances": [
 				{
@@ -2760,7 +2760,10 @@
 					"autoLayerTiles": [],
 					"seed": 9556247,
 					"overrideTilesetUid": null,
-					"gridTiles": [],
+					"gridTiles": [
+						{ "px": [288,0], "src": [0,0], "f": 0, "t": 0, "d": [9], "a": 1 },
+						{ "px": [320,0], "src": [0,0], "f": 0, "t": 0, "d": [10], "a": 1 }
+					],
 					"entityInstances": []
 				},
 				{
@@ -2965,7 +2968,10 @@
 					"autoLayerTiles": [],
 					"seed": 9301434,
 					"overrideTilesetUid": null,
-					"gridTiles": [],
+					"gridTiles": [
+						{ "px": [288,288], "src": [0,0], "f": 0, "t": 0, "d": [189], "a": 1 },
+						{ "px": [320,288], "src": [0,0], "f": 0, "t": 0, "d": [190], "a": 1 }
+					],
 					"entityInstances": []
 				},
 				{

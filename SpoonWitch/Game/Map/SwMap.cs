@@ -14,7 +14,7 @@ public class SwMap
     private readonly Dictionary<string,SwRoom> LoadedRooms = [];
     private readonly Dictionary<ErVec2I, SwSector> SectorLookup = [];
     private readonly Dictionary<ErVec2I,SwRoom> RoomLookup = [];
-    private readonly SwTileData[] TileData;
+    // private readonly SwTileData[] TileData;
     private readonly SwDisplayLayer[] DisplayLayers;
     public readonly int NumTileLayers;
     public readonly ErPhysicsWorld2D PhysicsWorld;
@@ -39,7 +39,7 @@ public class SwMap
         TileSize = tileSize ?? new(32, 32);
         SectorSizePx = sectorSizePx ?? new(640, 320);
         SectorSizeTiles = SectorSizePx / TileSize;
-        TileData = tileData ?? [];
+        var TileData = tileData ?? [];
         uint[] tileMaskLookup = [..TileData.Select(t => t.CollisionMask)];
         static void debugDrawRect(ErRect2 rect, bool overlap, uint mask)
         {
@@ -62,10 +62,10 @@ public class SwMap
     {
         GlobalMapObjects.AddObject(mapObject);
     }
-    public SwTileData GetTileData(int tileId)
-    {
-        return TileData[tileId];
-    }
+    // public SwTileData GetTileData(int tileId)
+    // {
+    //     return TileData[tileId];
+    // }
     private bool TryGetSector(out SwSector sector, ErVec2I tileCoord)
     {
         sector = null!;
@@ -173,7 +173,7 @@ public class SwMap
         foreach (var (key, tileId) in room.TileLookup)
         {
             SetTile(key.layerIdx, key.tileCoord, tileId);
-            if(tileId >= 0) Foliage.SetArable(key.tileCoord, TileData[tileId].IsArable);
+            if(tileId >= 0) Foliage.SetArable(key.tileCoord, SwGame.TileData[tileId].IsArable);
         }
         foreach (var sectorCoord in room.SectorCoords)
         {

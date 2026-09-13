@@ -1,8 +1,6 @@
 [
     {
         "name": "empty",
-        "source": "tilesets/wall_tileset.png",
-        "is_solid": true,
         "move_speed_mul": 0
     },
     {

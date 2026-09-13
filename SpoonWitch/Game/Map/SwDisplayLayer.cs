@@ -84,9 +84,10 @@ public class SwDisplayLayer
         var half = tileSize / 2;
         foreach (var (tilePos, tile) in AtlasGrid)
         {
-            var tileData = Map.GetTileData(tile.TileId);
+            var tileData = SwGame.TileData[tile.TileId];
+            if(!tileData.IsVisible) continue;
             var pos = (ErVec2)tilePos * tileSize - half;
-            if(!tileData.TryDraw(pos, tile.Mask, tile.Seed, ErEngine.CurrentTime)) continue;// ErEngine.LogError("bad tile, coord: ", tilePos, " tile id: ", tile.TileId, " mask: ", tile.Mask, " seed: ", tile.Seed);
+            if(!tileData.TryDraw(pos, tile.Mask, tile.Seed, ErEngine.CurrentTime)) continue;
         }
     }
 }
