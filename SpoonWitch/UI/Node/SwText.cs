@@ -36,6 +36,11 @@ public class SwText: SwUiNode
     {
         if(node.TryGet("text", out string s)) Text = s;
         if(node.TryGet("font_size", out double font_size)) FontSize = font_size;
+        if(node.TryGet("font_color", out string font_color))
+        {
+            if(!ErColor.TryParse(font_color, out var color)) ErEngine.LogWarning("bad color string '", font_color, "'");
+            else FontColor = color;
+        }
     }
     public ErFont? Font
     {

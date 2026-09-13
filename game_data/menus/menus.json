@@ -19,6 +19,7 @@
                     "text": "New Game",
                     "font_size": 16,
                     "font_color": "#ffffff",
+                    "font_color_focus": "#ff0000",
                     "on_click_command":{
                         "verb": "launch"
                     }
@@ -28,6 +29,7 @@
                     "text": "Options",
                     "font_size": 16,
                     "font_color": "#ffffff",
+                    "font_color_focus": "#ff0000",
                     "visible": false,
                     "on_click_command":{
                         "verb": "menu_set",
@@ -39,6 +41,7 @@
                     "text": "Credits",
                     "font_size": 16,
                     "font_color": "#ffffff",
+                    "font_color_focus": "#ff0000",
                     "on_click_command":{
                         "verb": "menu_set",
                         "menu_id": "credits"
@@ -49,6 +52,7 @@
                     "text": "Quit",
                     "font_size": 16,
                     "font_color": "#ffffff",
+                    "font_color_focus": "#ff0000",
                     "on_click_command":{
                         "verb": "quit"
                     }

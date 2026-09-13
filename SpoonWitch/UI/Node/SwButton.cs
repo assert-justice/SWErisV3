@@ -1,3 +1,4 @@
+using Eris;
 using Eris.Renderer;
 using ErisMath;
 using Prion.Node;
@@ -37,6 +38,12 @@ public class SwButton : SwUiNode
     {
         TextNode = new(node);
         AddChild(TextNode);
+        DefaultColor = TextNode.FontColor;
+        if(node.TryGet("font_color_focus", out string font_color_focus))
+        {
+            if(!ErColor.TryParse(font_color_focus, out var color)) ErEngine.LogWarning("bad color string '", font_color_focus, "'");
+            else FocusColor = color;
+        }
         MinusWidth = TextNode.Font?.GetStringSize("-").X ?? 0;
         Text = TextNode.Text;
         Command = node.Get("on_click_command");
