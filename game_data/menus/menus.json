@@ -83,8 +83,66 @@
                     "text": "Back",
                     "font_size": 16,
                     "font_color": "#ffffff",
+                    "font_color_focus": "#ff0000",
                     "on_click_command":{
                         "verb": "menu_back"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "menu",
+            "id": "pause",
+            "flow_h": "centered",
+            "flow_v": "centered",
+            "children":[
+                {
+                    "type": "text",
+                    "text": "Pause",
+                    "text_justify": "centered",
+                    "font_size": 24,
+                    "font_color": "#ffffff"
+                },
+                {
+                    "type": "button",
+                    "text": "Resume",
+                    "font_size": 16,
+                    "font_color": "#ffffff",
+                    "font_color_focus": "#ff0000",
+                    "on_click_command":{
+                        "verb": "unpause"
+                    }
+                },
+                {
+                    "type": "button",
+                    "text": "Main Menu",
+                    "visible": false,
+                    "font_size": 16,
+                    "font_color": "#ffffff",
+                    "font_color_focus": "#ff0000",
+                    "on_click_command":{
+                        "verb": "menu_back"
+                    }
+                },
+                {
+                    "type": "button",
+                    "text": "Restart",
+                    "visible": false,
+                    "font_size": 16,
+                    "font_color": "#ffffff",
+                    "font_color_focus": "#ff0000",
+                    "on_click_command":{
+                        "verb": "launch"
+                    }
+                },
+                {
+                    "type": "button",
+                    "text": "Quit",
+                    "font_size": 16,
+                    "font_color": "#ffffff",
+                    "font_color_focus": "#ff0000",
+                    "on_click_command":{
+                        "verb": "quit"
                     }
                 }
             ]

@@ -28,7 +28,7 @@ public class SwGame
     public static readonly Dictionary<int, SwParticles2D> ParticleEmitters = [];
     public static readonly Dictionary<int, SwInventory> InventoryLookup = [];
     public static SwMapCheckpoint ActiveCheckpoint{get; private set;} = null!;
-    public static double GameSpeed => 1;
+    public static double GameSpeed => SwApp.IsPaused ? 0 : 1;
     private static int _RenderLayer;
     public static int RenderLayer
     {
@@ -61,6 +61,17 @@ public class SwGame
     public static ErVec2 PlayerPos{get; private set;}
     public static SwGame Game{get; private set;} = null!;
     public static SwTileData[] TileData{get; private set;} = null!;
+    public void Cleanup()
+    {
+        _Map = null;
+        FrameWeight = 0;
+        RenderTextures = [];
+        ParticleEmitters.Clear();
+        InventoryLookup.Clear();
+        CurrentRoom = null;
+        Game = null!;
+        TileData = null!;
+    }
     public static void SetCameraTarget(ErVec2 point, bool shouldSnap = false)
     {
         if(Game.CurrentRoom is null || !Game.CurrentRoom.RectPx.Contains(point))

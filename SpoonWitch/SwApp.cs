@@ -21,7 +21,7 @@ public class SwApp : IErApp
     public static readonly ErVec2 ScreenSize = new(INTERNAL_WIDTH, INTERNAL_HEIGHT);
     public static readonly ErVec2 CameraSize = new(INTERNAL_WIDTH, INTERNAL_HEIGHT - HUD_HEIGHT);
     private SwGame? Game;
-    private SwMenuHolder? MenuHolder;
+    private SwMenuHolder MenuHolder = null!;
     private static int NextId;
     private ErTexture RenderTexture = null!;
     public static readonly SwCommandStore CommandStore = new();
@@ -31,7 +31,7 @@ public class SwApp : IErApp
     // private ErAudioSource Source = null!;
     // public static double GameSpeed => IsPaused ? GameSpeedMul : 0;
     // public static double GameSpeedMul => 1;
-    // public static bool IsPaused{get; private set;} = false;
+    public static bool IsPaused{get; private set;} = false;
     public const string GAME_DATA_PATH = "game_data";
     public static bool Debug => false;// Settings.TryGet("debug/debug", out bool debug) && debug;
     private readonly SwCommandHandler CommandHandler = new(CommandStore);
@@ -46,6 +46,8 @@ public class SwApp : IErApp
     {
         CommandHandler.AddHandlerAction("quit", ErEngine.Quit);
         CommandHandler.AddHandlerAction("launch", Launch);
+        CommandHandler.AddHandlerAction("pause", Pause);
+        CommandHandler.AddHandlerAction("unpause", UnPause);
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
         if (!SwData.TryInit())
         {
@@ -59,7 +61,6 @@ public class SwApp : IErApp
         }
         if(!TryLoadDb(Settings, "game_data/settings/example_settings.json", "game_data/settings/default_settings.json")) ErEngine.LogWarning("bad settings");
         TryInitMenu();
-        // Launch();
     }
     private bool TryInitMenu()
     {
@@ -70,10 +71,26 @@ public class SwApp : IErApp
     }
     private void Launch()
     {
-        MenuHolder?.Visible = false;
+        UnPause();
+        Game?.Cleanup();
+        if(Game is not null)
+        {
+            // cleanup game
+        }
         Game = new();
         Game.TryLoadMap("game_data/map/demo_map3.ldtk");
         Game.Launch();
+    }
+    private void Pause()
+    {
+        IsPaused = true;
+        MenuHolder.Visible = true;
+        MenuHolder.SetMenu("pause");
+    }
+    private void UnPause()
+    {
+        IsPaused = false;
+        MenuHolder.Visible = false;
     }
     public void Update()
     {
@@ -81,13 +98,13 @@ public class SwApp : IErApp
         CommandHandler.Dispatch();
         Game?.Update();
         MenuInput();
-        if(MenuHolder is not null && MenuHolder.Visible) MenuHolder.Update();
+        MenuHolder.Update();
     }
     public void Draw()
     {
         ErEngine.Renderer.PushViewport(ErVec2.Zero, RenderTexture);
         ErEngine.Renderer.Clear();
-        Game?.Draw();
+        if(!IsPaused) Game?.Draw();
         if(MenuHolder is not null && MenuHolder.Visible) MenuHolder.Draw();
         ErEngine.Renderer.PopViewport();
         RenderTexture.DrawFullscreen();
@@ -104,25 +121,32 @@ public class SwApp : IErApp
     private bool Cancel;
     private void MenuInput()
     {
-        // Todo: check if we're actually in the menu
-        if(!MenuHolder?.Visible ?? true) return;
+        if(!MenuHolder.Visible)
+        {
+            if (ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Escape))
+            {
+                MenuHolder.Visible = true;
+                CommandStore.AddCommandVerb("pause");
+            }
+            return;
+        }
         bool pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Up);
-        if(pressed && !Up) MenuHolder?.Up();
+        if(pressed && !Up) MenuHolder.Up();
         Up = pressed;
         pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Down);
-        if(pressed && !Down) MenuHolder?.Down();
+        if(pressed && !Down) MenuHolder.Down();
         Down = pressed;
         pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Left);
-        if(pressed && !Left) MenuHolder?.Left();
+        if(pressed && !Left) MenuHolder.Left();
         Left = pressed;
         pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Right);
-        if(pressed && !Right) MenuHolder?.Right();
+        if(pressed && !Right) MenuHolder.Right();
         Right = pressed;
         pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Space);
-        if(pressed && !Confirm) MenuHolder?.Confirm();
+        if(pressed && !Confirm) MenuHolder.Confirm();
         Confirm = pressed;
         pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Escape);
-        if(pressed && !Cancel) MenuHolder?.Cancel();
+        if(pressed && !Cancel) MenuHolder.Cancel();
         Cancel = pressed;
     }
     public static int GetNextId()

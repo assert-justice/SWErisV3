@@ -32,6 +32,12 @@ public class SwCommandStore
         if(!Stores.TryGetValue(verb, out var store)) return [];
         else return store.GetCommands();
     }
+    public void AddCommandVerb(string verb)
+    {
+        PriDict command = [];
+        command.TrySet("verb", verb);
+        AddCommand(command);
+    }
     public void AddCommand(PriNode command)
     {
         if(command is PriNull) return;

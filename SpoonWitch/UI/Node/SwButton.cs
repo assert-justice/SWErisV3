@@ -19,12 +19,12 @@ public class SwButton : SwUiNode
             if (HasFocus)
             {
                 TextNode.Text = Sep + value + Sep;
-                TextNode.LocalPosition = ErVec2.Right * MinusWidth;
+                TextNode.LocalPosition = ErVec2.Zero;
             }
             else
             {
                 TextNode.Text = value;
-                TextNode.LocalPosition = ErVec2.Zero;
+                TextNode.LocalPosition = ErVec2.Right * MinusWidth;
             }
         }
     }
