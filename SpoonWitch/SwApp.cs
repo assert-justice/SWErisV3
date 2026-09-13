@@ -73,7 +73,7 @@ public class SwApp : IErApp
     private void Launch()
     {
         Game = new();
-        Game.TryLoadMap("game_data/map/demo_map2.ldtk");
+        Game.TryLoadMap("game_data/map/demo_map3.ldtk");
         MenuHolder?.Visible = false;
     }
     public void Update()

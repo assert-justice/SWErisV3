@@ -5,18 +5,15 @@ namespace SpoonWitch.Game.Map;
 
 public class SwSector
 {
-    // private readonly List<Dictionary<ErVec2I,int>> Layers = [];
-    // public readonly SwMap Map;
-    // public readonly SwRoom Room;
     public readonly ErRect2I RectTiles;
     public readonly ErVec2I PositionSectors;
     private readonly int[][] Layers;
-    public SwSector(SwMap map, ErVec2I positionSectors)
+    public SwSector(ErVec2I positionSectors, ErVec2I sizeTiles, int numTileLayers)
     {
         PositionSectors = positionSectors;
-        RectTiles = new(positionSectors * map.SectorSizeTiles, map.SectorSizeTiles);
-        Layers = new int[map.NumTileLayers][];
-        for (int idx = 0; idx < map.NumTileLayers; idx++)
+        RectTiles = new(positionSectors * sizeTiles, sizeTiles);
+        Layers = new int[numTileLayers][];
+        for (int idx = 0; idx < numTileLayers; idx++)
         {
             Layers[idx] = [];
         }
@@ -41,18 +38,37 @@ public class SwSector
         }
         Layers[layer][idx] = tileId;
     }
-    public int GetTile(int layer, ErVec2I tileCoord)
+    public int GetTile(int layerIdx, ErVec2I tileCoord)
     {
         if (!RectTiles.Contains(tileCoord))
         {
             ErEngine.LogWarning("attempted to set tile ", tileCoord, " of sector ", PositionSectors, ". coord out of bounds");
-            return 0;
+            return -1;
         }
-        if(Layers[layer].Length == 0) return 0;
-        int idx = GetTileIdx(tileCoord);
-        return Layers[layer][idx];
+        return GetTilePriv(layerIdx, tileCoord);
     }
-    public void Load(SwMap map)
+    private int GetTilePriv(int layerIdx, ErVec2I tileCoord)
+    {
+        if(Layers[layerIdx].Length == 0) return -1;
+        tileCoord -= RectTiles.Position;
+        int idx = GetTileIdx(tileCoord);
+        return Layers[layerIdx][idx];
+    }
+    public int GetTopTile(ErVec2I tileCoord)
+    {
+        if (!RectTiles.Contains(tileCoord))
+        {
+            ErEngine.LogWarning("attempted to set tile ", tileCoord, " of sector ", PositionSectors, ". coord out of bounds");
+            return -1;
+        }
+        for (int layerIdx = Layers.Length - 1; layerIdx >= 0; layerIdx--)
+        {
+            int tileId = GetTilePriv(layerIdx, tileCoord);
+            if(tileId >= 0) return tileId;
+        }
+        return -1;
+    }
+    public IEnumerable<(int layerIdx, ErVec2I tileCoord, int tileId)> GetTiles()
     {
         for (int layerIdx = 0; layerIdx < Layers.Length; layerIdx++)
         {
@@ -65,34 +81,9 @@ public class SwSector
                     int tileId = Layers[layerIdx][tileIdx];
                     if(tileId == -1) continue;
                     var tileCoord = new ErVec2I(xi,yi) + RectTiles.Position;
-                    map.SetTile(layerIdx, tileCoord, tileId);
+                    yield return (layerIdx, tileCoord, tileId);
                 }
             }
         }
     }
-    // public int NumLayers{get => Layers.Count;}
-    // public bool IsDirty{get; private set;}
-    // public SwSector(SwMap map, SwRoom room, ErVec2I positionSectors)
-    // {
-    //     Map = map;
-    //     Room = room;
-    //     PositionSectors = positionSectors;
-    //     PositionTiles = positionSectors * map.SectorSizeTiles;
-    // }
-    // public bool TrySetTile(ErVec2I tilePosition, int layerIdx, int tileId)
-    // {
-    //     // Todo: set dirty flag
-    //     if(layerIdx < 0) return ErEngine.LogWarning("layer index cannot be negative");
-    //     if(layerIdx > 255) return ErEngine.LogWarning("layer index too high");
-    //     if(tilePosition / Map.SectorSizeTiles != PositionSectors) return ErEngine.LogWarning("tile position is out of bounds");
-    //     while(Layers.Count <= layerIdx) Layers.Add([]);
-    //     Layers[layerIdx][tilePosition] = tileId;
-    //     return true;
-    // }
-    // public void Clean()
-    // {
-    //     if(!IsDirty) return;
-    //     IsDirty = false;
-    // }
-    // public void Draw(){}
 }

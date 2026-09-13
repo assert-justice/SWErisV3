@@ -12,7 +12,8 @@ public class SwMap
 {
     private readonly Dictionary<string,SwRoom> Rooms = [];
     private readonly Dictionary<string,SwRoom> LoadedRooms = [];
-    private readonly Dictionary<ErVec2I, SwRoom> SectorLookup = [];
+    private readonly Dictionary<ErVec2I, SwSector> SectorLookup = [];
+    private readonly Dictionary<ErVec2I,SwRoom> RoomLookup = [];
     private readonly SwTileData[] TileData;
     private readonly SwDisplayLayer[] DisplayLayers;
     public readonly int NumTileLayers;
@@ -24,6 +25,7 @@ public class SwMap
     public readonly ErVec2I SectorSizePx;
     private readonly SwMapObjectLookup GlobalMapObjects = new();
     public readonly string Dirpath;
+    private SwSector? LastSector;
     public SwMap(string dirpath = "", string id = "", int numTileLayers = 0, ErVec2I? tileSize = null, ErVec2I? sectorSizePx = null, SwTileData[]? tileData = null)
     {
         Dirpath = dirpath;
@@ -64,18 +66,45 @@ public class SwMap
     {
         return TileData[tileId];
     }
-    public void SetTile(int layer, ErVec2I coord, int tileId, bool updateFoliage = false)
+    private bool TryGetSector(out SwSector sector, ErVec2I tileCoord)
     {
-        if(updateFoliage) Foliage.SetArable(coord, TileData[tileId].IsArable);
-        PhysicsWorld.SetTile(coord, tileId);
-        DisplayLayers[layer].SetTile(coord, tileId);
+        sector = null!;
+        var sectorCoord = tileCoord / SectorSizeTiles;
+        if(LastSector is null || LastSector.PositionSectors != sectorCoord)
+        {
+            if(!SectorLookup.TryGetValue(sectorCoord, out sector!)) return false;
+            else LastSector = sector;
+        }
+        return true;
+    }
+    private SwSector GetSector(ErVec2I tileCoord)
+    {
+        var sectorCoord = tileCoord / SectorSizeTiles;
+        if(LastSector is null || LastSector.PositionSectors != sectorCoord)
+        {
+            if(!SectorLookup.TryGetValue(sectorCoord, out var sector))
+            {
+                sector = new(sectorCoord, SectorSizeTiles, NumTileLayers);
+            }
+            LastSector = sector;
+        }
+        return LastSector;
+    }
+    public int GetTile(int layerIdx, ErVec2I tileCoord)
+    {
+        if(!TryGetSector(out var sector, tileCoord)) return -1;
+        return sector.GetTile(layerIdx, tileCoord);
+    }
+    public void SetTile(int layerIdx, ErVec2I tileCoord, int tileId)
+    {
+        var sector = GetSector(tileCoord);
+        sector.SetTile(layerIdx, tileCoord, tileId);
+        int topTileId = sector.GetTopTile(tileCoord);
+        PhysicsWorld.SetTile(tileCoord, topTileId);
+        DisplayLayers[layerIdx].SetTile(tileCoord, tileId);
     }
     private void AddRoom(SwRoom room)
     {
-        foreach (var sector in room.GetSectors())
-        {
-            SectorLookup.Add(sector.PositionSectors,room);
-        }
         Rooms.Add(room.Id, room);
     }
     public void Update()
@@ -134,14 +163,23 @@ public class SwMap
     }
     public bool TryGetRoom(ErVec2 position, out SwRoom room)
     {
-        ErVec2I sector = (position/(ErVec2)SectorSizePx).FloorToInt();
-        return SectorLookup.TryGetValue(sector, out room!);
+        ErVec2I sectorCoord = (position/(ErVec2)SectorSizePx).FloorToInt();
+        return RoomLookup.TryGetValue(sectorCoord, out room!);
     }
     private void LoadRoom(SwRoom room)
     {
         Rooms.TryAdd(room.Id, room);
         LoadedRooms.Add(room.Id, room);
-        room.Load();
+        foreach (var (key, tileId) in room.TileLookup)
+        {
+            SetTile(key.layerIdx, key.tileCoord, tileId);
+            if(tileId >= 0) Foliage.SetArable(key.tileCoord, TileData[tileId].IsArable);
+        }
+        foreach (var sectorCoord in room.SectorCoords)
+        {
+            RoomLookup.Add(sectorCoord, room);
+        }
+        room.LoadObjects();
     }
     public bool TryLoadRoom(string roomId)
     {
