@@ -46,8 +46,8 @@ public class SwApp : IErApp
     }
     public void Init()
     {
-        CommandHandler.AddHandler("quit", ErEngine.Quit);
-        CommandHandler.AddHandler("launch", Launch);
+        CommandHandler.AddHandlerAction("quit", ErEngine.Quit);
+        CommandHandler.AddHandlerAction("launch", Launch);
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
         if (!SwData.TryInit())
         {
@@ -72,9 +72,10 @@ public class SwApp : IErApp
     }
     private void Launch()
     {
+        MenuHolder?.Visible = false;
         Game = new();
         Game.TryLoadMap("game_data/map/demo_map3.ldtk");
-        MenuHolder?.Visible = false;
+        Game.Launch();
     }
     public void Update()
     {
@@ -82,7 +83,6 @@ public class SwApp : IErApp
         CommandHandler.Dispatch();
         Game?.Update();
         MenuInput();
-        // MenuHolder?.Update();
         if(MenuHolder is not null && MenuHolder.Visible) MenuHolder.Update();
     }
     public void Draw()

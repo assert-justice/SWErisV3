@@ -113,6 +113,11 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         BodySprite.Play(animName);
         HatSprite.Play(animName);
     }
+    private void PlayBodyAnim(string animName)
+    {
+        BodySprite.Play(animName);
+        HatSprite.Play(animName);
+    }
     // public override void BeginState(string lastState)
     // {
     //     base.BeginState(lastState);
@@ -123,6 +128,43 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         base.Update();
         ReticleSprite.Visible = Controls.ReticleVisible;
         ReticleSprite.Offset = Controls.ReticlePosition;
+    }
+    public class Spawning: SwPlayerState
+    {
+        public override string Name => "spawning";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            PlayBodyAnim("fly");
+            ErVec2 diff = Entity.Position - SwGame.ActiveCheckpoint.RectPx.Center;
+            double distance = diff.GetLength();
+            if(500 < distance) distance = 500;
+            ErVec2 offset = diff.Normalized() * distance;
+            ErVec2 pos = SwGame.ActiveCheckpoint.RectPx.Center + offset;
+            Entity.Position = pos;
+        }
+        public override void Update()
+        {
+            base.Update();
+            if(BodySprite.CurrentAnimation.Name == "respawn")
+            {
+                if(!BodySprite.IsPlaying) StateMachine.SetState("default");
+                return;
+            }
+            ErVec2 diff = SwGame.ActiveCheckpoint.RectPx.Center - Entity.Position;
+            double speed = Entity.BaseSpeed * SwGame.DeltaTime;
+            double lenSq = diff.GetLengthSquared();
+            if(lenSq < speed * speed)
+            {
+                Entity.Velocity = ErVec2.Zero;
+                PlayBodyAnim("respawn");
+            }
+            else
+            {
+                ErVec2 dir = (SwGame.ActiveCheckpoint.RectPx.Center - Entity.Position).Normalized();
+                Entity.Velocity = dir * Entity.BaseSpeed;
+            }
+        }
     }
     public class Default: SwPlayerState
     {
@@ -239,7 +281,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             command.TrySet("verb", "hud_set");
             command.TrySet("key", "sling_ammo");
             command.TrySet("value", Entity.Ammo);
-            SwApp.CommandStore.AddGlobalCommand(command);
+            SwApp.CommandStore.AddCommand(command);
         }
         public override void Update()
         {
@@ -250,23 +292,8 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             if (!Controls.IsCharging) StateMachine.SetState("default");
             else if (CanFire())
             {
-                // fire!
                 Fire();
                 StateMachine.SetState("default");
-                // var pos = Entity.Position;
-                // Entity.EntProps.Props.TrySet("bullet/x", pos.X);
-                // Entity.EntProps.Props.TrySet("bullet/y", pos.Y);
-                // Entity.EntProps.Props.TrySet("bullet/x_velocity", Controls.Aim.X * Entity.BulletSpeed);
-                // Entity.EntProps.Props.TrySet("bullet/y_velocity", Controls.Aim.Y * Entity.BulletSpeed);
-                // SwGame.Game.AddEntity<SwProjectile>(Entity.EntProps.Props.Get("bullet"));
-                // StateMachine.SetState("default");
-                // Entity.AttackCooldownClock = 0.1;
-                // Entity.Ammo--;
-                // PriDict command = [];
-                // command.TrySet("verb", "hud_set");
-                // command.TrySet("key", "sling_ammo");
-                // command.TrySet("value", Entity.Ammo);
-                // SwApp.CommandStore.AddGlobalCommand(command);
             }
         }
         public override void EndState(string nextState)
@@ -316,6 +343,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     public static SwStateMachine GetStateMachine(SwPlayer parent, string name)
     {
         return new(parent, name, [
+            new Spawning(),
             new Default(),
             new Attack(),
             new Charging(),

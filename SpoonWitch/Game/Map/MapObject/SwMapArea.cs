@@ -5,9 +5,7 @@ namespace SpoonWitch.Game.Map.MapObject;
 
 public class SwMapArea : SwMapObject
 {
-    public SwMapArea(PriNode data) : base(data)
-    {
-        // At least for now areas are always global
-        Data.TrySet("is_global", true);
-    }
+    // At least for now areas are always global
+    public override bool IsGlobal => true;
+    public SwMapArea(PriNode data) : base(data){}
 }

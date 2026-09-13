@@ -12,7 +12,7 @@ using SpoonWitch.Game.Entity.Actor.Enemy.Slume;
 using SpoonWitch.Game.Entity.Actor.Player;
 using SpoonWitch.Game.Inventory;
 using SpoonWitch.Game.Map;
-using SpoonWitch.Game.Map.Collision;
+using SpoonWitch.Game.Map.MapObject;
 using SpoonWitch.Rendering;
 using SpoonWitch.UI.Hud;
 
@@ -27,6 +27,7 @@ public class SwGame
     private static ErTexture[] RenderTextures = [];
     public static readonly Dictionary<int, SwParticles2D> ParticleEmitters = [];
     public static readonly Dictionary<int, SwInventory> InventoryLookup = [];
+    public static SwMapCheckpoint ActiveCheckpoint{get; private set;} = null!;
     public static double GameSpeed => 1;
     private static int _RenderLayer;
     public static int RenderLayer
@@ -43,21 +44,50 @@ public class SwGame
     private static readonly SwEntPropsLookup PropsLookup = new();
     private SwMap? _Map = null;
     public static SwMap Map => Game._Map!;
-    // public static SwMap Map{get; private set;} = new();
     private readonly Dictionary<byte, (SwEntity,SwEntity)> Prototypes = [];
     private SwByteStream LastStream = new();
     private SwByteStream NextStream = new();
     private readonly SwByteStream NewEntities = new();
     private SwRoom? CurrentRoom;
     private readonly SwHud Hud;
+    private double _FadeState = 0;
+    public double FadeState => ErMath.Ease(_FadeState, 5);
+    private double FadeTarget = 0;
+    private readonly double FadeSpeed = 1.0/6;
+    private PriNode FadeOnFinishCommand = PriNull.Null;
+    private readonly SwCommandHandler CommandHandler = new(SwApp.CommandStore);
     public static readonly SwCamera Camera = new();
-    public static ErVec2 PlayerPos{get; private set;} = new(32,32);
+    public static ErVec2 PlayerPos{get; private set;}// = new(32,32);
     public static SwGame Game{get; private set;} = null!;
     public static SwTileData[] TileData{get; private set;} = null!;
+    public static ErVec2 CameraTarget
+    {
+        get => Camera.TargetPos;
+        set
+        {
+            bool shouldSnap = false;
+            if(Game.CurrentRoom is null || !Game.CurrentRoom.RectPx.Contains(value))
+            {
+                if(Map.TryGetRoom(value, out var room))
+                {
+                    shouldSnap = Game.CurrentRoom is null;
+                    Game.CurrentRoom = room;
+                    Camera.UseBounds = true;
+                    Camera.SetBounds(room.RectPx);
+                }
+                else
+                {
+                    Camera.UseBounds = false;
+                    Game.CurrentRoom = null;
+                }
+                if(shouldSnap) Camera.SnapToPosition(value);
+                else Camera.SetTargetPosition(value);
+            }
+        }
+    }
     public static void SetPlayerPos(ErVec2 position)
     {
         PlayerPos = position;
-        Camera.SetTargetPosition(position);
     }
     public static SwMap GetMap()
     {
@@ -98,6 +128,7 @@ public class SwGame
             TileData[idx] = data;
             idx++;
         }
+        AttachHandlers();
     }
     public static bool TryGetEntProps(int id, out SwEntPropsBase entProps)
     {
@@ -120,8 +151,10 @@ public class SwGame
     }
     public void Update()
     {
+        HandleFade();
+        Map.Update();
         HandleRooms();
-        HandleCommands();
+        CommandHandler.Dispatch();
         Camera.Update();
         (LastStream,NextStream) = (NextStream,LastStream);
         LastStream.Reset();
@@ -145,6 +178,32 @@ public class SwGame
         Map.PhysicsWorld.Update(DeltaTime);
         Hud.Update();
     }
+    private void HandleFade()
+    {
+        double sign = Math.Sign(FadeTarget - _FadeState);
+        if(sign == 0) return;
+        double df = sign * FadeSpeed * DeltaTime;
+        _FadeState += df;
+        bool finished = false;
+        if(sign > 0 && _FadeState > FadeTarget) finished = true;
+        else if(sign < 0 && _FadeState < FadeTarget) finished = true;
+        if (finished)
+        {
+            _FadeState = FadeTarget;
+            SwApp.CommandStore.AddCommand(FadeOnFinishCommand);
+            FadeOnFinishCommand = PriNull.Null;
+        }
+    }
+    public void FadeIn()
+    {
+        _FadeState = 1;
+        FadeTarget = 0;
+    }
+    public void FadeOut()
+    {
+        _FadeState = 0;
+        FadeTarget = 1;
+    }
     private static void CalculateFrameWeight()
     {
         if(DeltaTime > 0) FrameWeight += FrameDuration / DeltaTime;
@@ -154,52 +213,62 @@ public class SwGame
     {
         CalculateFrameWeight();
         Camera.Draw();
+        DrawFade();
         Hud.Draw();
     }
-    private void HandleCommands()
+    private void SpawnEnt(PriNode command)
     {
-        foreach (var command in SwApp.CommandStore.GetGlobalCommands("spawn_player"))
+        if(!command.TryGet("entity_type", out string entityType))
         {
-            // Todo: implement this properly
-            AddEntity<SwPlayer>(command);
+            ErEngine.LogWarning("spawn entity command missing entity_type field");
+            return;
         }
-        foreach (var command in SwApp.CommandStore.GetGlobalCommands("spawn_entity"))
+        switch (entityType)
         {
-            if(!command.TryGet("entity_type", out string entityType))
-            {
-                ErEngine.LogWarning("spawn entity command missing entity_type field");
-                continue;
-            }
-            switch (entityType)
-            {
-                case "none":
-                    break;
-                case "slume":
-                    AddEntity<SwSlume>(command);
-                    break;
-                case "knight":
-                    AddEntity<SwKnight>(command);
-                    break;
-                default:
-                    ErEngine.LogWarning("tried to spawn unknown entity type '", entityType, "'");
-                    break;
-            }
+            case "none":
+                break;
+            case "slume":
+                AddEntity<SwSlume>(command);
+                break;
+            case "knight":
+                AddEntity<SwKnight>(command);
+                break;
+            default:
+                ErEngine.LogWarning("tried to spawn unknown entity type '", entityType, "'");
+                break;
         }
-        foreach (var command in SwApp.CommandStore.GetGlobalCommands("set_collision_tile_rect"))
+    }
+    public void Launch()
+    {
+        FadeIn();
+        AddEntity<SwPlayer>();
+        if(!Map.TryGetDefaultCheckpoint(out var checkpoint))
         {
-            if(!command.TryGet("tile_id", out int tileId)) continue;
-            if(!command.TryGet("x", out int x)) continue;
-            if(!command.TryGet("y", out int y)) continue;
-            if(!command.TryGet("w", out int w)) continue;
-            if(!command.TryGet("h", out int h)) continue;
-            Map.PhysicsWorld.SetTileRect(new(x,y,w,h), tileId);
+            ErEngine.LogWarning("no default checkpoint found");
+            return;
         }
-        foreach (var command in SwApp.CommandStore.GetGlobalCommands("game_spawn_player"))
-        {
-            if(!Map.TryGetDefaultCheckpoint(out var checkpoint)) ErEngine.LogWarning("failed to find default checkpoint");
-            else checkpoint.Trigger();
-        }
-        Map.HandleCommands();
+        ActiveCheckpoint = checkpoint;
+        CameraTarget = ActiveCheckpoint.RectPx.Center;
+    }
+    private void HandleFade(PriNode command)
+    {
+        if(!command.TryGet("verb", out string verb)) throw new("should be unreachable");
+        FadeOnFinishCommand = command.Get("on_finish");
+        if(verb == "game_fade_in") FadeIn();
+        else if(verb == "game_fade_out") FadeOut();
+        else throw new("should be unreachable");
+    }
+    private void RespawnPlayer(PriNode command)
+    {
+        ErEngine.Log(command);
+    }
+    private void AttachHandlers()
+    {
+        // CommandHandler.AddHandler("game_spawn_player", AddEntity<SwPlayer>);
+        CommandHandler.AddHandler("game_respawn_player", RespawnPlayer);
+        CommandHandler.AddHandler("game_spawn_entity", SpawnEnt);
+        CommandHandler.AddHandler("game_fade_in", HandleFade);
+        CommandHandler.AddHandler("game_fade_out", HandleFade);
     }
     private void HandleRooms()
     {
@@ -213,7 +282,7 @@ public class SwGame
         {
             Camera.UseBounds = true;
             Camera.SetBounds(room.RectPx);
-            if(CurrentRoom is null) Camera.SnapToPosition(PlayerPos);
+            // if(CurrentRoom is null) Camera.SnapToPosition(PlayerPos);
             CurrentRoom = room;
         }
     }
@@ -258,6 +327,11 @@ public class SwGame
         {
             RenderTextures[idx].Draw(ErVec2.Zero);
         }
+    }
+    private void DrawFade()
+    {
+        ErRect2 rect = new(0, SwApp.HUD_HEIGHT, SwApp.INTERNAL_WIDTH, SwApp.INTERNAL_HEIGHT);
+        if(FadeState > 0) ErEngine.Renderer.DrawRect(rect, ErColor.Black, FadeState);
     }
     private bool TryGetPrototype(byte typeId, out (SwEntity, SwEntity) pair)
     {
@@ -309,7 +383,7 @@ public class SwGame
         map.DebugLoadAllRooms();
         PriDict command = [];
         command.TrySet("verb", "game_spawn_player");
-        SwApp.CommandStore.AddGlobalCommand(command);
+        SwApp.CommandStore.AddCommand(command);
         return true;
     }
 }

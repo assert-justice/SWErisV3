@@ -67,4 +67,34 @@ public static class ErMath
             idx += step;
         }
     }
+    public static double Ease(double weight, double curve) 
+    {
+        weight = Math.Clamp(weight, 0, 1);
+        if (curve > 0) 
+        {
+            if (curve < 1) 
+            {
+                return 1 - Math.Pow(1 - weight, 1 / curve);
+            } 
+            else {
+                return Math.Pow(weight, curve);
+            }
+        } 
+        else if (curve < 0) 
+        {
+            //inout ease
+            if (weight < 0.5) 
+            {
+                return Math.Pow(weight * 2, -curve) * 0.5;
+            } 
+            else 
+            {
+                return (1 - Math.Pow(1 - (weight - 0.5) * 2, -curve)) * 0.5 + 0.5;
+            }
+        } 
+        else 
+        {
+            return 0; // no ease (raw)
+        }
+    }
 }

@@ -72,6 +72,7 @@ public class ErRenderer
         Handle = renderer;
         SDL.SetRenderVSync(Handle, 1);
         SDL.SetDefaultTextureScaleMode(Handle, SDL.ScaleMode.Nearest);
+        SDL.SetRenderDrawBlendMode(Handle, SDL.BlendMode.Blend);
         ResetViewport();
         TextureManager = new(Handle);
         CleanupStack.Push(TextureManager.Cleanup);
@@ -137,5 +138,13 @@ public class ErRenderer
             SDL.RenderLine(Handle, (float)start.X, (float)start.Y, (float)end.X, (float)end.Y);
         }
         DebugDrawQueue.Enqueue(fn);
+    }
+    public void DrawRect(ErRect2 rect, ErColor color, double alpha = 1, bool filled = true)
+    {
+        rect = rect.Translate(-ViewportTransform.Position);
+        byte a = (byte)(alpha * 255);
+        SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, a);
+        if (filled)SDL.RenderFillRect(Handle, rect.ToSdlRect());
+        else SDL.RenderRect(Handle, rect.ToSdlRect());
     }
 }

@@ -23,7 +23,11 @@ public abstract class SwActor: SwEntity
     private double FlickerCycle{get => Clocks[base.NumClocks+3]; set{Clocks[base.NumClocks+3] = value;}}
     public double Health;
     private bool _IsAlive = true;
-    public bool IsAlive => _IsAlive;
+    public bool IsAlive
+    {
+        get => _IsAlive; 
+        protected set => _IsAlive = value;
+    }
     protected override int NumClocks => base.NumClocks + 4;
     public SwActor()
     {

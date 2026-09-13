@@ -23,7 +23,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     public override int RenderLayer => 2;
     public static byte TypeId => 0;
     protected override byte GetTypeId => TypeId;
-    public override uint Mask => 3;
+    public override uint Mask => (uint)(IsAlive ? 3 : 0);
     public double ChargeTime => 1;
     public double ChargeSpeedMul => 0.5;
     // Note: dodge animations run at 12 fps, so 3/12 is 0.25 seconds
@@ -70,7 +70,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         dict.TrySet("verb", "hud_set");
         dict.TrySet("key", key);
         dict.TrySet("value", value);
-        SwApp.CommandStore.AddGlobalCommand(dict);
+        SwApp.CommandStore.AddCommand(dict);
     }
     private static void OnEnterSpoonHurtbox(SwColliderArea area, int bodyId, ErColliderBody body)
     {
@@ -82,6 +82,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     public override void Ready()
     {
         base.Ready();
+        IsAlive = false;
         SwDamage spoonDamage = new([(SwDamageType.Untyped, 10)]);
         EntProps.Props.TrySet("spoon_damage", spoonDamage.ToPri());
         InventoryComp.Entries.SetCount("sling_ammo", 0, 10);

@@ -37,7 +37,7 @@ public class SwTrigger : SwEntity, ISwEntity<SwTrigger>
     {
         if(!SwGame.TryGetEntProps(area.ParentId, out var pickupProps)) return;
         if(!pickupProps.Props.TryGet("on_enter_json", out PriNode command)) return;
-        if(pickupProps.Props.TryGet("is_command_global", out bool b) && b) SwApp.CommandStore.AddGlobalCommand(command);
+        if(pickupProps.Props.TryGet("is_command_global", out bool b) && b) SwApp.CommandStore.AddCommand(command);
         else
         {
             if(!SwGame.TryGetEntProps(body.ParentId, out var targetProps)) return;

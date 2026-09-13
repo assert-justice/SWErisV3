@@ -35,5 +35,10 @@
         "source": "tilesets/wall_tileset.png",
         "is_solid": true,
         "is_opaque": true
+    },
+    {
+        "name": "blocker",
+        "is_solid": true,
+        "is_opaque": true
     }
 ]

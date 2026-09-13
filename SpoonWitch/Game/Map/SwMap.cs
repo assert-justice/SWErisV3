@@ -3,8 +3,10 @@ using Eris.Renderer;
 using ErisMath;
 using ErisPhysics2D;
 using Prion.Node;
+using SpoonWitch.Command;
 using SpoonWitch.Game.Map.Foliage;
 using SpoonWitch.Game.Map.MapObject;
+using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Map;
 
@@ -24,6 +26,7 @@ public class SwMap
     public readonly ErVec2I SectorSizeTiles;
     public readonly ErVec2I SectorSizePx;
     private readonly SwMapObjectLookup GlobalMapObjects = new();
+    private readonly SwCommandHandler CommandHandler = new(SwApp.CommandStore);
     public readonly string Dirpath;
     private SwSector? LastSector;
     public SwMap(string dirpath = "", string id = "", int numTileLayers = 0, ErVec2I? tileSize = null, ErVec2I? sectorSizePx = null, SwTileData[]? tileData = null)
@@ -57,15 +60,25 @@ public class SwMap
             DebugDrawLine = debugDrawLine,
         };
         Foliage = new();
+        CommandHandler.AddHandler("map_set_tile_rect", HandleSetTileRect);
+        CommandHandler.AddHandler("map_fill_area", TryHandleFillArea);
+    }
+    private void HandleSetTileRect(PriNode command)
+    {
+        var pos = (ErVec2I)SwPrion.GetVec2(command);
+        var size = (ErVec2I)SwPrion.GetVec2(command, "w", "h");
+        int tileId = command.TryGet("tile_id", out int id) ? id : -1;
+        int layerIdx = command.TryGet("layer_idx", out id) ? id : NumTileLayers - 1;
+        ErRect2I rect = new(pos, size);
+        foreach (var coord in rect.GetInnerCoords())
+        {
+            SetTile(layerIdx, coord, tileId);
+        }
     }
     public void AddGlobalObject(SwMapObject mapObject)
     {
         GlobalMapObjects.AddObject(mapObject);
     }
-    // public SwTileData GetTileData(int tileId)
-    // {
-    //     return TileData[tileId];
-    // }
     private bool TryGetSector(out SwSector sector, ErVec2I tileCoord)
     {
         sector = null!;
@@ -109,6 +122,7 @@ public class SwMap
     }
     public void Update()
     {
+        CommandHandler.Dispatch();
         foreach (var item in GlobalMapObjects.GetObjects())
         {
             item.Update();
@@ -130,24 +144,24 @@ public class SwMap
             room.Draw();
         }
     }
-    private bool TryHandleFillArea(PriNode command)
+    private void TryHandleFillArea(PriNode command)
     {
-        if(!command.TryGet("area_id", out string area_id)) return ErEngine.LogWarning("missing area id");
-        if(!GlobalMapObjects.TryGetObject<SwMapArea>(area_id, out var area)) return ErEngine.LogWarning("no such area id ", area_id);
-        if(!command.TryGet("layer", out int layerIdx)) layerIdx = 0;
+        if(!command.TryGet("area_id", out string area_id))
+        {
+            ErEngine.LogWarning("missing area id");
+            return;
+        }
+        if(!GlobalMapObjects.TryGetObject<SwMapArea>(area_id, out var area))
+        {
+            ErEngine.LogWarning("no such area id ", area_id);
+            return;
+        }
+        if(!command.TryGet("layer_idx", out int layerIdx)) layerIdx = 0;
         layerIdx = NumTileLayers - 1 - layerIdx;
         if(!command.TryGet("tile_id", out int tile_id)) tile_id = -1;
         foreach (var coord in area.RectTiles.GetInnerCoords())
         {
             SetTile(layerIdx, coord, tile_id);
-        }
-        return true;
-    }
-    public void HandleCommands()
-    {
-        foreach (var item in SwApp.CommandStore.GetGlobalCommands("map_fill_area"))
-        {
-            TryHandleFillArea(item);
         }
     }
     public bool TryGetDefaultCheckpoint(out SwMapCheckpoint checkpoint)
@@ -201,16 +215,6 @@ public class SwMap
             item.Load();
         }
     }
-    // public void UnloadRoom(string roomId)
-    // {
-    //     if(!LoadedRooms.TryGetValue(roomId, out var room))
-    //     {
-    //         ErEngine.LogWarning("no room with id '", roomId, "' is loaded.");
-    //         return;
-    //     }
-    //     room.Unload();
-    //     LoadedRooms.Remove(roomId);
-    // }
     public static bool TryFromData(string filepath, PriNode data, SwTileData[] tileData, out SwMap map)
     {
         map = null!;

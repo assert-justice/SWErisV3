@@ -14,7 +14,16 @@ public class SwPlayerControls: SwComponent
     private ErVAxis2 AimAxis => Axis2s[1];
     public ErVec2 Move{get => MoveAxis.Vector;}
     public ErVec2 LnzMove{get; private set;} = ErVec2.Right;
-    public ErVec2 LastFacing{get; private set;} = ErVec2.Right;
+    private ErVec2 _LastFacing;
+    public ErVec2 LastFacing
+    {
+        get => _LastFacing;
+        set
+        {
+            _LastFacing = value;
+            LastFacingIdx = ErMath.RoundAngleToInt(LastFacing.GetAngle(), 4);
+        }
+    }
     public int LastFacingIdx{get; private set;}
     public ErVec2 Aim{get; private set;}
     public ErVec2 LnzAim{get; private set;} = ErVec2.Right;
@@ -39,6 +48,7 @@ public class SwPlayerControls: SwComponent
         }
         if(!ErInputProfile.TryGetAxes2(node, ["move", "aim"], out Axis2s)) return;
         if(!ErInputProfile.TryGetButtons(node, ["attack", "fire", "charge", "dodge"], out Buttons)) return;
+        LastFacing = ErVec2.Down;
     }
     public override void Read(SwByteStream byteStream)
     {
@@ -91,6 +101,5 @@ public class SwPlayerControls: SwComponent
             ReticleVisible = IsCharging || (Aim.IsNonzero() && reticle_always_visible_kb);
         }
         ReticleVisible = IsCharging || (Aim.IsNonzero() && reticle_always_visible_kb);
-        LastFacingIdx = ErMath.RoundAngleToInt(LastFacing.GetAngle(), 4);
     }
 }
