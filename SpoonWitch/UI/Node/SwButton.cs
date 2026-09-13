@@ -6,32 +6,52 @@ namespace SpoonWitch.UI.Node;
 
 public class SwButton : SwUiNode
 {
-    private readonly SwText Text;
-    public override ErVec2 MinSize => Text.MinSize;
+    private readonly SwText TextNode;
+    private string _Text = string.Empty;
+    private const char Sep = '-';
+    public string Text
+    {
+        get => _Text;
+        set
+        {
+            _Text = value;
+            if (HasFocus)
+            {
+                TextNode.Text = Sep + value + Sep;
+                TextNode.LocalPosition = ErVec2.Right * MinusWidth;
+            }
+            else
+            {
+                TextNode.Text = value;
+                TextNode.LocalPosition = ErVec2.Zero;
+            }
+        }
+    }
+    private readonly double MinusWidth;
+    public override ErVec2 MinSize => TextNode.MinSize;
     private ErColor DefaultColor = ErColor.Red;
     private ErColor FocusColor = ErColor.White;
     protected override bool CanFocusPro => true;
     private readonly PriNode Command = PriNull.Null;
     public SwButton(PriNode node) : base(node)
     {
-        Text = new(node);
-        AddChild(Text);
+        TextNode = new(node);
+        AddChild(TextNode);
+        MinusWidth = TextNode.Font?.GetStringSize("-").X ?? 0;
+        Text = TextNode.Text;
         Command = node.Get("on_click_command");
-    }
-    public override void SetPosition(ErVec2 position)
-    {
-        base.SetPosition(position);
-        Text.SetPosition(position);
     }
     public override void FocusBegin()
     {
         base.FocusBegin();
-        Text.FontColor = FocusColor;
+        TextNode.FontColor = FocusColor;
+        Text = _Text;
     }
     public override void FocusEnd()
     {
         base.FocusEnd();
-        Text.FontColor = DefaultColor;
+        TextNode.FontColor = DefaultColor;
+        Text = _Text;
     }
     public override void Confirm()
     {

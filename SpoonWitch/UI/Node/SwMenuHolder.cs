@@ -102,7 +102,7 @@ public class SwMenuHolder: SwUiNode
         if (MenuStack.Contains(menuId))
         {
             while(MenuStack.TryPop(out var id) && id != menuId){}
-            MenuStack.Push(menuId);
         }
+        MenuStack.Push(menuId);
     }
 }

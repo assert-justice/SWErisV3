@@ -9,11 +9,13 @@ public abstract class SwUiNode
     public readonly List<SwUiNode> Children = [];
     public SwUiNode? Parent{get; private set;}
     public virtual ErVec2 MinSize => ErVec2.Zero;
-    public ErVec2 Position{get; private set;}
+    public ErVec2 LocalPosition;
+    public ErVec2 GlobalPosition => (Parent?.GlobalPosition ?? ErVec2.Zero) + LocalPosition;
     public bool CanFocus => Visible && CanFocusPro;
     protected virtual bool CanFocusPro => false;
     private bool _Visible = true;
     public bool IsDirty{get; private set;}
+    public bool HasFocus{get; private set;}
     public bool Visible
     {
         get => _Visible;
@@ -35,12 +37,8 @@ public abstract class SwUiNode
     {
         _Visible = isVisible;
     }
-    public virtual void SetPosition(ErVec2 position)
-    {
-        Position = position;
-    }
-    public virtual void FocusBegin(){}
-    public virtual void FocusEnd(){}
+    public virtual void FocusBegin(){HasFocus = true;}
+    public virtual void FocusEnd(){HasFocus = false;}
     public virtual void Up(){}
     public virtual void Down(){}
     public virtual void Left(){}

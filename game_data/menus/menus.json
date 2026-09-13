@@ -12,13 +12,13 @@
                     "text": "Spoon Witch",
                     "text_justify": "centered",
                     "font_size": 24,
-                    "font_color": "white"
+                    "font_color": "#ffffff"
                 },
                 {
                     "type": "button",
                     "text": "New Game",
                     "font_size": 16,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
                     "on_click_command":{
                         "verb": "launch"
                     }
@@ -27,7 +27,8 @@
                     "type": "button",
                     "text": "Options",
                     "font_size": 16,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
+                    "visible": false,
                     "on_click_command":{
                         "verb": "menu_set",
                         "menu_id": "settings"
@@ -37,7 +38,7 @@
                     "type": "button",
                     "text": "Credits",
                     "font_size": 16,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
                     "on_click_command":{
                         "verb": "menu_set",
                         "menu_id": "credits"
@@ -47,7 +48,7 @@
                     "type": "button",
                     "text": "Quit",
                     "font_size": 16,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
                     "on_click_command":{
                         "verb": "quit"
                     }
@@ -65,19 +66,19 @@
                     "text": "Credits",
                     "text_justify": "centered",
                     "font_size": 24,
-                    "font_color": "white"
+                    "font_color": "#ffffff"
                 },
                 {
                     "type": "text",
                     "text": "Alexa - Writing\nGOLEM PINK - Music and Sfx\nJade Laidlaw/Starfishness - Art\nRiley/Etmm - Programming",
                     "font_size": 16,
-                    "font_color": "white"
+                    "font_color": "#ffffff"
                 },
                 {
                     "type": "button",
                     "text": "Back",
                     "font_size": 16,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
                     "on_click_command":{
                         "verb": "menu_back"
                     }
@@ -95,13 +96,13 @@
                     "text": "Options",
                     "text_justify": "centered",
                     "font_size": 24,
-                    "font_color": "white"
+                    "font_color": "#ffffff"
                 },
                 {
                     "type": "button",
                     "text": "Audio Settings",
                     "font_size": 16,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
                     "on_click_command":{
                         "verb": "menu_set",
                         "menu_id": "audio_settings"
@@ -111,7 +112,7 @@
                     "type": "button",
                     "text": "Game Settings",
                     "font_size": 16,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
                     "on_click_command":{
                         "verb": "menu_set",
                         "menu_id": "game_settings"
@@ -121,7 +122,7 @@
                     "type": "button",
                     "text": "Back",
                     "font_size": 16,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
                     "on_click_command":{
                         "verb": "menu_back"
                     }
@@ -142,14 +143,14 @@
                     "text": "Audio Settings",
                     "text_justify": "centered",
                     "font_size": 24,
-                    "font_color": "white"
+                    "font_color": "#ffffff"
                 },
                 {
                     "type": "slider",
                     "mode": "percent",
                     "text": "Main Volume",
                     "font_size": 24,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
                     "setting_name": "volume/main",
                     "step_size": 5,
                     "min_value": 0,
@@ -160,7 +161,7 @@
                     "mode": "percent",
                     "text": "Music Volume",
                     "font_size": 24,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
                     "setting_name": "volume/music",
                     "step_size": 5,
                     "min_value": 0,
@@ -171,7 +172,7 @@
                     "mode": "percent",
                     "text": "Sfx Volume",
                     "font_size": 24,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
                     "setting_name": "volume/sfx",
                     "step_size": 5,
                     "min_value": 0,
@@ -181,7 +182,7 @@
                     "type": "button",
                     "text": "Back",
                     "font_size": 16,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
                     "on_click_command":{
                         "verb": "menu_back"
                     }
@@ -202,14 +203,14 @@
                     "text": "Game Settings",
                     "text_justify": "centered",
                     "font_size": 24,
-                    "font_color": "white"
+                    "font_color": "#ffffff"
                 },
                 {
                     "type": "slider",
                     "mode": "percent",
                     "text": "Damage Dealt",
                     "font_size": 24,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
                     "setting_name": "gameplay/damage_dealt",
                     "step_size": 5,
                     "min_value": 0,
@@ -220,7 +221,7 @@
                     "mode": "percent",
                     "text": "Damage Received",
                     "font_size": 24,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
                     "setting_name": "gameplay/damage_received",
                     "step_size": 5,
                     "min_value": 0,
@@ -231,7 +232,7 @@
                     "mode": "percent",
                     "text": "Game Speed",
                     "font_size": 24,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
                     "setting_name": "gameplay/game_speed",
                     "step_size": 5,
                     "min_value": 0,
@@ -241,21 +242,21 @@
                     "type": "toggle",
                     "text": "Keyboard Aiming",
                     "font_size": 24,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
                     "setting_name": "kbm/kb_aiming"
                 },
                 {
                     "type": "toggle",
                     "text": "Auto Charge",
                     "font_size": 24,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
                     "setting_name": "gamepad/auto_charge"
                 },
                 {
                     "type": "button",
                     "text": "Back",
                     "font_size": 16,
-                    "font_color": "white",
+                    "font_color": "#ffffff",
                     "on_click_command":{
                         "verb": "menu_back"
                     }

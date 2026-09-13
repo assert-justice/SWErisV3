@@ -23,10 +23,11 @@ public class SwMenu: SwUiNode
         if (!isVisible) return;
         // position children
         FocusableNodes.Clear();
-        var pos = Position;
+        var pos = LocalPosition;
         foreach (var item in Children)
         {
-            item.SetPosition(pos);
+            if(!item.Visible) continue;
+            item.LocalPosition = pos;
             pos += new ErVec2(0, item.MinSize.Y);
             if(item.CanFocus) FocusableNodes.Add(item);
         }
