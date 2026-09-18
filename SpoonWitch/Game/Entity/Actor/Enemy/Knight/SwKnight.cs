@@ -8,14 +8,8 @@ using SpoonWitch.Game.Map.Collision;
 
 namespace SpoonWitch.Game.Entity.Actor.Enemy.Knight;
 
-public class SwKnight : SwEnemy, ISwEntity<SwKnight>
+public class SwKnight : SwEnemy
 {
-    public static byte TypeId => 2;
-    private static SwKnight? _Primary;
-    private static SwKnight? _Secondary;
-    public static SwKnight Primary => _Primary ??= new();
-    public static SwKnight Secondary => _Secondary ??= new();
-    protected override byte GetTypeId => TypeId;
     private readonly SwStateMachine StateMachine;
     public double WanderSpeedMul = 0.25;
     public double TimeoutClock;

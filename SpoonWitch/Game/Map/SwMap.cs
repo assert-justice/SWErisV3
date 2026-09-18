@@ -95,6 +95,7 @@ public class SwMap
             if(!SectorLookup.TryGetValue(sectorCoord, out sector!)) return false;
             else LastSector = sector;
         }
+        else sector = LastSector;
         return true;
     }
     private SwSector GetSector(ErVec2I tileCoord)
@@ -105,6 +106,7 @@ public class SwMap
             if(!SectorLookup.TryGetValue(sectorCoord, out var sector))
             {
                 sector = new(sectorCoord, SectorSizeTiles, NumTileLayers);
+                SectorLookup[sectorCoord] = sector;
             }
             LastSector = sector;
         }
@@ -114,6 +116,11 @@ public class SwMap
     {
         if(!TryGetSector(out var sector, tileCoord)) return -1;
         return sector.GetTile(layerIdx, tileCoord);
+    }
+    public int GetTopTile(ErVec2I tileCoord)
+    {
+        if(!TryGetSector(out var sector, tileCoord)) return -1;
+        return sector.GetTopTile(tileCoord);
     }
     public void SetTile(int layerIdx, ErVec2I tileCoord, int tileId)
     {

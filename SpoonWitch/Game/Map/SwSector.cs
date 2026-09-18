@@ -66,6 +66,11 @@ public class SwSector
             int tileId = GetTilePriv(layerIdx, tileCoord);
             if(tileId >= 0) return tileId;
         }
+        // for (int layerIdx = 0; layerIdx < Layers.Length; layerIdx++)
+        // {
+        //     int tileId = GetTilePriv(layerIdx, tileCoord);
+        //     if(tileId >= 0) return tileId;
+        // }
         return -1;
     }
     public IEnumerable<(int layerIdx, ErVec2I tileCoord, int tileId)> GetTiles()

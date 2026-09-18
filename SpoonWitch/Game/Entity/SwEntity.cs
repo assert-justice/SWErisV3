@@ -14,30 +14,18 @@ public abstract class SwEntity
 {
     private readonly Dictionary<(Type,string), SwComponent> ComponentLookup = [];
     private readonly List<SwComponent> Components = [];
-    // public SwEntPropsBase EntProps{get; private set;} = null!;
     public PriDb Props{get; private set;} = new();
     public virtual int RenderLayer => 1;
-    abstract protected byte GetTypeId{get;}
     private int _Id;
     public int Id => _Id;
-    // private int _CurrentHeadIndex = -1;
-    // public int CurrentHeadIndex{get => _CurrentHeadIndex;}
-    // private int _LastHeadIndex = -1;
-    // public int LastHeadIndex{get => _LastHeadIndex;}
     public ErVec2 Position;
-    // public ErVec2 Velocity;
     public bool Visible = true;
-    // public virtual ErVec2 Size => new(32,32);
-    // public virtual uint Mask => 0;
     public bool IsFreeQueued{get; private set;}
     protected virtual int NumClocks => 0;
     protected readonly double[] Clocks;
     private readonly Queue<PriNode> CommandQueue = [];
     private readonly Dictionary<string,Action<PriNode>> Handlers = [];
     private readonly Dictionary<string,Action<PriNode>> GlobalHandlers = [];
-    // private bool WasBodyEnabled = false;
-    // public bool BodyEnabled = true;
-    // private readonly SwColliderBody Body = new();
     public SwEntity()
     {
         _Id = SwApp.GetNextId();

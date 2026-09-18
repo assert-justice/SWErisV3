@@ -1,22 +1,15 @@
 using Eris;
 using Eris.Renderer;
 using ErisMath;
-using ErisPhysics2D.Collider;
 using Prion.Node;
 using SpoonWitch.Game.Entity.Component;
-using SpoonWitch.Game.Map.Collision;
 
 namespace SpoonWitch.Game.Entity.Projectile;
 
-public class SwProjectile : SwEntity, ISwEntity<SwProjectile>
+public class SwProjectile : SwEntity
 {
-    public static byte TypeId => 3;
-    private static SwProjectile? _Primary;
-    private static SwProjectile? _Secondary;
-    public static SwProjectile Primary => _Primary ??= new();
-    public static SwProjectile Secondary => _Secondary ??= new();
-    protected override byte GetTypeId => TypeId;
     private readonly ErTexture Texture;
+    private uint CollisionMask = 0;
     public ErVec2 Velocity;
     public SwProjectile()
     {
@@ -30,14 +23,17 @@ public class SwProjectile : SwEntity, ISwEntity<SwProjectile>
         Props.TryGet("x_velocity", out double xVel);
         Props.TryGet("y_velocity", out double yVel);
         Velocity = new(xVel, yVel);
+        if(Props.TryGet("collision_mask", out uint i)) CollisionMask = i;
     }
     public override void Update()
     {
         base.Update();
+        Position += Velocity * SwGame.DeltaTime;
         var tileCoord = SwGame.Map.PhysicsWorld.PointToTileCoord(Position);
-        var tileId = SwGame.Map.PhysicsWorld.GetTile(tileCoord);
+        int tileId = SwGame.Map.GetTopTile(tileCoord);
+        if(tileId < 0) return;
         var tileData = SwGame.TileData[tileId];
-        if(tileData.IsOpaque) QueueFree();
+        if((tileData.CollisionMask & CollisionMask) != 0) QueueFree();
     }
     protected override void DrawImpl(SwEntity nextState)
     {
@@ -47,8 +43,6 @@ public class SwProjectile : SwEntity, ISwEntity<SwProjectile>
     }
     private void OnEnterHurtbox(SwEntity entity)
     {
-        // if(!SwGame.TryGetEntProps(area.ParentId, out var myProps)) return;
-        // if(!SwGame.TryGetEntProps(body.ParentId, out var targetProps)) return;
         if(!Props.TryGet("damage", out PriNode damage)) return;
         entity.AddCommand(damage);
     }

@@ -9,19 +9,10 @@ using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Entity;
 
-public class SwPickup : SwEntity, ISwEntity<SwPickup>
+public class SwPickup : SwEntity
 {
-    public static byte TypeId => 5;
-    // public override uint Mask => 0;
-    private static SwPickup? _Primary;
-    private static SwPickup? _Secondary;
-    public static SwPickup Primary => _Primary ??= new();
-    public static SwPickup Secondary => _Secondary ??= new();
-    protected override byte GetTypeId => TypeId;
     private readonly SwAreaComponent Area;
     private ErTexture? Texture;
-    // private readonly List<ErTexture> Textures = [];
-    // private readonly Dictionary<string,int> TextureLookup = [];
     public SwPickup()
     {
         Area = new(this, "area", 2, new(32, 32), enabled: true, onBodyEnter: OnEnter);
@@ -40,13 +31,6 @@ public class SwPickup : SwEntity, ISwEntity<SwPickup>
         // Todo: obviously don't hardcode this
         string texture_filepath = "game_data/entities/actors/player/images/bella_sling_ammo_pickup.png";
         if(!ErTexture.TryFromPath(texture_filepath, out Texture)) return;
-        // if(!TextureLookup.TryGetValue(texture_filepath, out int texId))
-        // {
-        //     texId = Textures.Count;
-        //     Textures.Add(texture);
-        //     TextureLookup[texture_filepath] = texId;
-        // }
-        // Props.TrySet("tex_id", texId);
         var size = SwPrion.GetVec2(Props.Data, "width_px", "height_px");
         Area.Size = size;
         if(Props.TryGet("mask", out uint mask)) Area.Mask = mask;
@@ -54,9 +38,7 @@ public class SwPickup : SwEntity, ISwEntity<SwPickup>
     protected override void DrawImpl(SwEntity nextState)
     {
         base.DrawImpl(nextState);
-        // if(!SwGame.TryGetEntProps(Id, out var entProps)) return;
         if(!Props.TryGet("count", out int count)) return;
-        // if(!entProps.Props.TryGet("tex_id", out int texId)) return;
         if(Texture is null) return;
         var center = Texture.Size * 0.5;
         for (int idx = 0; idx < count; idx++)

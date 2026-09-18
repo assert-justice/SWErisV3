@@ -14,15 +14,8 @@ using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Entity.Actor.Player;
 
-public class SwPlayer: SwActor, ISwEntity<SwPlayer>
+public class SwPlayer: SwActor
 {
-    private static SwPlayer? _Primary;
-    private static SwPlayer? _Secondary;
-    public static SwPlayer Primary => _Primary ??= new();
-    public static SwPlayer Secondary => _Secondary ??= new();
-    public override int RenderLayer => 2;
-    public static byte TypeId => 0;
-    protected override byte GetTypeId => TypeId;
     public override uint Mask => (uint)(IsAlive ? 3 : 0);
     public double ChargeTime => 1;
     public double ChargeSpeedMul => 0.5;
@@ -88,6 +81,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         InventoryComp.Entries.SetCount("sling_ammo", 0, 10);
         SwDamage slingDamage = new([(SwDamageType.Untyped,10)]);
         Props.TrySet("bullet/damage", slingDamage.ToPri());
+        Props.TrySet("bullet/collision_mask", 3);
     }
     public override void Update()
     {

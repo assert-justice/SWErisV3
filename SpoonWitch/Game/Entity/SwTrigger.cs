@@ -5,14 +5,8 @@ using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Entity;
 
-public class SwTrigger : SwEntity, ISwEntity<SwTrigger>
+public class SwTrigger : SwEntity
 {
-    public static byte TypeId => 4;
-    private static SwTrigger? _Primary;
-    private static SwTrigger? _Secondary;
-    public static SwTrigger Primary => _Primary ??= new();
-    public static SwTrigger Secondary => _Secondary ??= new();
-    protected override byte GetTypeId => TypeId;
     private readonly SwAreaComponent Area;
     public SwTrigger()
     {

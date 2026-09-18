@@ -334,12 +334,12 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         private void Fire()
         {
             var pos = Entity.Position;
-            PriDict bullet = [];
+            var b = Entity.Props.Get("bullet").DeepCopy();
+            if(!b.TryAs(out PriDict bullet)) throw new("fuck off");
             bullet.TrySet("x", pos.X);
             bullet.TrySet("y", pos.Y);
             bullet.TrySet("x_velocity", Controls.Aim.X * Entity.BulletSpeed);
             bullet.TrySet("y_velocity", Controls.Aim.Y * Entity.BulletSpeed);
-            bullet.TrySet("damage", Entity.Props.Get("bullet/damage"));
             SwProjectile projectile = new();
             projectile.SetProps(bullet);
             SwGame.Game.AddEntity(projectile);

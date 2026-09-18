@@ -9,15 +9,8 @@ using SpoonWitch.Game.Map.Collision;
 
 namespace SpoonWitch.Game.Entity.Actor.Enemy.Slume;
 
-public class SwSlume : SwEnemy, ISwEntity<SwSlume>
+public class SwSlume : SwEnemy
 {
-    public static byte TypeId => 1;
-    private static SwSlume? _Primary;
-    private static SwSlume? _Secondary;
-    public static SwSlume Primary => _Primary ??= new();
-    public static SwSlume Secondary => _Secondary ??= new();
-    protected override byte GetTypeId => TypeId;
-    // public override ErVec2 Size => new(16,16);
     public ErVec2 HurtboxSize = new(20, 20);
     public double TimeoutClock;
     private readonly SwStateMachine StateMachine;
