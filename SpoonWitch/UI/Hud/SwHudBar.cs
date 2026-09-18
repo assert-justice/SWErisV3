@@ -24,12 +24,14 @@ public class SwHudBar
         get => _Value;
         set
         {
+            value = Math.Clamp(value, 0, MaxValue);
             if(value < _Value) BgValue = _Value;
             _Value = value;
         }
     }
     private double BgValue = 100;
     public double BgUpdateSpeed = 50;
+    // public double Regen = 0;
     public double HScale = 1;
     private SwHudBar(ErVec2 offset, string dirpath, string name, PriNode node)
     {
@@ -59,6 +61,7 @@ public class SwHudBar
     }
     public void Update()
     {
+        // Value = Math.Clamp(Value + Regen * SwGame.DeltaTime, 0, MaxValue);
         if(BgValue > Value) BgValue -= BgUpdateSpeed * SwGame.DeltaTime;
     }
     public void Draw()

@@ -277,6 +277,7 @@ public class SwGame
         FadeIn();
         SwPlayer player = new();
         player.SetProps(new PriDict());
+        Hud.Player = player;
         AddEntity(player);
         if(!Map.TryGetDefaultCheckpoint(out var checkpoint))
         {

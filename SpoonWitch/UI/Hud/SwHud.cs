@@ -2,6 +2,7 @@ using Eris;
 using Eris.Renderer;
 using ErisMath;
 using Prion.Node;
+using SpoonWitch.Game.Entity.Actor.Player;
 
 namespace SpoonWitch.UI.Hud;
 
@@ -14,7 +15,8 @@ public class SwHud
     public readonly SwHudBar ManaBar;
     public readonly SwHudBar StaminaBar;
     private readonly ErVec2 Offset;
-    private readonly List<SwHudSprite> RootSlots = [];
+    private readonly SwHudSlots RootSlots;
+    public SwPlayer? Player;
     // private readonly List<SwHudSprite> AmmoSlots = [];
     private readonly SwHudSlots AmmoSlots;
     private SwHud(ErVec2 offset)
@@ -30,22 +32,31 @@ public class SwHud
         if(!SwHudBar.TryLoad(offset, dirpath, "health", node, out HealthBar)) throw new("no health bar");
         if(!SwHudBar.TryLoad(offset, dirpath, "mana", node, out ManaBar)) throw new("no mana bar");
         if(!SwHudBar.TryLoad(offset, dirpath, "stamina", node, out StaminaBar)) throw new("no stamina bar");
-        if(!SwHudSprite.TryLoadList(dirpath, node.Get("roots"), RootSlots)) throw new("no roots");
+        // if(!SwHudSprite.TryLoadList(dirpath, node.Get("roots"), RootSlots)) throw new("no roots");
         if(!SwHudSlots.TryLoad(out AmmoSlots, dirpath, node.Get("ammo"))) throw new("no ammo");
+        if(!SwHudSlots.TryLoad(out RootSlots, dirpath, node.Get("roots"))) throw new("no roots");
     }
     public void Update()
     {
-        foreach (var item in SwApp.CommandStore.GetCommands("hud_set"))
-        {
-            TryHandleSet(item);
-        }
+        if(Player is null) return;
+        // foreach (var item in SwApp.CommandStore.GetCommands("hud_set"))
+        // {
+        //     TryHandleSet(item);
+        // }
+        HealthBar.MaxValue = Player.MaxHealth;
+        HealthBar.Value = Player.Health;
         HealthBar.Update();
-        ManaBar.Update();
+        StaminaBar.MaxValue = Player.MaxStamina;
+        StaminaBar.Value = Player.Stamina;
         StaminaBar.Update();
-        foreach (var item in RootSlots)
-        {
-            item.Update();
-        }
+        ManaBar.MaxValue = Player.MaxMana;
+        ManaBar.Value = Player.Mana;
+        ManaBar.Update();
+        RootSlots.MaxValue = Player.MaxRoots;
+        RootSlots.Value = Player.Roots;
+        RootSlots.Update();
+        AmmoSlots.MaxValue = Player.MaxAmmo;
+        AmmoSlots.Value = Player.Ammo;
         AmmoSlots.Update();
     }
     private bool TryHandleSet(PriNode node)
@@ -58,8 +69,32 @@ public class SwHud
             case "health":
                 HealthBar.Value = value;
                 break;
+            case "health_max":
+                HealthBar.MaxValue = value;
+                break;
+            case "stamina":
+                StaminaBar.Value = value;
+                break;
+            case "stamina_max":
+                StaminaBar.MaxValue = value;
+                break;
+            case "mana":
+                ManaBar.Value = value;
+                break;
+            case "mana_max":
+                ManaBar.MaxValue = value;
+                break;
             case "sling_ammo":
                 AmmoSlots.Value = (int)value;
+                break;
+            case "sling_ammo_max":
+                AmmoSlots.MaxValue = (int)value;
+                break;
+            case "roots":
+                AmmoSlots.Value = (int)value;
+                break;
+            case "roots_max":
+                AmmoSlots.MaxValue = (int)value;
                 break;
             default:
                 return ErEngine.LogWarning("invalid hud key '", key, "'");
@@ -73,10 +108,7 @@ public class SwHud
         HealthBar.Draw();
         ManaBar.Draw();
         StaminaBar.Draw();
-        foreach (var item in RootSlots)
-        {
-            item.Draw();
-        }
+        RootSlots.Draw();
         AmmoSlots.Draw();
     }
     public static bool TryLoad(ErVec2 offset, out SwHud hud)
