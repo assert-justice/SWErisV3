@@ -1,7 +1,9 @@
 using Eris;
 using ErisMath;
+using ErisPhysics2D.Collider;
 using Prion.Node;
 using SpoonWitch.ByteStream;
+using SpoonWitch.Game.Map.Collision;
 
 namespace SpoonWitch.Game.Entity.Actor;
 
@@ -27,29 +29,40 @@ public abstract class SwActor: SwEntity
         get => _IsAlive; 
         set => _IsAlive = value;
     }
+    public ErVec2 Velocity;
+    // {
+    //     get => Body.Velocity;
+    //     set => Body.Velocity = value;
+    // }
+    public ErVec2 Size = new (32, 32);
+    public virtual uint Mask => 0;
+
     protected override int NumClocks => base.NumClocks + 4;
+    private readonly SwColliderBody Body;
     public SwActor()
     {
         AddHandler("damage", DamageHandler);
+        Body = new();
     }
     public override void Ready()
     {
         base.Ready();
         Health = MaxHealth;
         _IsAlive = true;
+        Body.ParentId = Id;
     }
-    public override void Read(SwByteStream byteStream)
-    {
-        base.Read(byteStream);
-        if(!byteStream.TryReadF64(out Health)) throw new($"no health for {GetType()}");
-        if(!byteStream.TryReadBool(out _IsAlive))  throw new("no is alive clock");
-    }
-    public override void Write(SwByteStream byteStream)
-    {
-        base.Write(byteStream);
-        byteStream.WriteF64(Health);
-        byteStream.WriteBool(_IsAlive);
-    }
+    // public override void Read(SwByteStream byteStream)
+    // {
+    //     base.Read(byteStream);
+    //     if(!byteStream.TryReadF64(out Health)) throw new($"no health for {GetType()}");
+    //     if(!byteStream.TryReadBool(out _IsAlive))  throw new("no is alive clock");
+    // }
+    // public override void Write(SwByteStream byteStream)
+    // {
+    //     base.Write(byteStream);
+    //     byteStream.WriteF64(Health);
+    //     byteStream.WriteBool(_IsAlive);
+    // }
     private void HandleFlicker()
     {
         if(FlickerClock <= 0) return;
@@ -69,6 +82,14 @@ public abstract class SwActor: SwEntity
         if(InvulnClock > 0)InvulnClock -= SwGame.DeltaTime;
         if(KnockbackClock > 0)KnockbackClock -= SwGame.DeltaTime;
         HandleFlicker();
+        Body.Mask = Mask;
+        Body.Rect = ErRect2.Centered(Position, Size);
+        // Body.Size = Size;
+        // Body.Position = Position;
+        Body.Velocity = Velocity;
+        SwGame.Map.PhysicsWorld.MoveAndSlide(SwGame.DeltaTime, Id, Body);
+        Position = Body.Rect.Center;
+        Velocity = Body.Velocity;
     }
     private string GetTypeName()
     {

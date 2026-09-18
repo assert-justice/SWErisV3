@@ -15,6 +15,7 @@ using SpoonWitch.Game.Map;
 using SpoonWitch.Game.Map.MapObject;
 using SpoonWitch.Rendering;
 using SpoonWitch.UI.Hud;
+using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game;
 
@@ -25,8 +26,8 @@ public class SwGame
     // The factor to blend between the last state and the next state with
     public static double FrameWeight{get; private set;}
     private static ErTexture[] RenderTextures = [];
-    public static readonly Dictionary<int, SwParticles2D> ParticleEmitters = [];
-    public static readonly Dictionary<int, SwInventory> InventoryLookup = [];
+    // public static readonly Dictionary<int, SwParticles2D> ParticleEmitters = [];
+    // public static readonly Dictionary<int, SwInventory> InventoryLookup = [];
     public static SwMapCheckpoint ActiveCheckpoint{get; private set;} = null!;
     public static double GameSpeed => SwApp.IsPaused ? 0 : 1;
     private static int _RenderLayer;
@@ -41,13 +42,16 @@ public class SwGame
             ErEngine.Renderer.PushViewport(Camera.DrawPos, RenderTextures[value]);
         }
     }
-    private static readonly SwEntPropsLookup PropsLookup = new();
+    // private static readonly SwEntPropsLookup PropsLookup = new();
     private SwMap? _Map = null;
     public static SwMap Map => Game._Map!;
-    private readonly Dictionary<byte, (SwEntity,SwEntity)> Prototypes = [];
-    private SwByteStream LastStream = new();
-    private SwByteStream NextStream = new();
-    private readonly SwByteStream NewEntities = new();
+    // private readonly Dictionary<byte, (SwEntity,SwEntity)> Prototypes = [];
+    public readonly SwLookup EntityLookup = new();
+    // private SwByteStream LastStream = new();
+    // private SwByteStream NextStream = new();
+    // private readonly SwByteStream NewEntities = new();
+    private readonly Queue<SwEntity> NewEntities = [];
+    private readonly Queue<SwEntity> FreedEntities = [];
     private SwRoom? CurrentRoom;
     private readonly SwHud Hud;
     public double FadeState = 0;
@@ -66,8 +70,8 @@ public class SwGame
         _Map = null;
         FrameWeight = 0;
         RenderTextures = [];
-        ParticleEmitters.Clear();
-        InventoryLookup.Clear();
+        // ParticleEmitters.Clear();
+        // InventoryLookup.Clear();
         CurrentRoom = null;
         Game = null!;
         TileData = null!;
@@ -138,25 +142,25 @@ public class SwGame
         }
         AttachHandlers();
     }
-    public static bool TryGetEntProps(int id, out SwEntPropsBase entProps)
-    {
-        return PropsLookup.TryGet(id, out entProps);
-    }
-    public static void PatchEnt(int head, ErVec2 position, ErVec2 velocity)
-    {
-        Game.NextStream.SetHead(head);
-        Game.NextStream.WriteVec2(position);
-        Game.NextStream.WriteVec2(velocity);
-    }
-    private bool TryReadEnt(SwByteStream bs, out SwEntity primary)
-    {
-        primary = default!;
-        if(!bs.TryPeekByte(out byte typeId)) return false;
-        if(!TryGetPrototype(typeId, out var pair)) return false;
-        primary = pair.Item1;
-        primary.Read(bs);
-        return true;
-    }
+    // public static bool TryGetEntProps(int id, out SwEntPropsBase entProps)
+    // {
+    //     return PropsLookup.TryGet(id, out entProps);
+    // }
+    // public static void PatchEnt(int head, ErVec2 position, ErVec2 velocity)
+    // {
+    //     Game.NextStream.SetHead(head);
+    //     Game.NextStream.WriteVec2(position);
+    //     Game.NextStream.WriteVec2(velocity);
+    // }
+    // private bool TryReadEnt(SwByteStream bs, out SwEntity primary)
+    // {
+    //     primary = default!;
+    //     if(!bs.TryPeekByte(out byte typeId)) return false;
+    //     if(!TryGetPrototype(typeId, out var pair)) return false;
+    //     primary = pair.Item1;
+    //     primary.Read(bs);
+    //     return true;
+    // }
     public void Update()
     {
         HandleFade();
@@ -164,25 +168,44 @@ public class SwGame
         HandleRooms();
         CommandHandler.Dispatch();
         Camera.Update();
-        (LastStream,NextStream) = (NextStream,LastStream);
-        LastStream.Reset();
-        NextStream.Clear();
-        while(TryReadEnt(LastStream, out var entity))
+        // Note, all queued entities are added before ready is called
+        foreach (var entity in NewEntities)
         {
-            entity.Update();
-            if(!entity.IsFreeQueued) entity.Write(NextStream);
-            else
-            {
-                PropsLookup.RemoveEntProps(entity);
-                entity.GameCleanup();
-            }
+            EntityLookup.TryAdd(entity.Id.ToString(), entity);
         }
-        if(NewEntities.Head > 0)
+        while(NewEntities.TryDequeue(out var entity))
         {
-            NewEntities.Reset();
-            NextStream.Extend(NewEntities);
-            NewEntities.Clear();
+            entity.Ready();
         }
+        foreach (var item in EntityLookup.GetAllValues<SwEntity>())
+        {
+            item.Update();
+            if(item.IsFreeQueued) FreedEntities.Enqueue(item);
+        }
+        while(FreedEntities.TryDequeue(out var entity))
+        {
+            entity.GameCleanup();
+            EntityLookup.Remove(entity.Id.ToString());
+        }
+        // (LastStream,NextStream) = (NextStream,LastStream);
+        // LastStream.Reset();
+        // NextStream.Clear();
+        // while(TryReadEnt(LastStream, out var entity))
+        // {
+        //     entity.Update();
+        //     if(!entity.IsFreeQueued) entity.Write(NextStream);
+        //     else
+        //     {
+        //         PropsLookup.RemoveEntProps(entity);
+        //         entity.GameCleanup();
+        //     }
+        // }
+        // if(NewEntities.Head > 0)
+        // {
+        //     NewEntities.Reset();
+        //     NextStream.Extend(NewEntities);
+        //     NewEntities.Clear();
+        // }
         Map.PhysicsWorld.Update(DeltaTime);
         Hud.Update();
     }
@@ -235,10 +258,14 @@ public class SwGame
             case "none":
                 break;
             case "slume":
-                AddEntity<SwSlume>(command);
+                var slume = new SwSlume();
+                slume.SetProps(command);
+                AddEntity(slume);
                 break;
             case "knight":
-                AddEntity<SwKnight>(command);
+                SwKnight knight = new();
+                knight.SetProps(command);
+                AddEntity(knight);
                 break;
             default:
                 ErEngine.LogWarning("tried to spawn unknown entity type '", entityType, "'");
@@ -248,7 +275,9 @@ public class SwGame
     public void Launch()
     {
         FadeIn();
-        AddEntity<SwPlayer>();
+        SwPlayer player = new();
+        player.SetProps(new PriDict());
+        AddEntity(player);
         if(!Map.TryGetDefaultCheckpoint(out var checkpoint))
         {
             ErEngine.LogWarning("no default checkpoint found");
@@ -265,13 +294,13 @@ public class SwGame
         else if(verb == "game_fade_out") FadeOut();
         else throw new("should be unreachable");
     }
-    private void RespawnPlayer(PriNode command)
-    {
-        ErEngine.Log(command);
-    }
+    // private void RespawnPlayer(PriNode command)
+    // {
+    //     ErEngine.Log(command);
+    // }
     private void AttachHandlers()
     {
-        CommandHandler.AddHandler("game_respawn_player", RespawnPlayer);
+        // CommandHandler.AddHandler("game_respawn_player", RespawnPlayer);
         CommandHandler.AddHandler("game_spawn_entity", SpawnEnt);
         CommandHandler.AddHandler("game_fade_in", HandleFadeCommand);
         CommandHandler.AddHandler("game_fade_out", HandleFadeCommand);
@@ -288,7 +317,6 @@ public class SwGame
         {
             Camera.UseBounds = true;
             Camera.SetBounds(room.RectPx);
-            // if(CurrentRoom is null) Camera.SnapToPosition(PlayerPos);
             CurrentRoom = room;
         }
     }
@@ -310,24 +338,28 @@ public class SwGame
             Map.PhysicsWorld.DebugDrawAreas();
         }
         ErEngine.Renderer.FlushDebug();
-        LastStream.Reset();
-        NextStream.Reset();
-        while(NextStream.BytesRemaining() > 0)
+        foreach (var entity in EntityLookup.GetAllValues<SwEntity>())
         {
-            NextStream.TryPeekByte(out byte typeId);
-            if(!TryGetPrototype(typeId, out var pair)) continue;
-            var (lastEnt, nextEnt) = pair;
-            nextEnt.Read(NextStream);
-            if(nextEnt.LastHeadIndex < 0) continue;
-            LastStream.SetHead(nextEnt.LastHeadIndex);
-            if(!LastStream.TryPeekByte(out _))
-            {
-                ErEngine.LogWarning("ent ", nextEnt.Id, " of type ", nextEnt.GetType(), " could not be read");
-                continue;
-            }
-            lastEnt.Read(LastStream);
-            lastEnt.Draw(nextEnt);
+            entity.Draw(entity);
         }
+        // LastStream.Reset();
+        // NextStream.Reset();
+        // while(NextStream.BytesRemaining() > 0)
+        // {
+        //     NextStream.TryPeekByte(out byte typeId);
+        //     if(!TryGetPrototype(typeId, out var pair)) continue;
+        //     var (lastEnt, nextEnt) = pair;
+        //     nextEnt.Read(NextStream);
+        //     if(nextEnt.LastHeadIndex < 0) continue;
+        //     LastStream.SetHead(nextEnt.LastHeadIndex);
+        //     if(!LastStream.TryPeekByte(out _))
+        //     {
+        //         ErEngine.LogWarning("ent ", nextEnt.Id, " of type ", nextEnt.GetType(), " could not be read");
+        //         continue;
+        //     }
+        //     lastEnt.Read(LastStream);
+        //     lastEnt.Draw(nextEnt);
+        // }
         ErEngine.Renderer.PopViewport();
         for (int idx = 0; idx < RenderTextures.Length; idx++)
         {
@@ -339,37 +371,42 @@ public class SwGame
         ErRect2 rect = new(0, SwApp.HUD_HEIGHT, SwApp.INTERNAL_WIDTH, SwApp.INTERNAL_HEIGHT);
         if(FadeState > 0) ErEngine.Renderer.DrawRect(rect, ErColor.Black, ErMath.Ease(FadeState, 1));
     }
-    private bool TryGetPrototype(byte typeId, out (SwEntity, SwEntity) pair)
+    public void AddEntity(SwEntity entity)
     {
-        if(!Prototypes.TryGetValue(typeId, out pair)) return ErEngine.LogError("Unregistered type id '", typeId, "'.");
-        return true;
+        NewEntities.Enqueue(entity);
+        // EntityLookup.TryAdd(entity.Id.ToString(), entity);
     }
-    private (T,T) GetPrototype<T>() where T: SwEntity, ISwEntity<T>
-    {
-        if(!Prototypes.TryGetValue(T.TypeId, out var pair))
-        {
-            pair = (T.Primary,T.Secondary);
-            Prototypes.Add(T.TypeId, pair);
-        }
-        var (p,s) = pair;
-        if(p is not T primary) throw new("should be unreachable");
-        if(s is not T secondary) throw new("should be unreachable");
-        return (primary,secondary);
-    }
-    public void AddEntity<T>()where T: SwEntity, ISwEntity<T>
-    {
-        AddEntityInternal<T>(new());
-    }
-    public void AddEntity<T>(PriNode entData) where T: SwEntity, ISwEntity<T>
-    {
-        AddEntityInternal<T>(new(entData));
-    }
-    private void AddEntityInternal<T>(SwEntProps<T> entProps) where T: SwEntity, ISwEntity<T>
-    {
-        GetPrototype<T>();
-        PropsLookup.AddEntProps(entProps);
-        entProps.Init(NewEntities);
-    }
+    // private bool TryGetPrototype(byte typeId, out (SwEntity, SwEntity) pair)
+    // {
+    //     if(!Prototypes.TryGetValue(typeId, out pair)) return ErEngine.LogError("Unregistered type id '", typeId, "'.");
+    //     return true;
+    // }
+    // private (T,T) GetPrototype<T>() where T: SwEntity, ISwEntity<T>
+    // {
+    //     if(!Prototypes.TryGetValue(T.TypeId, out var pair))
+    //     {
+    //         pair = (T.Primary,T.Secondary);
+    //         Prototypes.Add(T.TypeId, pair);
+    //     }
+    //     var (p,s) = pair;
+    //     if(p is not T primary) throw new("should be unreachable");
+    //     if(s is not T secondary) throw new("should be unreachable");
+    //     return (primary,secondary);
+    // }
+    // public void AddEntity<T>()where T: SwEntity, ISwEntity<T>
+    // {
+    //     AddEntityInternal<T>(new());
+    // }
+    // public void AddEntity<T>(PriNode entData) where T: SwEntity, ISwEntity<T>
+    // {
+    //     AddEntityInternal<T>(new(entData));
+    // }
+    // private void AddEntityInternal<T>(SwEntProps<T> entProps) where T: SwEntity, ISwEntity<T>
+    // {
+    //     GetPrototype<T>();
+    //     PropsLookup.AddEntProps(entProps);
+    //     entProps.Init(NewEntities);
+    // }
     public bool TryLoadMap(string filepath)
     {
         PriNode data;

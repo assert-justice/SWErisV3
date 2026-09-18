@@ -258,7 +258,16 @@ public partial class ErPhysicsWorld2D
         if(minY > rect.Top) dy += minY - rect.Top + ErMath.EPSILON;
         y += dy;
     }
-    private void MoveAndSlide(int id, uint mask, ErVec2 size, ref ErVec2 position, ref ErVec2 velocity)
+    public void MoveAndSlide<T>(double dt, int bodyId, T body) where T: ErColliderBody, new()
+    {
+        var velocity = body.Velocity * dt;
+        var position = body.Position;
+        MoveAndSlide(bodyId, body.Mask, body.Size, ref position, ref velocity);
+        body.Velocity = velocity / dt;
+        body.Position = position;
+        SetBody(bodyId, body);
+    }
+    public void MoveAndSlide(int id, uint mask, ErVec2 size, ref ErVec2 position, ref ErVec2 velocity)
     {
         double x = position.X; double y = position.Y;
         double dx = velocity.X; double dy = velocity.Y;
@@ -333,15 +342,15 @@ public partial class ErPhysicsWorld2D
     public void Update(double dt)
     {
         // try to move bodies, calling on_move
-        foreach (var (bodyId, body) in BodyLookup.Lookup)
-        {
-            var pos = body.Position;// - body.Size * 0.5;
-            var vel = body.Velocity * dt;
-            MoveAndSlide(bodyId, body.Mask, body.Size, ref pos, ref vel);
-            body.Position = pos;// + body.Size * 0.5;
-            body.Velocity = vel / dt;
-            body.OnMove();
-        }
+        // foreach (var (bodyId, body) in BodyLookup.Lookup)
+        // {
+        //     var pos = body.Position;// - body.Size * 0.5;
+        //     var vel = body.Velocity * dt;
+        //     MoveAndSlide(bodyId, body.Mask, body.Size, ref pos, ref vel);
+        //     body.Position = pos;// + body.Size * 0.5;
+        //     body.Velocity = vel / dt;
+        //     body.OnMove();
+        // }
         // update area overlaps, calling on_enter, on_exit, and update
         foreach (var area in AreaLookup.Lookup.Values)
         {

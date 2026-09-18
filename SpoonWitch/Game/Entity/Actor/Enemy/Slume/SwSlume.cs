@@ -17,7 +17,7 @@ public class SwSlume : SwEnemy, ISwEntity<SwSlume>
     public static SwSlume Primary => _Primary ??= new();
     public static SwSlume Secondary => _Secondary ??= new();
     protected override byte GetTypeId => TypeId;
-    public override ErVec2 Size => new(16,16);
+    // public override ErVec2 Size => new(16,16);
     public ErVec2 HurtboxSize = new(20, 20);
     public double TimeoutClock;
     private readonly SwStateMachine StateMachine;
@@ -29,21 +29,18 @@ public class SwSlume : SwEnemy, ISwEntity<SwSlume>
     {
         string path = "game_data/entities/actors/slume/slume_anim_data.json";
         if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load slume sprites");
-        SwAreaComponent hurtbox = new(this, "hurtbox", 2, new(18, 18));
-        // {
-        //     Enabled = true,
-        // };
-        hurtbox.Area.OnBodyEnterFn = OnEnterHurtbox;
+        SwAreaComponent hurtbox = new(this, "hurtbox", 2, new(18, 18), onBodyEnter: OnEnterHurtbox);
         RegisterComponent(hurtbox);
         StateMachine = SwSlumeState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
+        Size = new(16,16);
     }
     public override void Ready()
     {
         base.Ready();
         if(!IsPassive) StateMachine.SetState("wandering");
         SwDamage damage = new([(SwDamageType.Untyped, 10)]);
-        EntProps.Props.TrySet("damage", damage.ToPri());
+        Props.TrySet("damage", damage.ToPri());
     }
     protected override void Die()
     {
@@ -66,11 +63,9 @@ public class SwSlume : SwEnemy, ISwEntity<SwSlume>
         if(value > 0) StateMachine.SetState("knockback");
         return value;
     }
-    private static void OnEnterHurtbox(SwColliderArea area, int bodyId, ErColliderBody body)
+    private void OnEnterHurtbox(SwEntity entity)
     {
-        if(!SwGame.TryGetEntProps(area.ParentId, out var sourceProps)) return;
-        if(!SwGame.TryGetEntProps(body.ParentId, out var targetProps)) return;
-        if(!sourceProps.Props.TryGet("damage", out PriNode damage)) return;
-        targetProps.AddCommand(damage);
+        if(!Props.TryGet("damage", out PriNode damage)) return;
+        entity.AddCommand(damage);
     }
 }

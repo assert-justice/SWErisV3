@@ -339,8 +339,10 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             bullet.TrySet("y", pos.Y);
             bullet.TrySet("x_velocity", Controls.Aim.X * Entity.BulletSpeed);
             bullet.TrySet("y_velocity", Controls.Aim.Y * Entity.BulletSpeed);
-            bullet.TrySet("damage", Entity.EntProps.Props.Get("bullet/damage"));
-            SwGame.Game.AddEntity<SwProjectile>(bullet);
+            bullet.TrySet("damage", Entity.Props.Get("bullet/damage"));
+            SwProjectile projectile = new();
+            projectile.SetProps(bullet);
+            SwGame.Game.AddEntity(projectile);
             Entity.AttackCooldownClock = 0.1;
             Entity.Ammo--;
             PriDict command = [];

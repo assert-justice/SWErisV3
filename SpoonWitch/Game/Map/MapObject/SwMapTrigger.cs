@@ -11,6 +11,8 @@ public class SwMapTrigger : SwMapObject
     public override void Load()
     {
         base.Load();
-        SwGame.Game.AddEntity<SwTrigger>(GetProps());
+        SwTrigger trigger = new();
+        trigger.SetProps(GetProps());
+        SwGame.Game.AddEntity(trigger);
     }
 }

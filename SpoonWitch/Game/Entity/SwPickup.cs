@@ -12,22 +12,19 @@ namespace SpoonWitch.Game.Entity;
 public class SwPickup : SwEntity, ISwEntity<SwPickup>
 {
     public static byte TypeId => 5;
-    public override uint Mask => 0;
+    // public override uint Mask => 0;
     private static SwPickup? _Primary;
     private static SwPickup? _Secondary;
     public static SwPickup Primary => _Primary ??= new();
     public static SwPickup Secondary => _Secondary ??= new();
     protected override byte GetTypeId => TypeId;
     private readonly SwAreaComponent Area;
-    private readonly List<ErTexture> Textures = [];
-    private readonly Dictionary<string,int> TextureLookup = [];
+    private ErTexture? Texture;
+    // private readonly List<ErTexture> Textures = [];
+    // private readonly Dictionary<string,int> TextureLookup = [];
     public SwPickup()
     {
-        Area = new(this, "area", 2, new(32, 32))
-        {
-            Enabled = true,
-        };
-        Area.Area.OnBodyEnterFn = OnEnter;
+        Area = new(this, "area", 2, new(32, 32), enabled: true, onBodyEnter: OnEnter);
         RegisterComponent(Area);
         AddHandler("pickup_set_rem", SetRem);
     }
@@ -36,50 +33,49 @@ public class SwPickup : SwEntity, ISwEntity<SwPickup>
         base.Ready();
         PriDict command = [];
         command.TrySet("verb", "ent_offer_item");
-        command.TrySet("pickup_type", EntProps.Props.Get("pickup_type"));
-        command.TrySet("count", EntProps.Props.Get("count"));
+        command.TrySet("pickup_type", Props.Get("pickup_type"));
+        command.TrySet("count", Props.Get("count"));
         command.TrySet("ent_id", Id);
-        EntProps.Props.TrySet("ent_offer_item", command);
+        Props.TrySet("ent_offer_item", command);
         // Todo: obviously don't hardcode this
         string texture_filepath = "game_data/entities/actors/player/images/bella_sling_ammo_pickup.png";
-        if(!TextureLookup.TryGetValue(texture_filepath, out int texId))
-        {
-            texId = Textures.Count;
-            if(!ErTexture.TryFromPath(texture_filepath, out var texture)) return;
-            Textures.Add(texture);
-            TextureLookup[texture_filepath] = texId;
-        }
-        EntProps.Props.TrySet("tex_id", texId);
-        var size = SwPrion.GetVec2(EntProps.Props.Data, "width_px", "height_px");
+        if(!ErTexture.TryFromPath(texture_filepath, out Texture)) return;
+        // if(!TextureLookup.TryGetValue(texture_filepath, out int texId))
+        // {
+        //     texId = Textures.Count;
+        //     Textures.Add(texture);
+        //     TextureLookup[texture_filepath] = texId;
+        // }
+        // Props.TrySet("tex_id", texId);
+        var size = SwPrion.GetVec2(Props.Data, "width_px", "height_px");
         Area.Size = size;
-        if(EntProps.Props.TryGet("mask", out uint mask)) Area.Mask = mask;
+        if(Props.TryGet("mask", out uint mask)) Area.Mask = mask;
     }
     protected override void DrawImpl(SwEntity nextState)
     {
         base.DrawImpl(nextState);
-        if(!SwGame.TryGetEntProps(Id, out var entProps)) return;
-        if(!entProps.Props.TryGet("count", out int count)) return;
-        if(!entProps.Props.TryGet("tex_id", out int texId)) return;
-        var center = Textures[texId].Size * 0.5;
+        // if(!SwGame.TryGetEntProps(Id, out var entProps)) return;
+        if(!Props.TryGet("count", out int count)) return;
+        // if(!entProps.Props.TryGet("tex_id", out int texId)) return;
+        if(Texture is null) return;
+        var center = Texture.Size * 0.5;
         for (int idx = 0; idx < count; idx++)
         {
             double dis = idx * center.X;
             double angle = idx * ErMath.TAU / 6;
             ErVec2 vec = ErVec2.FromAngle(angle) * dis;
-            Textures[texId].Draw(Position + vec - center);
+            Texture.Draw(Position + vec - center);
         }
     }
     private void SetRem(PriNode command)
     {
         if(!command.TryGet("rem", out int rem)) return;
-        EntProps.Props.TrySet("count", rem);
+        Props.TrySet("count", rem);
         if(rem == 0) Area.Enabled = false;
     }
-    private static void OnEnter(SwColliderArea area, int bodyId, ErColliderBody body)
+    private void OnEnter(SwEntity entity)
     {
-        if(!SwGame.TryGetEntProps(area.ParentId, out var pickupProps)) return;
-        if(!SwGame.TryGetEntProps(body.ParentId, out var targetProps)) return;
-        if(!pickupProps.Props.TryGet("ent_offer_item", out PriNode command)) return;
-        targetProps.AddCommand(command);
+        if(!Props.TryGet("ent_offer_item", out PriNode command)) return;
+        entity.AddCommand(command);
     }
 }

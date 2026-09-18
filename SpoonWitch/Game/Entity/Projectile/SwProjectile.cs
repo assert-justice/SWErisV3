@@ -17,18 +17,18 @@ public class SwProjectile : SwEntity, ISwEntity<SwProjectile>
     public static SwProjectile Secondary => _Secondary ??= new();
     protected override byte GetTypeId => TypeId;
     private readonly ErTexture Texture;
+    public ErVec2 Velocity;
     public SwProjectile()
     {
-        SwAreaComponent hurtbox = new(this, "hurtbox", 4, new(14,14), enabled:true);
-        hurtbox.Area.OnBodyEnterFn = OnEnterHurtbox;
+        SwAreaComponent hurtbox = new(this, "hurtbox", 4, new(14,14), enabled:true, onBodyEnter: OnEnterHurtbox);
         RegisterComponent(hurtbox);
         if(!ErTexture.TryFromPath("game_data/entities/actors/player/images/bella_sling_ammo_shot.png", out Texture)) ErEngine.LogError("bad projectile texture path");
     }
     public override void Ready()
     {
         base.Ready();
-        EntProps.Props.TryGet("x_velocity", out double xVel);
-        EntProps.Props.TryGet("y_velocity", out double yVel);
+        Props.TryGet("x_velocity", out double xVel);
+        Props.TryGet("y_velocity", out double yVel);
         Velocity = new(xVel, yVel);
     }
     public override void Update()
@@ -45,11 +45,11 @@ public class SwProjectile : SwEntity, ISwEntity<SwProjectile>
         var pos = ErMath.Lerp(Position, nextState.Position, SwGame.FrameWeight) - Texture.Size * 0.5;
         Texture.Draw(pos);
     }
-    private static void OnEnterHurtbox(SwColliderArea area, int bodyId, ErColliderBody body)
+    private void OnEnterHurtbox(SwEntity entity)
     {
-        if(!SwGame.TryGetEntProps(area.ParentId, out var myProps)) return;
-        if(!SwGame.TryGetEntProps(body.ParentId, out var targetProps)) return;
-        if(!myProps.Props.TryGet("damage", out PriNode damage)) return;
-        targetProps.AddCommand(damage);
+        // if(!SwGame.TryGetEntProps(area.ParentId, out var myProps)) return;
+        // if(!SwGame.TryGetEntProps(body.ParentId, out var targetProps)) return;
+        if(!Props.TryGet("damage", out PriNode damage)) return;
+        entity.AddCommand(damage);
     }
 }

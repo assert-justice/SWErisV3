@@ -40,7 +40,6 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     public double AttackCooldownClock{get => Clocks[base.NumClocks+2]; set {Clocks[base.NumClocks+2] = value;}}
     private readonly SwStateMachine StateMachine;
     private readonly SwPlayerControls Controls;
-    public override ErVec2 Size => new(28,28);
     private SwInventoryComponent InventoryComp;
     public SwPlayer()
     {
@@ -57,14 +56,13 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         RegisterComponent(particles);
         string path = "game_data/entities/actors/player/player_anim_data.json";
         if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load player sprites");
-        SwAreaComponent spoonHurtbox = new(this, "spoon_hurtbox", 4, new(32,32));
-        spoonHurtbox.Area.OnBodyEnterFn = OnEnterSpoonHurtbox;
+        SwAreaComponent spoonHurtbox = new(this, "spoon_hurtbox", 4, new(32, 32), onBodyEnter: OnEnterSpoonHurtbox);
         RegisterComponent(spoonHurtbox);
         StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
         AddHandler("ent_offer_item", EntOfferItem);
-        // AddHandler("player_add_item", PlayerAddItem);
-
+        AddGlobalHandler("player_add_item", PlayerAddItem);
+        Size = new(28, 28);
     }
     private static void SetHud(string key, double value)
     {
@@ -74,22 +72,22 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         dict.TrySet("value", value);
         SwApp.CommandStore.AddCommand(dict);
     }
-    private static void OnEnterSpoonHurtbox(SwColliderArea area, int bodyId, ErColliderBody body)
+    private void OnEnterSpoonHurtbox(SwEntity entity)
     {
-        if(!SwGame.TryGetEntProps(area.ParentId, out var playerProps)) return;
-        if(!SwGame.TryGetEntProps(body.ParentId, out var targetProps)) return;
-        if(!playerProps.Props.TryGet("spoon_damage", out PriNode spoonDamage)) return;
-        targetProps.AddCommand(spoonDamage);
+        if(!Props.TryGet("spoon_damage", out PriNode spoonDamage)) return;
+        ErEngine.Log(spoonDamage);
+        entity.AddCommand(spoonDamage);
     }
     public override void Ready()
     {
         base.Ready();
         IsAlive = false;
         SwDamage spoonDamage = new([(SwDamageType.Untyped, 10)]);
-        EntProps.Props.TrySet("spoon_damage", spoonDamage.ToPri());
+        var d = spoonDamage.ToPri();
+        Props.TrySet("spoon_damage", d);
         InventoryComp.Entries.SetCount("sling_ammo", 0, 10);
         SwDamage slingDamage = new([(SwDamageType.Untyped,10)]);
-        EntProps.Props.TrySet("bullet/damage", slingDamage.ToPri());
+        Props.TrySet("bullet/damage", slingDamage.ToPri());
     }
     public override void Update()
     {
@@ -97,14 +95,10 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         if(DodgeCooldownClock > 0) DodgeCooldownClock -= SwGame.DeltaTime;
         if(AttackCooldownClock > 0) AttackCooldownClock -= SwGame.DeltaTime;
         SwGame.SetPlayerPos(Position);
-        EntProps.Props.TrySet("spoon_damage/source_pos_x", Position.X);
-        EntProps.Props.TrySet("spoon_damage/source_pos_y", Position.Y);
+        Props.TrySet("spoon_damage/source_pos_x", Position.X);
+        Props.TrySet("spoon_damage/source_pos_y", Position.Y);
         if(IsAlive && ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Semicolon)) Die();
         if(IsAlive) SwGame.SetCameraTarget(Position);
-        foreach (var item in SwApp.CommandStore.GetCommands("player_add_item"))
-        {
-            PlayerAddItem(item);
-        }
     }
     protected override double Damage(SwDamage damage)
     {
@@ -132,7 +126,7 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
     private void EntOfferItem(PriNode command)
     {
         if(!command.TryGet("ent_id", out int id)) return;
-        if(!SwGame.TryGetEntProps(id, out var props)) return;
+        if(!SwGame.Game.EntityLookup.TryGet<SwEntity>(id.ToString(), out var entity)) return;
         if(!command.TryGet("count", out int count)) return;
         if(!command.TryGet("pickup_type", out string pickup_type)) return;
         if(!InventoryComp.Entries.TryAdd(pickup_type, count, out int rem)) return;
@@ -140,12 +134,10 @@ public class SwPlayer: SwActor, ISwEntity<SwPlayer>
         PriDict com = [];
         com.TrySet("verb", "pickup_set_rem");
         com.TrySet("rem", rem);
-        props.AddCommand(com);
+        entity.AddCommand(com);
     }
     private void PlayerAddItem(PriNode command)
     {
-        // if(!command.TryGet("pickup_type", out string pickup_type)) pickup_type = string.Empty;
-        // if(!command.TryGet("text", out string text)) text = string.Empty;
         StateMachine.SetState("item_get");
     }
 }

@@ -5,6 +5,7 @@ namespace SpoonWitch.Game.Map.Collision;
 
 public class SwColliderArea: ErColliderArea
 {
+    public int Id;
     public Action<SwColliderArea,int,ErColliderBody>? OnBodyEnterFn;
     public Action<SwColliderArea,int,ErColliderBody>? OnBodyExitFn;
     // public int SingleUseId = -1;

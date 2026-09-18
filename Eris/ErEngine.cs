@@ -23,7 +23,7 @@ public static class ErEngine
         return false;
     }
     private static readonly Stack<Action> CleanupStack = new();
-    public static int Tickrate{get; private set;} = 90;
+    public static int Tickrate{get; private set;} = 60;
     public static ErRenderer Renderer{get; private set;} = new ErRenderer();
     public static ErAudioApp AudioApp{get; private set;} = new();
     public static void SetRenderer(ErRenderer renderer){

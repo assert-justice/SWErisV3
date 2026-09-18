@@ -23,8 +23,7 @@ public class SwKnight : SwEnemy, ISwEntity<SwKnight>
     {
         string path = "game_data/entities/actors/knight/knight_anim_data.json";
         if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load knight sprites");
-        SwAreaComponent hurtbox = new(this, "hurtbox", 2, new(32,32));
-        hurtbox.Area.OnBodyEnterFn = OnEnterHurtbox;
+        SwAreaComponent hurtbox = new(this, "hurtbox", 2, new(32,32), onBodyEnter: OnEnterHurtbox);
         RegisterComponent(hurtbox);
         StateMachine = SwKnightState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
@@ -34,7 +33,7 @@ public class SwKnight : SwEnemy, ISwEntity<SwKnight>
         base.Ready();
         if(!IsPassive) StateMachine.SetState("wandering");
         SwDamage damage = new([(SwDamageType.Untyped, 30)]);
-        EntProps.Props.TrySet("damage", damage.ToPri());
+        Props.TrySet("damage", damage.ToPri());
     }
     public override void Read(SwByteStream byteStream)
     {
@@ -57,11 +56,11 @@ public class SwKnight : SwEnemy, ISwEntity<SwKnight>
         if(value > 0) StateMachine.SetState("knockback");
         return value;
     }
-    private static void OnEnterHurtbox(SwColliderArea area, int bodyId, ErColliderBody body)
+    private void OnEnterHurtbox(SwEntity entity)
     {
-        if(!SwGame.TryGetEntProps(area.ParentId, out var sourceProps)) return;
-        if(!SwGame.TryGetEntProps(body.ParentId, out var targetProps)) return;
-        if(!sourceProps.Props.TryGet("damage", out PriNode damage)) return;
-        targetProps.AddCommand(damage);
+        // if(!SwGame.TryGetEntProps(area.ParentId, out var sourceProps)) return;
+        // if(!SwGame.TryGetEntProps(body.ParentId, out var targetProps)) return;
+        if(!Props.TryGet("damage", out PriNode damage)) return;
+        entity.AddCommand(damage);
     }
 }

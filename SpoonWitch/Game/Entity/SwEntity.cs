@@ -1,5 +1,6 @@
 using Eris;
 using ErisMath;
+using Prion.Db;
 using Prion.Node;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Game.Entity.Component;
@@ -13,34 +14,47 @@ public abstract class SwEntity
 {
     private readonly Dictionary<(Type,string), SwComponent> ComponentLookup = [];
     private readonly List<SwComponent> Components = [];
-    public SwEntPropsBase EntProps{get; private set;} = null!;
+    // public SwEntPropsBase EntProps{get; private set;} = null!;
+    public PriDb Props{get; private set;} = new();
     public virtual int RenderLayer => 1;
     abstract protected byte GetTypeId{get;}
     private int _Id;
     public int Id => _Id;
-    private int _CurrentHeadIndex = -1;
-    public int CurrentHeadIndex{get => _CurrentHeadIndex;}
-    private int _LastHeadIndex = -1;
-    public int LastHeadIndex{get => _LastHeadIndex;}
+    // private int _CurrentHeadIndex = -1;
+    // public int CurrentHeadIndex{get => _CurrentHeadIndex;}
+    // private int _LastHeadIndex = -1;
+    // public int LastHeadIndex{get => _LastHeadIndex;}
     public ErVec2 Position;
-    public ErVec2 Velocity;
+    // public ErVec2 Velocity;
     public bool Visible = true;
-    public virtual ErVec2 Size => new(32,32);
-    public virtual uint Mask => 0;
+    // public virtual ErVec2 Size => new(32,32);
+    // public virtual uint Mask => 0;
     public bool IsFreeQueued{get; private set;}
     protected virtual int NumClocks => 0;
     protected readonly double[] Clocks;
+    private readonly Queue<PriNode> CommandQueue = [];
     private readonly Dictionary<string,Action<PriNode>> Handlers = [];
+    private readonly Dictionary<string,Action<PriNode>> GlobalHandlers = [];
     // private bool WasBodyEnabled = false;
     // public bool BodyEnabled = true;
-    private readonly SwColliderBody Body = new();
+    // private readonly SwColliderBody Body = new();
     public SwEntity()
     {
+        _Id = SwApp.GetNextId();
         Clocks = new double[NumClocks];
+        Array.Fill(Clocks, 0);
     }
     protected void AddHandler(string verb, Action<PriNode> action)
     {
-        if(!Handlers.TryAdd(verb, action)) ErEngine.LogWarning("tried to add duplicate command: ", verb);
+        if(!Handlers.TryAdd(verb, action)) ErEngine.LogWarning("tried to add duplicate handler: ", verb);
+    }
+    protected void AddGlobalHandler(string verb, Action<PriNode> action)
+    {
+        if(!GlobalHandlers.TryAdd(verb, action)) ErEngine.LogWarning("tried to add duplicate global: ", verb);
+    }
+    public void AddCommand(PriNode command)
+    {
+        CommandQueue.Enqueue(command);
     }
     protected SwComponent RegisterComponent(SwComponent component)
     {
@@ -50,18 +64,22 @@ public abstract class SwEntity
         else ErEngine.LogError("Failed to register component of name '", component.Name, "' and type '", component.GetType(), "'.");
         return component;
     }
-    public void Init(SwEntPropsBase entProps)
+    // public void Init(SwEntPropsBase entProps)
+    // {
+    //     _Id = entProps.Id;
+    //     EntProps = entProps;
+    //     _CurrentHeadIndex = -1;
+    //     _LastHeadIndex = -1;
+    //     Array.Fill(Clocks, 0);
+    //     Ready();
+    // }
+    public virtual void SetProps(PriNode props)
     {
-        _Id = entProps.Id;
-        EntProps = entProps;
-        _CurrentHeadIndex = -1;
-        _LastHeadIndex = -1;
-        Array.Fill(Clocks, 0);
-        Ready();
+        Props = new(props);
+        Position = SwPrion.GetVec2(Props.Data);
     }
     public virtual void Ready()
     {
-        Position = SwPrion.GetVec2(EntProps.Props.Data);
         foreach (var item in Components)
         {
             item.Ready();
@@ -70,25 +88,25 @@ public abstract class SwEntity
     public virtual void Read(SwByteStream byteStream)
     {
         // read type byte
-        if(!byteStream.TryReadByte(out _)) throw new("no type id");
-        if(!byteStream.TryReadI32(out _Id)) throw new("jerkbag");
-        if(!byteStream.TryReadI32(out _CurrentHeadIndex)) throw new("oops2");
-        if(!byteStream.TryReadI32(out _LastHeadIndex)) throw new("oops3");
-        if(!byteStream.TryReadVec2(out Position)) throw new("oops4");
-        if(!byteStream.TryReadVec2(out Velocity)) throw new("oops5");
-        if(!byteStream.TryReadBool(out Visible)) throw new("oops6");
-        // if(!byteStream.TryReadBool(out WasBodyEnabled)) throw new("oops7");
-        // if(!byteStream.TryReadBool(out BodyEnabled)) throw new("oops7");
-        // Position = BodyEnabled ? pos + Size * 0.5 : pos;
-        // read clocks
-        if(!byteStream.TryReadF64s(in Clocks)) throw new("bad clocks");
-        // read components
-        foreach (var item in Components)
-        {
-            item.Read(byteStream);
-        }
-        if(!SwGame.TryGetEntProps(Id, out var entProps)) ErEngine.LogError("no properties found for for entity ", Id);
-        EntProps = entProps!;
+        // if(!byteStream.TryReadByte(out _)) throw new("no type id");
+        // if(!byteStream.TryReadI32(out _Id)) throw new("jerkbag");
+        // if(!byteStream.TryReadI32(out _CurrentHeadIndex)) throw new("oops2");
+        // if(!byteStream.TryReadI32(out _LastHeadIndex)) throw new("oops3");
+        // if(!byteStream.TryReadVec2(out Position)) throw new("oops4");
+        // if(!byteStream.TryReadVec2(out Velocity)) throw new("oops5");
+        // if(!byteStream.TryReadBool(out Visible)) throw new("oops6");
+        // // if(!byteStream.TryReadBool(out WasBodyEnabled)) throw new("oops7");
+        // // if(!byteStream.TryReadBool(out BodyEnabled)) throw new("oops7");
+        // // Position = BodyEnabled ? pos + Size * 0.5 : pos;
+        // // read clocks
+        // if(!byteStream.TryReadF64s(in Clocks)) throw new("bad clocks");
+        // // read components
+        // foreach (var item in Components)
+        // {
+        //     item.Read(byteStream);
+        // }
+        // if(!SwGame.TryGetEntProps(Id, out var entProps)) ErEngine.LogError("no properties found for for entity ", Id);
+        // EntProps = entProps!;
     }
     protected void QueueFree()
     {
@@ -96,7 +114,8 @@ public abstract class SwEntity
     }
     protected void HandleCommands()
     {
-        foreach(var command in EntProps.GetCommands())
+        while(CommandQueue.TryDequeue(out var command))
+        // foreach(var command in EntProps.GetCommands())
         {
             if(!command.TryGet("verb", out string verb))
             {
@@ -106,41 +125,48 @@ public abstract class SwEntity
             if(!Handlers.TryGetValue(verb, out var action)) continue;
             action(command);
         }
+        foreach (var (verb, action) in GlobalHandlers)
+        {
+            foreach (var item in SwApp.CommandStore.GetCommands(verb))
+            {
+                action(item);
+            }
+        }
     }
     public virtual void Write(SwByteStream byteStream)
     {
         // if(IsFreeQueued) return; // Game does not call Write on entities with queue free set
-        int head = byteStream.Head;
-        // write type byte
-        byteStream.WriteByte(GetTypeId);
-        byteStream.WriteI32(_Id);
-        // write head position as current head index
-        byteStream.WriteI32(head);
-        // write current head index as last head index
-        // Note: if it is negative, that means there is no valid last head index. this is relevant for drawing.
-        byteStream.WriteI32(_CurrentHeadIndex);
-        Body.ParentId = Id;
-        Body.Rect = ErRect2.Centered(Position, Size);
-        Body.Velocity = Velocity;
-        Body.Mask = Mask;
-        Body.Head = byteStream.Head;
-        SwGame.Map.PhysicsWorld.SetBody(Id, Body);
+        // int head = byteStream.Head;
+        // // write type byte
+        // byteStream.WriteByte(GetTypeId);
+        // byteStream.WriteI32(_Id);
+        // // write head position as current head index
+        // byteStream.WriteI32(head);
+        // // write current head index as last head index
+        // // Note: if it is negative, that means there is no valid last head index. this is relevant for drawing.
+        // byteStream.WriteI32(_CurrentHeadIndex);
+        // Body.ParentId = Id;
+        // Body.Rect = ErRect2.Centered(Position, Size);
+        // Body.Velocity = Velocity;
+        // Body.Mask = Mask;
+        // Body.Head = byteStream.Head;
+        // SwGame.Map.PhysicsWorld.SetBody(Id, Body);
+        // // }
+        // byteStream.WriteVec2(Position);
+        // byteStream.WriteVec2(Velocity);
+        // byteStream.WriteBool(Visible);
+        // // clocks
+        // byteStream.WriteF64s(in Clocks);
+        // // write components
+        // foreach (var item in Components)
+        // {
+        //     item.Write(byteStream);
         // }
-        byteStream.WriteVec2(Position);
-        byteStream.WriteVec2(Velocity);
-        byteStream.WriteBool(Visible);
-        // clocks
-        byteStream.WriteF64s(in Clocks);
-        // write components
-        foreach (var item in Components)
-        {
-            item.Write(byteStream);
-        }
     }
     public virtual void Update()
     {
         // CommandHandler.Dispatch();
-        IsFreeQueued = false;
+        // IsFreeQueued = false;
         HandleCommands();
         foreach (var comp in Components)
         {
@@ -198,7 +224,7 @@ public abstract class SwEntity
     public virtual void GameCleanup()
     {
         // Note: this method should only be called by game
-        SwGame.Map.PhysicsWorld.RemoveBody(Id);
+        // SwGame.Map.PhysicsWorld.RemoveBody(Id);
         foreach (var item in Components)
         {
             item.Cleanup();

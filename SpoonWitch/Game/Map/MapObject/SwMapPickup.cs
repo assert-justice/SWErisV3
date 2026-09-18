@@ -9,6 +9,8 @@ public class SwMapPickup : SwMapObject
     public override void Load()
     {
         base.Load();
-        SwGame.Game.AddEntity<SwPickup>(GetProps());
+        SwPickup pickup = new();
+        pickup.SetProps(GetProps());
+        SwGame.Game.AddEntity(pickup);
     }
 }
