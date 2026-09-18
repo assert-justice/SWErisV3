@@ -22,6 +22,8 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     private SwParticleComponent DustParticles = null!;
     private SwInventoryComponent _Inventory = null!;
     private SwInventory Inventory => _Inventory.Entries!;
+    protected virtual double StaminaRegenClockMul => 1;
+    protected virtual double ManaRegenMul => 1;
     // name, hands, facing
     private static readonly string[][][] BodyAnims = [
         [
@@ -81,11 +83,13 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     {
         if(Entity.DodgeCooldownClock > 0) return false;
         if(!Controls.Move.IsNonzero()) return false;
+        if(Entity.Stamina <= 0) return false;
         return true;
     }
     private bool CanAttack()
     {
         if(Entity.AttackCooldownClock > 0) return false;
+        if(Entity.Stamina <= 0) return false;
         return true;
     }
     public override void Init(SwStateMachine stateMachine)
@@ -128,6 +132,20 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         base.Update();
         ReticleSprite.Visible = Controls.ReticleVisible;
         ReticleSprite.Offset = Controls.ReticlePosition;
+        if(Entity.Stamina < Entity.MaxStamina)
+        {
+            if(Entity.StaminaRegenClock > 0) Entity.StaminaRegenClock -= SwGame.DeltaTime * StaminaRegenClockMul;
+            else
+            {
+                Entity.Stamina += Entity.StaminaRegen * SwGame.DeltaTime;
+                if(Entity.Stamina > Entity.MaxStamina) Entity.Stamina = Entity.MaxStamina;
+            }
+        }
+        if(Entity.Mana < Entity.MaxMana)
+        {
+            Entity.Mana += Entity.ManaRegen * SwGame.DeltaTime * ManaRegenMul;
+            if(Entity.Mana > Entity.MaxMana) Entity.Mana = Entity.MaxMana;
+        }
     }
     public class Dead: SwPlayerState
     {
@@ -241,14 +259,15 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
             SetBodyHandedAnim(animIdx, 2, Controls.LastFacingIdx);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed;
-            if(Controls.AttackJustPressed && CanAttack()) StateMachine.SetState("attack");
+            if(CanAttack() && Controls.AttackJustPressed) StateMachine.SetState("attack");
             else if(Controls.IsCharging && Inventory.GetCount("sling_ammo") > 0) StateMachine.SetState("charging");
-            else if(Controls.DodgeJustPressed && CanDodge()) StateMachine.SetState("dodging");
+            else if(CanDodge() && Controls.DodgeJustPressed) StateMachine.SetState("dodging");
         }
     }
     public class Attack: SwPlayerState
     {
         public override string Name => "attack";
+        protected override double StaminaRegenClockMul => 0;
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
@@ -258,6 +277,10 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             SetBodyHandedAnim(0, 0, Controls.LastFacingIdx);
             Entity.Velocity = ErVec2.Zero;
             SetHurtbox();
+            Entity.Stamina -= Entity.SpoonAttackStaminaCost;
+            Entity.StaminaRegenClock = Entity.StaminaRegenDelay;
+            if(Entity.Stamina < 0) Entity.StaminaRegenClock += Entity.StaminaRegenDelayPenalty;
+            SpoonSprite.HFlip = !SpoonSprite.HFlip;
         }
         public override void Update()
         {
@@ -375,6 +398,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     public class Dodging: SwPlayerState
     {
         public override string Name => "dodging";
+        protected override double StaminaRegenClockMul => 0;
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
@@ -392,6 +416,9 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
                 particles.Lifetime = 5 * 0.125;
                 particles.OneShot = true;
             }
+            Entity.Stamina -= Entity.DodgeStaminaCost;
+            Entity.StaminaRegenClock = Entity.StaminaRegenDelay;
+            if(Entity.Stamina < 0) Entity.StaminaRegenClock += Entity.StaminaRegenDelayPenalty;
         }
         public override void Update()
         {

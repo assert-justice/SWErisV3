@@ -25,6 +25,7 @@ public class SwPlayer: SwActor
     public double DodgeDuration => 9.0 / 12;
     public double DodgeCooldown => 0.15;
     public double DodgeSpeedMul => 1.5;
+    public double DodgeStaminaCost = 20;
     public double BulletSpeed => 100;
     public int Ammo
     {
@@ -41,6 +42,9 @@ public class SwPlayer: SwActor
     public double Stamina = 100;
     public double MaxStamina = 100;
     public double StaminaRegen = 30;
+    public double StaminaRegenDelay = 0.1;
+    public double StaminaRegenDelayPenalty = 0.3;
+    public double StaminaRegenClock = 0;
     public double Mana = 100;
     public double MaxMana = 100;
     public double ManaRegen = 10;
@@ -48,9 +52,10 @@ public class SwPlayer: SwActor
     public double Clock0{get => Clocks[base.NumClocks+0]; set {Clocks[base.NumClocks+0] = value;}}
     public double DodgeCooldownClock{get => Clocks[base.NumClocks+1]; set {Clocks[base.NumClocks+1] = value;}}
     public double AttackCooldownClock{get => Clocks[base.NumClocks+2]; set {Clocks[base.NumClocks+2] = value;}}
+    public double SpoonAttackStaminaCost = 30;
     private readonly SwStateMachine StateMachine;
     private readonly SwPlayerControls Controls;
-    private SwInventoryComponent InventoryComp;
+    private readonly SwInventoryComponent InventoryComp;
     public SwPlayer()
     {
         Controls = new SwPlayerControls(this);
@@ -74,14 +79,6 @@ public class SwPlayer: SwActor
         AddGlobalHandler("player_add_item", PlayerAddItem);
         Size = new(28, 28);
     }
-    // private static void SetHud(string key, double value)
-    // {
-    //     PriDict dict = [];
-    //     dict.TrySet("verb", "hud_set");
-    //     dict.TrySet("key", key);
-    //     dict.TrySet("value", value);
-    //     SwApp.CommandStore.AddCommand(dict);
-    // }
     private void OnEnterSpoonHurtbox(SwEntity entity)
     {
         if(!Props.TryGet("spoon_damage", out PriNode spoonDamage)) return;
@@ -116,10 +113,6 @@ public class SwPlayer: SwActor
     protected override double Damage(SwDamage damage)
     {
         double value = base.Damage(damage);
-        // if(value > 0)
-        // {
-        //     SetHud("health", Health);
-        // }
         return value;
     }
     protected override void Die()

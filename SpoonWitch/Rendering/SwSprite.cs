@@ -43,6 +43,8 @@ public class SwSprite(string name)
         get => HasFlags(SwSpriteFlags.IsCentered);
         set => SetFlags(SwSpriteFlags.IsCentered, value);
     }
+    public bool HFlip = false;
+    public bool VFlip = false;
     public SwAnimation CurrentAnimation => Animations[CurrentAnimIdx];
     public bool IsPlaying
     {
@@ -133,7 +135,9 @@ public class SwSprite(string name)
             return;
         }
         ErVec2 origin = Centered ? frame.SourceRect.Size * 0.5 : ErVec2.Zero;
-        frame.Draw(position + Offset, PalletIdx, origin, Angle, NextAnimationState.HFlip, NextAnimationState.VFlip);
+        bool hFlip = HFlip ? !NextAnimationState.HFlip : NextAnimationState.HFlip;
+        bool vFlip = VFlip ? !NextAnimationState.VFlip : NextAnimationState.VFlip;
+        frame.Draw(position + Offset, PalletIdx, origin, Angle, hFlip, vFlip);
     }
     public bool TryRead(SwByteStream byteStream)
     {
