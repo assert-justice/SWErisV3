@@ -262,6 +262,8 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             if(CanAttack() && Controls.AttackJustPressed) StateMachine.SetState("attack");
             else if(Controls.IsCharging && Inventory.GetCount("sling_ammo") > 0) StateMachine.SetState("charging");
             else if(CanDodge() && Controls.DodgeJustPressed) StateMachine.SetState("dodging");
+            if(Entity.DodgeCooldownClock > 0) Entity.DodgeCooldownClock -= SwGame.DeltaTime;
+            if(Entity.AttackCooldownClock > 0) Entity.AttackCooldownClock -= SwGame.DeltaTime;
         }
     }
     public class Attack: SwPlayerState
@@ -368,11 +370,6 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             SwGame.Game.AddEntity(projectile);
             Entity.AttackCooldownClock = 0.1;
             Entity.Ammo--;
-            PriDict command = [];
-            command.TrySet("verb", "hud_set");
-            command.TrySet("key", "sling_ammo");
-            command.TrySet("value", Entity.Ammo);
-            SwApp.CommandStore.AddCommand(command);
         }
         public override void Update()
         {
@@ -412,7 +409,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
                 particles.Emitting = true;
                 particles.Speed = 30;
                 particles.Amount = 80;
-                particles.UseLocalCoords = false;
+                particles.UseLocalCoordinates = false;
                 particles.Lifetime = 5 * 0.125;
                 particles.OneShot = true;
             }

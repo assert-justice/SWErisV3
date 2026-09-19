@@ -95,16 +95,25 @@ public class SwPlayer: SwActor
         Props.TrySet("spoon_damage", d);
         InventoryComp.Entries.SetCount("sling_ammo", 0, 10);
         SwDamage slingDamage = new([(SwDamageType.Untyped,10)]);
+        PriDict impactParticles = [];
+        impactParticles.TrySet("name", "rock_chunks");
+        impactParticles.TrySet("filepath", "game_data/particles/particles.json");
+        impactParticles.TrySet("explosiveness", 0.75);
+        impactParticles.TrySet("one_shot", true);
+        impactParticles.TrySet("lifetime", 0.1);
+        impactParticles.TrySet("amount", 20);
+        impactParticles.TrySet("speed", 100);
+        impactParticles.TrySet("randomize_frames", true);
         Props.TrySet("bullet/damage", slingDamage.ToPri());
         Props.TrySet("bullet/collision_mask", 3);
+        Props.TrySet("bullet/texture_filepath", "game_data/entities/actors/player/images/bella_sling_ammo_shot.png");
+        Props.TrySet("bullet/impact_particles", impactParticles);
         InventoryComp.Entries.SetCount("sling_ammo", 0, 8);
         InventoryComp.Entries.SetCount("roots", 0, 1);
     }
     public override void Update()
     {
         base.Update();
-        if(DodgeCooldownClock > 0) DodgeCooldownClock -= SwGame.DeltaTime;
-        if(AttackCooldownClock > 0) AttackCooldownClock -= SwGame.DeltaTime;
         SwGame.SetPlayerPos(Position);
         Props.TrySet("spoon_damage/source_pos_x", Position.X);
         Props.TrySet("spoon_damage/source_pos_y", Position.Y);

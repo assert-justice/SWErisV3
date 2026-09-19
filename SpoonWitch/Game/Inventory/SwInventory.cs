@@ -47,6 +47,7 @@ public class SwInventory
         if(Data.TryGetValue(key, out var value))
         {
             value.Count = count;
+            Data[key] = value;
         }
         else Data[key] = new(count);
     }
@@ -56,6 +57,7 @@ public class SwInventory
         {
             value.Max = max;
             value.Count = count;
+            Data[key] = value;
         }
         else Data[key] = new(count, max);
     }
