@@ -131,14 +131,11 @@ public class SwPlayer: SwActor
     }
     private void EntOfferItem(PriNode command)
     {
-        ErEngine.Log(command);
         if(!command.TryGet("ent_id", out int id)) return;
         if(!SwGame.Game.EntityLookup.TryGet<SwEntity>(id.ToString(), out var entity)) return;
         if(!command.TryGet("count", out int count)) return;
         if(!command.TryGet("pickup_type", out string pickup_type)) return;
         if(!InventoryComp.Entries.TryAdd(pickup_type, count, out int rem)) return;
-        ErEngine.Log("lazy ", InventoryComp.Entries.GetCount("sling_ammo"));
-        // SetHud(pickup_type, InventoryComp.Entries.GetCount(pickup_type));
         PriDict com = [];
         com.TrySet("verb", "pickup_set_rem");
         com.TrySet("rem", rem);
