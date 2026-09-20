@@ -38,6 +38,11 @@ public class SwParticles2D
     {
         Animation = animation;
     }
+    public SwParticles2D(ErTexture texture)
+    {
+        var frames = SwFrame.GetAllFrames(new(texture), texture.Size);
+        Animation = new SwAnimation("default", [..frames], texture.Size, new SwAnimationState());
+    }
     private void AddParticle()
     {
         // create new particle
@@ -105,23 +110,6 @@ public class SwParticles2D
         CurrentTime += dt;
         if(RandomizeFrames) UpdateNoAdvance(dt);
         else UpdateAdvance(dt);
-        // SwAnimationState state = default;
-        // for (int idx = 0; idx < DataEntries.Count; idx++)
-        // {
-        //     if(DataEntries[idx].Expires > CurrentTime)
-        //     {
-        //         // update particle position
-        //         Positions[idx] += DataEntries[idx].Velocity * dt;
-        //         state = AnimStates[idx];
-        //         SwAnimationState.Advance(ref state, dt, Animation.NumFrames);
-        //         AnimStates[idx] = state;
-        //     }
-        //     else
-        //     {
-        //         // queue particle for removal
-        //         ToRemove.Push(idx);
-        //     }
-        // }
         while(ToRemove.TryPop(out int idx))
         {
             if(idx < Positions.Count - 1)
@@ -165,11 +153,18 @@ public class SwParticles2D
     {
         particles = default!;
         if(!data.TryGet("name", out string name)) return false;
-        if(!data.TryGet("filepath", out string filepath)) return false;
-        string dirpath = Path.GetDirectoryName(filepath)!;
-        if(!SwApp.TryLoadPrion(filepath, out var aseData)) return false;
-        if(!SwAnimation.TryFromPriAse(out SwAnimation animation, name, dirpath, aseData)) return false;
-        particles = new(animation);
+        if(data.TryGet("filepath_ase", out string filepath))
+        {
+            string dirpath = Path.GetDirectoryName(filepath)!;
+            if(!SwApp.TryLoadPrion(filepath, out var aseData)) return false;
+            if(!SwAnimation.TryFromPriAse(out SwAnimation animation, name, dirpath, aseData)) return false;
+            particles = new(animation);
+        }
+        else if(data.TryGet("filepath_texture", out filepath))
+        {
+            if(!ErTexture.TryFromPath(filepath, out var texture)) return false;
+            particles = new(texture);
+        }
         if(data.TryGet("spawn_delay", out double d)) particles.SpawnDelay = d;
         if(SwPrion.TryGetVec2(out var v, data.Get("origin"))) particles.Origin = v;
         if(data.TryGet("amount", out int i)) particles.Amount = i;

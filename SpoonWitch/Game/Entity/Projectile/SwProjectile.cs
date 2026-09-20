@@ -57,6 +57,11 @@ public class SwProjectile : SwEntity
             ImpactParticles.Origin = Position;
             ImpactParticles.Update(SwGame.DeltaTime);
         }
+        if(FlyingParticles is not null)
+        {
+            FlyingParticles.Origin = Position;
+            FlyingParticles.Update(SwGame.DeltaTime);
+        }
         if (!IsAlive)
         {
             if(ImpactParticles is null || ImpactParticles.LiveParticles == 0) QueueFree();
@@ -78,6 +83,7 @@ public class SwProjectile : SwEntity
             Texture.Draw(pos);
         }
         ImpactParticles?.Draw(SwGame.FrameDuration);
+        FlyingParticles?.Draw(SwGame.FrameDuration);
     }
     private void OnEnterHurtbox(SwEntity entity)
     {
