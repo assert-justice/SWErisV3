@@ -37,7 +37,7 @@ public class SwMap
         DisplayLayers = new SwDisplayLayer[numTileLayers];
         for (int i = 0; i < DisplayLayers.Length; i++)
         {
-            DisplayLayers[i] = new(this);
+            DisplayLayers[i] = new(this, i);
         }
         TileSize = tileSize ?? new(32, 32);
         SectorSizePx = sectorSizePx ?? new(640, 320);
@@ -114,7 +114,7 @@ public class SwMap
     }
     public int GetTile(int layerIdx, ErVec2I tileCoord)
     {
-        if(!TryGetSector(out var sector, tileCoord)) return -1;
+        if(!TryGetSector(out var sector, tileCoord)) return -2;
         return sector.GetTile(layerIdx, tileCoord);
     }
     public int GetTopTile(ErVec2I tileCoord)

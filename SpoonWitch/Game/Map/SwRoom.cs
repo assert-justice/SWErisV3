@@ -59,18 +59,20 @@ public class SwRoom
             }
             else throw new($"bad layer type '{layerType}'.");
         }
-        if(props.TryGet("room_auto_mode", out string autoMode))
-        {
-            switch (autoMode)
-            {
-                case "walled_grassy":
-                    AutoWalledGrassy();
-                    break;
-                default:
-                    ErEngine.LogWarning("unknown auto mode ", autoMode);
-                    break;
-            }
-        }
+        // if(props.TryGet("room_auto_mode", out string autoMode))
+        // {
+        //     switch (autoMode)
+        //     {
+        //         case "none":
+        //             break;
+        //         case "walled_grassy":
+        //             AutoWalledGrassy();
+        //             break;
+        //         default:
+        //             ErEngine.LogWarning("unknown auto mode ", autoMode);
+        //             break;
+        //     }
+        // }
     }
     public void Update()
     {

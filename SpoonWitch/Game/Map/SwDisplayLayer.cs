@@ -6,6 +6,7 @@ namespace SpoonWitch.Game.Map;
 public class SwDisplayLayer
 {
     public readonly SwMap Map;
+    public readonly int LayerIdx;
     private struct SwTileDisplay
     {
         public int TileId;
@@ -13,29 +14,23 @@ public class SwDisplayLayer
         public readonly ushort Seed{get; init;}
     }
     private readonly Dictionary<ErVec2I,SwTileDisplay> AtlasGrid = [];
-    private readonly Dictionary<ErVec2I,int> TileGrid = [];
-    private const int DefaultTileId = -1;
     private readonly List<(ErVec2I,int)> NextTiles = [];
     private static readonly ErVec2I[] Neighbors = [ErVec2I.Zero, ErVec2I.Right, ErVec2I.Down, ErVec2I.One];
-    public SwDisplayLayer(SwMap map)
+    public SwDisplayLayer(SwMap map, int layerIdx)
     {
         Map = map;
+        LayerIdx = layerIdx;
     }
     public void SetTile(ErVec2I tileCoord, int tileId)
     {
-        if(tileId < 0) TileGrid.Remove(tileCoord);
-        else TileGrid[tileCoord] = tileId;
         NextTiles.Add((tileCoord,tileId));
-    }
-    public int GetTileId(ErVec2I tileCoord)
-    {
-        if(!TileGrid.TryGetValue(tileCoord, out var val)) return DefaultTileId;
-        return val;
     }
     private bool IsTileMatch(ErVec2I tileCoord, int tileId)
     {
-        if(!TileGrid.TryGetValue(tileCoord, out var val)) return tileId == DefaultTileId;
-        return tileId == val;
+        int val = Map.GetTile(LayerIdx, tileCoord);
+        if(val == -2) return true;
+        else if(val == -1) return false;
+        else return tileId == val;
     }
     private SwTileMask GetMask(ErVec2I displayCoord, int tileId)
     {
