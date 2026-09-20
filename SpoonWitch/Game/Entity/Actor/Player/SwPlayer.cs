@@ -19,6 +19,7 @@ public class SwPlayer: SwActor
 {
     public override uint Mask => (uint)(IsAlive ? 3 : 0);
     public override int RenderLayer => 3;
+    public int PlayerIdx;
     public double ChargeTime => 1;
     public double ChargeSpeedMul => 0.5;
     // Note: dodge animations run at 12 fps, so 3/12 is 0.25 seconds

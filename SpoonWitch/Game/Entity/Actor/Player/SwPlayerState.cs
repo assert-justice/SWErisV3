@@ -260,6 +260,11 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     public class Default: SwPlayerState
     {
         public override string Name => "default";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            if(Entity.PlayerIdx == 1) BodySprite.SetPallet(0);
+        }
         public override void Update()
         {
             base.Update();

@@ -279,6 +279,9 @@ public class SwGame
         player.SetProps(new PriDict());
         Hud.Player = player;
         AddEntity(player);
+        // player = new();
+        // player.SetProps(new PriDict());
+        // AddEntity(player);
         if(!Map.TryGetDefaultCheckpoint(out var checkpoint))
         {
             ErEngine.LogWarning("no default checkpoint found");
