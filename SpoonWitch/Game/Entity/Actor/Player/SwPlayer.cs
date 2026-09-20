@@ -6,6 +6,7 @@ using Prion.Node;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Command;
 using SpoonWitch.Data;
+using SpoonWitch.Game.Effect.Spell;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
 using SpoonWitch.Game.Map.Collision;
@@ -54,6 +55,7 @@ public class SwPlayer: SwActor
     public double DodgeCooldownClock{get => Clocks[base.NumClocks+1]; set {Clocks[base.NumClocks+1] = value;}}
     public double AttackCooldownClock{get => Clocks[base.NumClocks+2]; set {Clocks[base.NumClocks+2] = value;}}
     public double SpoonAttackStaminaCost = 30;
+    public SwSpell? CurrentSpell;
     private readonly SwStateMachine StateMachine;
     private readonly SwPlayerControls Controls;
     private readonly SwInventoryComponent InventoryComp;
@@ -116,9 +118,19 @@ public class SwPlayer: SwActor
         Props.TrySet("bullet/collision_mask", 3);
         Props.TrySet("bullet/texture_filepath", "game_data/entities/actors/player/images/bella_sling_ammo_shot.png");
         Props.TrySet("bullet/impact_particles", impactParticles);
-        Props.TrySet("bullet/flying_particles", flyingParticles);
+        Props.TrySet("comet/damage", slingDamage.ToPri());
+        Props.TrySet("comet/collision_mask", 3);
+        Props.TrySet("comet/texture_filepath", "game_data/entities/actors/player/images/bella_sling_ammo_shot.png");
+        Props.TrySet("comet/impact_particles", impactParticles);
+        Props.TrySet("comet/flying_particles", flyingParticles);
+        var spell = new SwCometShield(this)
+        {
+            ProjectileData = Props.Get("comet"),
+        };
+        CurrentSpell = spell;
         InventoryComp.Entries.SetCount("sling_ammo", 0, 8);
         InventoryComp.Entries.SetCount("roots", 0, 1);
+
     }
     public override void Update()
     {
@@ -126,6 +138,7 @@ public class SwPlayer: SwActor
         SwGame.SetPlayerPos(Position);
         Props.TrySet("spoon_damage/source_pos_x", Position.X);
         Props.TrySet("spoon_damage/source_pos_y", Position.Y);
+        CurrentSpell?.Update();
         if(IsAlive && ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Semicolon)) TestDamage(1000);
         if(IsAlive) SwGame.SetCameraTarget(Position);
     }

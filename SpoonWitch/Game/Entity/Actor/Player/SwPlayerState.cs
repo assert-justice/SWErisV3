@@ -92,6 +92,13 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         if(Entity.Stamina <= 0) return false;
         return true;
     }
+    private bool CanCast()
+    {
+        if(Entity.CurrentSpell is null) return false;
+        if(Entity.Mana < Entity.CurrentSpell.ManaCost) return false;
+        if(Entity.CurrentSpell.IsActive) return false;
+        return true;
+    }
     public override void Init(SwStateMachine stateMachine)
     {
         base.Init(stateMachine);
@@ -262,6 +269,15 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             if(CanAttack() && Controls.AttackJustPressed) StateMachine.SetState("attack");
             else if(Controls.IsCharging && Inventory.GetCount("sling_ammo") > 0) StateMachine.SetState("charging");
             else if(CanDodge() && Controls.DodgeJustPressed) StateMachine.SetState("dodging");
+            else if(Entity.CurrentSpell is not null)
+            {
+                // if(Entity.CurrentSpell.IsActive && Controls.CastJustPressed) Entity.CurrentSpell.End();
+                if(!Entity.CurrentSpell.IsActive && CanCast() && Controls.CastJustPressed)
+                {
+                    Entity.CurrentSpell.Begin();
+                    Entity.Mana -= Entity.CurrentSpell.ManaCost;
+                }
+            }
             if(Entity.DodgeCooldownClock > 0) Entity.DodgeCooldownClock -= SwGame.DeltaTime;
             if(Entity.AttackCooldownClock > 0) Entity.AttackCooldownClock -= SwGame.DeltaTime;
         }

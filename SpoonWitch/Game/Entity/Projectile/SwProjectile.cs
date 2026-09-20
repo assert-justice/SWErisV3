@@ -16,6 +16,7 @@ public class SwProjectile : SwEntity
     public ErVec2 Velocity;
     public bool Piercing = false;
     private bool IsAlive = true;
+    public override int RenderLayer => 3;
     private readonly SwAreaComponent Hurtbox;
     public SwProjectile()
     {

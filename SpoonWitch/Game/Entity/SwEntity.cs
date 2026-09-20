@@ -96,7 +96,7 @@ public abstract class SwEntity
         // if(!SwGame.TryGetEntProps(Id, out var entProps)) ErEngine.LogError("no properties found for for entity ", Id);
         // EntProps = entProps!;
     }
-    protected void QueueFree()
+    public void QueueFree()
     {
         IsFreeQueued = true;
     }

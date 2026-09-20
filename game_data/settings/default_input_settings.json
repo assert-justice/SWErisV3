@@ -3,11 +3,11 @@
         "attack": {
             "buffer": 0.25,
             "mouse_buttons":["Left"],
-            "gamepad_buttons": ["West","RightShoulder"]
+            "gamepad_buttons": ["West"]
         },
         "fire": {
             "mouse_buttons":["Left"],
-            "gamepad_buttons": ["West","RightShoulder"]
+            "gamepad_buttons": ["RightShoulder"]
         },
         "charge": {
             "mouse_buttons":["Right"],
@@ -17,6 +17,11 @@
             "buffer": 0.25,
             "keys":["Space"],
             "gamepad_buttons":["East", "LeftShoulder"]
+        },
+        "cast": {
+            "buffer": 0.25,
+            "keys":["F"],
+            "gamepad_buttons":["North"]
         },
         "pause":{
             "keys": ["Escape"],

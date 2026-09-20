@@ -34,10 +34,12 @@ public class SwPlayerControls: SwComponent
     private ErVButton Fire => Buttons[1];
     private ErVButton Charge => Buttons[2];
     private ErVButton Dodge => Buttons[3];
-    public bool AttackJustPressed{get => Attack.JustPressed;}
-    public bool FireJustPressed{get => Fire.JustPressed;}
+    private ErVButton Cast => Buttons[4];
+    public bool AttackJustPressed => Attack.JustPressed;
+    public bool FireJustPressed => Fire.JustPressed;
     public bool IsCharging{get; private set;}
-    public bool DodgeJustPressed{get => Dodge.JustPressed;}
+    public bool DodgeJustPressed => Dodge.JustPressed;
+    public bool CastJustPressed => Cast.JustPressed;
     public ErInputDevice Device = ErInputDevice.All();
     public SwPlayerControls(SwPlayer parent): base(parent, "controls")
     {
@@ -47,7 +49,7 @@ public class SwPlayerControls: SwComponent
             return;
         }
         if(!ErInputProfile.TryGetAxes2(node, ["move", "aim"], out Axis2s)) return;
-        if(!ErInputProfile.TryGetButtons(node, ["attack", "fire", "charge", "dodge"], out Buttons)) return;
+        if(!ErInputProfile.TryGetButtons(node, ["attack", "fire", "charge", "dodge", "cast"], out Buttons)) return;
         LastFacing = ErVec2.Down;
     }
     public override void Read(SwByteStream byteStream)
