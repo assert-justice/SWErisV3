@@ -1,4 +1,10 @@
 {
     "sling_bullet":{},
-    "spell_bullet": {}
+    "spell_bullet": {},
+    "pickups":{
+        "spoon":{
+            "texture_filepath": "entities/actors/player/images/bella_spoon_item.png"
+        }
+    },
+    "entities":{}
 }

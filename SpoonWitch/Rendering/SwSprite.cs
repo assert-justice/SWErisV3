@@ -131,6 +131,7 @@ public class SwSprite(string name)
         SwAnimationState.Advance(ref NextAnimationState, SwGame.FrameDuration, CurrentAnimation.NumFrames);
         if(!CurrentAnimation.TryGetFrame(out var frame, NextAnimationState.FrameIdx))
         {
+            // throw new("oops");
             ErEngine.LogError("bad frame idx ", NextAnimationState.FrameIdx, " for anim ", CurrentAnimation.Name);
             return;
         }

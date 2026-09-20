@@ -468,6 +468,11 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             base.Update();
             if(Controls.DodgeJustPressed) StateMachine.SetState("default");
         }
+        public override void EndState(string nextState)
+        {
+            base.EndState(nextState);
+            Entity.PickupTexture = null;
+        }
     }
     public static SwStateMachine GetStateMachine(SwPlayer parent, string name)
     {

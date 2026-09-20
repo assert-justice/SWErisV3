@@ -60,6 +60,7 @@ public class SwPlayer: SwActor
     private readonly SwStateMachine StateMachine;
     private readonly SwPlayerControls Controls;
     private readonly SwInventoryComponent InventoryComp;
+    public ErTexture? PickupTexture;
     public SwPlayer()
     {
         Controls = new SwPlayerControls(this);
@@ -143,6 +144,15 @@ public class SwPlayer: SwActor
         if(IsAlive && ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Semicolon)) TestDamage(1000);
         if(IsAlive) SwGame.SetCameraTarget(Position);
     }
+    protected override void DrawImpl(SwEntity nextState)
+    {
+        base.DrawImpl(nextState);
+        if(PickupTexture is not null)
+        {
+            var rect = ErRect2.Centered(Position + ErVec2.Up * 24, PickupTexture.Size);
+            PickupTexture.Draw(rect.Position);
+        }
+    }
     protected override double Damage(SwDamage damage)
     {
         double value = base.Damage(damage);
@@ -177,5 +187,11 @@ public class SwPlayer: SwActor
     private void PlayerAddItem(PriNode command)
     {
         StateMachine.SetState("item_get");
+        if(!command.TryGet("pickup_type", out string pickup_type)) return;
+        if(!command.TryGet("text", out string text)) text = string.Empty;
+        if(SwData.Prototypes.TryGet($"pickups/{pickup_type}/texture_filepath", out string texture_filepath))
+        {
+            if(!ErTexture.TryFromPath(Path.Join(SwData.GAME_DATA_PATH, texture_filepath), out PickupTexture)) ErEngine.Log("bad pickup texture path");
+        }
     }
 }

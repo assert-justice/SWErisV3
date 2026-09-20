@@ -1999,7 +1999,8 @@
 		{ "identifier": "entity_type", "uid": 48, "values": [
 			{ "id": "none", "tileRect": null, "color": 14120515 },
 			{ "id": "slume", "tileRect": null, "color": 12470831 },
-			{ "id": "knight", "tileRect": null, "color": 15389866 }
+			{ "id": "knight", "tileRect": null, "color": 15389866 },
+			{ "id": "aspect", "tileRect": null, "color": 14984818 }
 		], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] },
 		{ "identifier": "prop_collision_mode", "uid": 66, "values": [
 			{ "id": "none", "tileRect": null, "color": 12470831 },
@@ -3415,6 +3416,34 @@
 							],
 							"__worldX": 1120,
 							"__worldY": 64
+						},
+						{
+							"__identifier": "spawner",
+							"__grid": [12,28],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FF0044",
+							"iid": "c6ef3a90-96d0-11f1-a632-d564a133d244",
+							"width": 32,
+							"height": 32,
+							"defUid": 8,
+							"px": [96,224],
+							"fieldInstances": [
+								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "aspect", "__tile": null, "defUid": 49, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["aspect"]
+								}] },
+								{ "__identifier": "trigger_on_load", "__type": "Bool", "__value": true, "__tile": null, "defUid": 9, "realEditorValues": [] },
+								{ "__identifier": "property_overrides_json", "__type": "String", "__value": null, "__tile": null, "defUid": 12, "realEditorValues": [] },
+								{ "__identifier": "max_uses", "__type": "Int", "__value": null, "__tile": null, "defUid": 50, "realEditorValues": [] },
+								{ "__identifier": "is_passive", "__type": "Bool", "__value": true, "__tile": null, "defUid": 119, "realEditorValues": [{
+									"id": "V_Bool",
+									"params": [ true ]
+								}] }
+							],
+							"__worldX": 736,
+							"__worldY": 224
 						}
 					]
 				},
@@ -3475,14 +3504,11 @@
 							"defUid": 61,
 							"px": [288,128],
 							"fieldInstances": [
-								{ "__identifier": "texture_filepath", "__type": "FilePath", "__value": "../entities/actors/player/images/bella_spoon_d.png", "__tile": null, "defUid": 63, "realEditorValues": [{
+								{ "__identifier": "texture_filepath", "__type": "FilePath", "__value": "../entities/actors/player/images/bella_spoon_item.png", "__tile": null, "defUid": 63, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["../entities/actors/player/images/bella_spoon_d.png"]
+									"params": ["../entities/actors/player/images/bella_spoon_item.png"]
 								}] },
-								{ "__identifier": "properties_json", "__type": "String", "__value": "{\n  \"tile_width\": 64,\n  \"tile_height\": 64\n}", "__tile": null, "defUid": 65, "realEditorValues": [{
-									"id": "V_String",
-									"params": ["{\\n  \"tile_width\": 64,\\n  \"tile_height\": 64\\n}"]
-								}] },
+								{ "__identifier": "properties_json", "__type": "String", "__value": null, "__tile": null, "defUid": 65, "realEditorValues": [null] },
 								{ "__identifier": "prop_collision_mode", "__type": "LocalEnum.prop_collision_mode", "__value": "none", "__tile": null, "defUid": 73, "realEditorValues": [] }
 							],
 							"__worldX": 928,
