@@ -26,68 +26,44 @@ public class SwCommandStore
             while(Overflow.TryDequeue(out var command)) Commands.Add(command);
         }
     }
-    private class SwQueue
+    private readonly Dictionary<string, SwStore> Stores = [];
+    public IEnumerable<PriNode> GetCommands(string verb)
     {
-        private readonly Queue<PriNode> Commands = [];
-        private long LastUsed;
-        private void NoteUsed()
-        {
-            LastUsed = DateTime.UtcNow.Ticks;
-        }
-        public IEnumerable<PriNode> GetCommands()
-        {
-            if(Commands.Count > 0) NoteUsed();
-            while(Commands.TryDequeue(out var command)) yield return command;
-        }
-        public bool CanEvict(long now, long ageGate)
-        {
-            if(Commands.Count > 0) return false;
-            return now - LastUsed > ageGate;
-        }
-        public void AddCommand(PriNode command)
-        {
-            Commands.Enqueue(command);
-            NoteUsed();
-        }
-    }
-    private readonly Dictionary<string, SwStore> GeneralStores = [];
-    private readonly Dictionary<string,SwQueue> QueueLookup = [];
-    public IEnumerable<PriNode> GetGlobalCommands(string verb)
-    {
-        if(!GeneralStores.TryGetValue(verb, out var store)) return [];
+        if(!Stores.TryGetValue(verb, out var store)) return [];
         else return store.GetCommands();
     }
-    public IEnumerable<PriNode> HandleCommands(string id)
+    public void AddCommandVerb(string verb)
     {
-        if(!QueueLookup.TryGetValue(id, out var commands)) return [];
-        return commands.GetCommands();
+        PriDict command = [];
+        command.TrySet("verb", verb);
+        AddCommand(command);
     }
-    public void AddGlobalCommand(PriNode command)
+    public void AddCommand(PriNode command)
     {
+        if(command is PriNull) return;
+        if(command is PriList list)
+        {
+            foreach (var item in list.Data)
+            {
+                AddCommand(item);
+            }
+            return;
+        }
         if(!command.TryGet("verb", out string verb))
         {
             ErEngine.LogWarning("malformed command, missing verb");
             return;
         }
-        if(!GeneralStores.TryGetValue(verb, out var store))
+        if(!Stores.TryGetValue(verb, out var store))
         {
             store = new();
-            GeneralStores[verb] = store;
+            Stores[verb] = store;
         }
         store.AddCommand(command);
     }
-    public void AddCommand(string id, PriNode command)
-    {
-        if(!QueueLookup.TryGetValue(id, out var queue))
-        {
-            queue = new();
-            QueueLookup.Add(id, queue); 
-        }
-        queue.AddCommand(command);
-    }
     public void Flush()
     {
-        foreach (var item in GeneralStores.Values)
+        foreach (var item in Stores.Values)
         {
             item.Flush();
         }

@@ -16,6 +16,7 @@ public static class SwData
     public static readonly PriDb Settings = new();
     public static readonly PriDb SaveData = new();
     public static readonly PriDb Manifest = new();
+    public static readonly PriDb Prototypes = new();
     private static readonly List<nint> PalletLookup = [];
     public static bool TryInit()
     {
@@ -24,6 +25,7 @@ public static class SwData
         {
             PalletLookup.Add(item);
         }
+        if(!TryLoadDb(Prototypes, Path.Join(GAME_DATA_PATH, "prototypes.json"))) return ErEngine.LogError("unable to load prototypes");
         return true;
     }
     public static int PaletteCount => PalletLookup.Count;

@@ -31,13 +31,13 @@ public class SwMapProp : SwMapObject
         if (IsSolid)
         {
             PriDict command = [];
-            command.TrySet("verb", "set_collision_tile_rect");
-            command.TrySet("tile_id", 0);
+            command.TrySet("verb", "map_set_tile_rect");
+            command.TrySet("tile_id", 7);
             command.TrySet("x", RectTiles.Position.X);
             command.TrySet("y", RectTiles.Position.Y);
             command.TrySet("w", RectTiles.Size.X);
             command.TrySet("h", RectTiles.Size.Y);
-            SwApp.CommandStore.AddGlobalCommand(command);
+            SwApp.CommandStore.AddCommand(command);
         }
     }
     public override void Draw()

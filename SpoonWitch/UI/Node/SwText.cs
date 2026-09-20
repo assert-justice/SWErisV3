@@ -8,7 +8,15 @@ namespace SpoonWitch.UI.Node;
 public class SwText: SwUiNode
 {
     private string _Text = string.Empty;
-    public string Text{get => _Text; set{_Text = value;}}
+    public string Text
+    {
+        get => _Text;
+        set
+        {
+            _Text = value;
+            _MinSize = null;
+        }
+    }
     public ErColor FontColor = ErColor.Red;
     public float _FontSize = 16;
     private ErVec2? _MinSize;
@@ -27,19 +35,14 @@ public class SwText: SwUiNode
     public SwText(PriNode node) : base(node)
     {
         if(node.TryGet("text", out string s)) Text = s;
+        if(node.TryGet("font_size", out double font_size)) FontSize = font_size;
+        if(node.TryGet("font_color", out string font_color))
+        {
+            if(!ErColor.TryParse(font_color, out var color)) ErEngine.LogWarning("bad color string '", font_color, "'");
+            else FontColor = color;
+        }
     }
-    // private ErVec2 GetMinSize()
-    // {
-    //     if(_MinSize is not null) return _MinSize.Value;
-    //     if(Font is null)
-    //     {
-    //         ErEngine.Log("dumb");
-    //         return base.MinSize;
-    //     }
-    //     ErEngine.Log("text size", Font.GetStringSize(Text));
-    //     return _MinSize ??= Font?.GetStringSize(Text) ?? base.MinSize;
-    // }
-    private ErFont? Font
+    public ErFont? Font
     {
         get
         {
@@ -53,6 +56,6 @@ public class SwText: SwUiNode
     public override void Draw()
     {
         base.Draw();
-        Font?.DrawString(Text, FontColor, Position);
+        Font?.DrawString(Text, FontColor, GlobalPosition);
     }
 }

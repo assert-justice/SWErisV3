@@ -22,6 +22,8 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     private SwParticleComponent DustParticles = null!;
     private SwInventoryComponent _Inventory = null!;
     private SwInventory Inventory => _Inventory.Entries!;
+    protected virtual double StaminaRegenClockMul => 1;
+    protected virtual double ManaRegenMul => 1;
     // name, hands, facing
     private static readonly string[][][] BodyAnims = [
         [
@@ -81,11 +83,20 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     {
         if(Entity.DodgeCooldownClock > 0) return false;
         if(!Controls.Move.IsNonzero()) return false;
+        if(Entity.Stamina <= 0) return false;
         return true;
     }
     private bool CanAttack()
     {
         if(Entity.AttackCooldownClock > 0) return false;
+        if(Entity.Stamina <= 0) return false;
+        return true;
+    }
+    private bool CanCast()
+    {
+        if(Entity.CurrentSpell is null) return false;
+        if(Entity.Mana < Entity.CurrentSpell.ManaCost) return false;
+        if(Entity.CurrentSpell.IsActive) return false;
         return true;
     }
     public override void Init(SwStateMachine stateMachine)
@@ -113,6 +124,11 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         BodySprite.Play(animName);
         HatSprite.Play(animName);
     }
+    private void PlayBodyAnim(string animName)
+    {
+        BodySprite.Play(animName);
+        HatSprite.Play(animName);
+    }
     // public override void BeginState(string lastState)
     // {
     //     base.BeginState(lastState);
@@ -123,24 +139,158 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         base.Update();
         ReticleSprite.Visible = Controls.ReticleVisible;
         ReticleSprite.Offset = Controls.ReticlePosition;
+        if(Entity.Stamina < Entity.MaxStamina)
+        {
+            if(Entity.StaminaRegenClock > 0) Entity.StaminaRegenClock -= SwGame.DeltaTime * StaminaRegenClockMul;
+            else
+            {
+                Entity.Stamina += Entity.StaminaRegen * SwGame.DeltaTime;
+                if(Entity.Stamina > Entity.MaxStamina) Entity.Stamina = Entity.MaxStamina;
+            }
+        }
+        if(Entity.Mana < Entity.MaxMana)
+        {
+            Entity.Mana += Entity.ManaRegen * SwGame.DeltaTime * ManaRegenMul;
+            if(Entity.Mana > Entity.MaxMana) Entity.Mana = Entity.MaxMana;
+        }
+    }
+    public class Dead: SwPlayerState
+    {
+        public override string Name => "dead";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            PlayBodyAnim("die");
+            Entity.Velocity = ErVec2.Zero;
+        }
+        public override void Update()
+        {
+            base.Update();
+            if(BodySprite.IsPlaying) return;
+            if(BodySprite.CurrentAnimation.Name == "die") PlayBodyAnim("continue");
+            else if(SwGame.Map.InSameRoom(Entity.Position, SwGame.ActiveCheckpoint.RectPx.Center)) StateMachine.SetState("respawn");
+            else StateMachine.SetState("respawn_fade_out");
+        }
+    }
+    public class RespawnFadeOut: SwPlayerState
+    {
+        public override string Name => "respawn_fade_out";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            PlayBodyAnim("fly");
+            SwGame.Game.FadeOut();
+        }
+        public override void Update()
+        {
+            base.Update();
+            bool isVisible = SwGame.Camera.IsPointVisible(Entity.Position);
+            if (isVisible)
+            {
+                Entity.MoveToward(SwGame.ActiveCheckpoint.RectPx.Center, Entity.BaseSpeed);
+            }
+            else Entity.Velocity = ErVec2.Zero;
+            if(SwGame.Game.FadeState == 1 && !isVisible) StateMachine.SetState("respawn_fade_in");
+        }
+    }
+    public class RespawnFadeIn: SwPlayerState
+    {
+        public override string Name => "respawn_fade_in";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            PlayBodyAnim("fly");
+            SwGame.Game.FadeIn();
+            SwGame.SetCameraTarget(SwGame.ActiveCheckpoint.RectPx.Center, true);
+            ErVec2 diff = Entity.Position - SwGame.ActiveCheckpoint.RectPx.Center;
+            double distance = diff.GetLength();
+            if(500 < distance) distance = 500;
+            ErVec2 offset = diff.Normalized() * distance;
+            ErVec2 pos = SwGame.ActiveCheckpoint.RectPx.Center + offset;
+            Entity.Position = pos;
+        }
+        public override void Update()
+        {
+            base.Update();
+            if(BodySprite.CurrentAnimation.Name == "respawn")
+            {
+                if (!BodySprite.IsPlaying)
+                {
+                    StateMachine.SetState("default");
+                    Entity.IsAlive = true;
+                }
+                return;
+            }
+            double distance = Entity.MoveToward(SwGame.ActiveCheckpoint.RectPx.Center, Entity.BaseSpeed);
+            if(distance == 0) PlayBodyAnim("respawn");
+        }
+    }
+    public class Respawn: SwPlayerState
+    {
+        public override string Name => "respawn";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            PlayBodyAnim("fly");
+        }
+        public override void Update()
+        {
+            base.Update();
+            if(BodySprite.CurrentAnimation.Name == "respawn")
+            {
+                if(!BodySprite.IsPlaying) StateMachine.SetState("default");
+                Entity.IsAlive = true;
+                return;
+            }
+            ErVec2 diff = SwGame.ActiveCheckpoint.RectPx.Center - Entity.Position;
+            double speed = Entity.BaseSpeed * SwGame.DeltaTime;
+            double lenSq = diff.GetLengthSquared();
+            if(lenSq < speed * speed)
+            {
+                Entity.Velocity = ErVec2.Zero;
+                PlayBodyAnim("respawn");
+            }
+            else
+            {
+                ErVec2 dir = (SwGame.ActiveCheckpoint.RectPx.Center - Entity.Position).Normalized();
+                Entity.Velocity = dir * Entity.BaseSpeed;
+            }
+        }
     }
     public class Default: SwPlayerState
     {
         public override string Name => "default";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            if(Entity.PlayerIdx == 1) BodySprite.SetPallet(0);
+        }
         public override void Update()
         {
             base.Update();
             int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
             SetBodyHandedAnim(animIdx, 2, Controls.LastFacingIdx);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed;
-            if(Controls.AttackJustPressed && CanAttack()) StateMachine.SetState("attack");
+            if(CanAttack() && Controls.AttackJustPressed) StateMachine.SetState("attack");
             else if(Controls.IsCharging && Inventory.GetCount("sling_ammo") > 0) StateMachine.SetState("charging");
-            else if(Controls.DodgeJustPressed && CanDodge()) StateMachine.SetState("dodging");
+            else if(CanDodge() && Controls.DodgeJustPressed) StateMachine.SetState("dodging");
+            else if(Entity.CurrentSpell is not null)
+            {
+                // if(Entity.CurrentSpell.IsActive && Controls.CastJustPressed) Entity.CurrentSpell.End();
+                if(!Entity.CurrentSpell.IsActive && CanCast() && Controls.CastJustPressed)
+                {
+                    Entity.CurrentSpell.Begin();
+                    Entity.Mana -= Entity.CurrentSpell.ManaCost;
+                }
+            }
+            if(Entity.DodgeCooldownClock > 0) Entity.DodgeCooldownClock -= SwGame.DeltaTime;
+            if(Entity.AttackCooldownClock > 0) Entity.AttackCooldownClock -= SwGame.DeltaTime;
         }
     }
     public class Attack: SwPlayerState
     {
         public override string Name => "attack";
+        protected override double StaminaRegenClockMul => 0;
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
@@ -150,6 +300,10 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             SetBodyHandedAnim(0, 0, Controls.LastFacingIdx);
             Entity.Velocity = ErVec2.Zero;
             SetHurtbox();
+            Entity.Stamina -= Entity.SpoonAttackStaminaCost;
+            Entity.StaminaRegenClock = Entity.StaminaRegenDelay;
+            if(Entity.Stamina < 0) Entity.StaminaRegenClock += Entity.StaminaRegenDelayPenalty;
+            SpoonSprite.HFlip = !SpoonSprite.HFlip;
         }
         public override void Update()
         {
@@ -226,20 +380,17 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         private void Fire()
         {
             var pos = Entity.Position;
-            PriDict bullet = [];
+            var b = Entity.Props.Get("bullet").DeepCopy();
+            if(!b.TryAs(out PriDict bullet)) throw new("fuck off");
             bullet.TrySet("x", pos.X);
             bullet.TrySet("y", pos.Y);
             bullet.TrySet("x_velocity", Controls.Aim.X * Entity.BulletSpeed);
             bullet.TrySet("y_velocity", Controls.Aim.Y * Entity.BulletSpeed);
-            bullet.TrySet("damage", Entity.EntProps.Props.Get("bullet/damage"));
-            SwGame.Game.AddEntity<SwProjectile>(bullet);
+            SwProjectile projectile = new();
+            projectile.SetProps(bullet);
+            SwGame.Game.AddEntity(projectile);
             Entity.AttackCooldownClock = 0.1;
             Entity.Ammo--;
-            PriDict command = [];
-            command.TrySet("verb", "hud_set");
-            command.TrySet("key", "sling_ammo");
-            command.TrySet("value", Entity.Ammo);
-            SwApp.CommandStore.AddGlobalCommand(command);
         }
         public override void Update()
         {
@@ -250,23 +401,8 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             if (!Controls.IsCharging) StateMachine.SetState("default");
             else if (CanFire())
             {
-                // fire!
                 Fire();
                 StateMachine.SetState("default");
-                // var pos = Entity.Position;
-                // Entity.EntProps.Props.TrySet("bullet/x", pos.X);
-                // Entity.EntProps.Props.TrySet("bullet/y", pos.Y);
-                // Entity.EntProps.Props.TrySet("bullet/x_velocity", Controls.Aim.X * Entity.BulletSpeed);
-                // Entity.EntProps.Props.TrySet("bullet/y_velocity", Controls.Aim.Y * Entity.BulletSpeed);
-                // SwGame.Game.AddEntity<SwProjectile>(Entity.EntProps.Props.Get("bullet"));
-                // StateMachine.SetState("default");
-                // Entity.AttackCooldownClock = 0.1;
-                // Entity.Ammo--;
-                // PriDict command = [];
-                // command.TrySet("verb", "hud_set");
-                // command.TrySet("key", "sling_ammo");
-                // command.TrySet("value", Entity.Ammo);
-                // SwApp.CommandStore.AddGlobalCommand(command);
             }
         }
         public override void EndState(string nextState)
@@ -280,6 +416,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     public class Dodging: SwPlayerState
     {
         public override string Name => "dodging";
+        protected override double StaminaRegenClockMul => 0;
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
@@ -293,17 +430,21 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
                 particles.Emitting = true;
                 particles.Speed = 30;
                 particles.Amount = 80;
-                particles.UseLocalCoords = false;
+                particles.UseLocalCoordinates = false;
                 particles.Lifetime = 5 * 0.125;
                 particles.OneShot = true;
             }
+            Entity.Stamina -= Entity.DodgeStaminaCost;
+            Entity.StaminaRegenClock = Entity.StaminaRegenDelay;
+            if(Entity.Stamina < 0) Entity.StaminaRegenClock += Entity.StaminaRegenDelayPenalty;
         }
         public override void Update()
         {
             base.Update();
             double elapsed = Entity.Clock0;
             Entity.Clock0 += SwGame.DeltaTime;
-            if(Entity.Clock0 > Entity.DodgeDuration) StateMachine.SetState("default");
+            if(!BodySprite.IsPlaying) StateMachine.SetState("default");
+            // if(Entity.Clock0 > Entity.DodgeDuration) StateMachine.SetState("default");
             // Note: edge detection. fires when the clock is now past invuln delay
             else if(Entity.Clock0 >= Entity.DodgeInvulnDelay && elapsed < Entity.DodgeInvulnDelay) Entity.InvulnClock = Entity.DodgeInvulnWindow;
         }
@@ -313,14 +454,34 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             Entity.DodgeCooldownClock = Entity.DodgeCooldown;
         }
     }
+    public class ItemGet: SwPlayerState
+    {
+        public override string Name => "item_get";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            PlayBodyAnim("item_found");
+            Entity.Velocity = ErVec2.Zero;
+        }
+        public override void Update()
+        {
+            base.Update();
+            if(Controls.DodgeJustPressed) StateMachine.SetState("default");
+        }
+    }
     public static SwStateMachine GetStateMachine(SwPlayer parent, string name)
     {
         return new(parent, name, [
+            new RespawnFadeIn(),
+            new RespawnFadeOut(),
+            new Respawn(),
             new Default(),
             new Attack(),
             new Charging(),
             new Charged(),
             new Dodging(),
+            new Dead(),
+            new ItemGet(),
         ]);
     }
 }

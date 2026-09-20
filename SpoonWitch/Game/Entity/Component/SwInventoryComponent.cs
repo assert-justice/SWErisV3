@@ -15,19 +15,5 @@ public class SwInventoryComponent: SwComponent
         base.Ready();
         Id = SwApp.GetNextId();
         Entries = new();
-        SwGame.InventoryLookup.Add(Id, Entries);
-    }
-    public override void Read(SwByteStream byteStream)
-    {
-        base.Read(byteStream);
-        byteStream.TryReadI32(out Id);
-        if(!SwGame.InventoryLookup.TryGetValue(Id, out var inventory)) return;
-        Entries = inventory;
-    }
-    public override void Write(SwByteStream byteStream)
-    {
-        base.Write(byteStream);
-        byteStream.WriteI32(Id);
-        Entries = null!;
     }
 }

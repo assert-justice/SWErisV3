@@ -3,7 +3,7 @@ using Prion.Node;
 using SpoonWitch.Command;
 using SpoonWitch.UI.Node;
 
-namespace SpoonWitch.UI.Menu;
+namespace SpoonWitch.UI.Node;
 
 public class SwMenuHolder: SwUiNode
 {
@@ -86,13 +86,8 @@ public class SwMenuHolder: SwUiNode
         menuId = id;
         return true;
     }
-    private void SetMenu(PriNode command)
+    public void SetMenu(string menuId)
     {
-        if(!command.TryGet("menu_id", out string menuId))
-        {
-            ErEngine.LogWarning("bad set menu command");
-            return;
-        }
         if (!MenuLookup.ContainsKey(menuId))
         {
             ErEngine.LogWarning("invalid menu name ", menuId);
@@ -102,7 +97,27 @@ public class SwMenuHolder: SwUiNode
         if (MenuStack.Contains(menuId))
         {
             while(MenuStack.TryPop(out var id) && id != menuId){}
-            MenuStack.Push(menuId);
         }
+        MenuStack.Push(menuId);
+    }
+    private void SetMenu(PriNode command)
+    {
+        if(!command.TryGet("menu_id", out string menuId))
+        {
+            ErEngine.LogWarning("bad set menu command");
+            return;
+        }
+        SetMenu(menuId);
+        // if (!MenuLookup.ContainsKey(menuId))
+        // {
+        //     ErEngine.LogWarning("invalid menu name ", menuId);
+        //     return;
+        // }
+        // if(CurrentMenu is not null && CurrentMenu.Id == menuId) return;
+        // if (MenuStack.Contains(menuId))
+        // {
+        //     while(MenuStack.TryPop(out var id) && id != menuId){}
+        // }
+        // MenuStack.Push(menuId);
     }
 }

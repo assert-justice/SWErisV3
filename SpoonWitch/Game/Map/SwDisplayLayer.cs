@@ -6,6 +6,7 @@ namespace SpoonWitch.Game.Map;
 public class SwDisplayLayer
 {
     public readonly SwMap Map;
+    public readonly int LayerIdx;
     private struct SwTileDisplay
     {
         public int TileId;
@@ -13,29 +14,23 @@ public class SwDisplayLayer
         public readonly ushort Seed{get; init;}
     }
     private readonly Dictionary<ErVec2I,SwTileDisplay> AtlasGrid = [];
-    private readonly Dictionary<ErVec2I,int> TileGrid = [];
-    private const int DefaultTileId = -1;
     private readonly List<(ErVec2I,int)> NextTiles = [];
     private static readonly ErVec2I[] Neighbors = [ErVec2I.Zero, ErVec2I.Right, ErVec2I.Down, ErVec2I.One];
-    public SwDisplayLayer(SwMap map)
+    public SwDisplayLayer(SwMap map, int layerIdx)
     {
         Map = map;
+        LayerIdx = layerIdx;
     }
     public void SetTile(ErVec2I tileCoord, int tileId)
     {
-        if(tileId < 0) TileGrid.Remove(tileCoord);
-        else TileGrid[tileCoord] = tileId;
         NextTiles.Add((tileCoord,tileId));
-    }
-    public int GetTileId(ErVec2I tileCoord)
-    {
-        if(!TileGrid.TryGetValue(tileCoord, out var val)) return DefaultTileId;
-        return val;
     }
     private bool IsTileMatch(ErVec2I tileCoord, int tileId)
     {
-        if(!TileGrid.TryGetValue(tileCoord, out var val)) return tileId == DefaultTileId;
-        return tileId == val;
+        int val = Map.GetTile(LayerIdx, tileCoord);
+        if(val == -2) return true;
+        else if(val == -1) return false;
+        else return tileId == val;
     }
     private SwTileMask GetMask(ErVec2I displayCoord, int tileId)
     {
@@ -52,14 +47,18 @@ public class SwDisplayLayer
     }
     private void UpdateDisplayTile(ErVec2I displayCoord, int tileId)
     {
-        var mask = GetMask(displayCoord, tileId);
         if(!AtlasGrid.TryGetValue(displayCoord, out var tile))
         {
             tile = new()
             {
                 Seed = (ushort)displayCoord.GetHashCode(),
+                TileId = -1,
             };
         }
+        int oldId = tile.TileId;
+        if(tileId >= 0){}
+        else if(oldId >= 0) tileId = oldId;
+        var mask = GetMask(displayCoord, tileId);
         tile.Mask = mask;
         tile.TileId = tileId;
         if(tileId >= 0) AtlasGrid[displayCoord] = tile;
@@ -84,9 +83,10 @@ public class SwDisplayLayer
         var half = tileSize / 2;
         foreach (var (tilePos, tile) in AtlasGrid)
         {
-            var tileData = Map.GetTileData(tile.TileId);
+            var tileData = SwGame.TileData[tile.TileId];
+            if(!tileData.IsVisible) continue;
             var pos = (ErVec2)tilePos * tileSize - half;
-            if(!tileData.TryDraw(pos, tile.Mask, tile.Seed, ErEngine.CurrentTime)) continue;// ErEngine.LogError("bad tile, coord: ", tilePos, " tile id: ", tile.TileId, " mask: ", tile.Mask, " seed: ", tile.Seed);
+            if(!tileData.TryDraw(pos, tile.Mask, tile.Seed, ErEngine.CurrentTime)) continue;
         }
     }
 }

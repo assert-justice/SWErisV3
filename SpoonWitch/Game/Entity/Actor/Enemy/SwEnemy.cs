@@ -7,13 +7,14 @@ namespace SpoonWitch.Game.Entity.Actor.Enemy;
 public abstract class SwEnemy: SwActor
 {
     public override uint Mask => (uint)(IsAlive ? 5 : 0);
+    public override int RenderLayer => 2;
     public bool IsPassive;
     public ErVec2 TargetPosition;
     public byte FacingIdx;
     public override void Ready()
     {
         base.Ready();
-        IsPassive = EntProps.Props.TryGet("property_overrides_json/is_passive", out bool isPassive) && isPassive;
+        IsPassive = Props.TryGet("is_passive", out bool isPassive) && isPassive;
     }
     public bool CanSeePoint(ErVec2 point)
     {

@@ -1,5 +1,6 @@
 using Eris;
 using ErisMath;
+using Prion.Db;
 using Prion.Node;
 using SpoonWitch.Game.Map.MapObject;
 
@@ -7,29 +8,71 @@ namespace SpoonWitch.Game.Map;
 
 public class SwRoom
 {
-    private readonly Dictionary<ErVec2I,SwSector> Sectors = [];
+    public readonly HashSet<ErVec2I> SectorCoords = [];
     private readonly SwMapObjectLookup MapObjects = new();
     public readonly SwMap Map;
     public readonly string Id;
     public readonly ErRect2I RectSectors;
     public readonly ErRect2I RectTiles;
     public readonly ErRect2 RectPx;
+    public readonly PriDb Props;
+    public readonly string DisplayName = string.Empty;
     public bool IsDirty{get; private set;}
-
-    private SwRoom(SwMap map, string id, ErRect2I rectSectors)
+    public readonly Dictionary<(int layerIdx, ErVec2I tileCoord), int> TileLookup = [];
+    private SwRoom(SwMap map, PriNode data)
     {
         Map = map;
-        Id = id;
-        RectSectors = rectSectors;
-        RectTiles = rectSectors * map.SectorSizeTiles;
-        RectPx = (ErRect2)(RectTiles * map.TileSize);
-    }
-    public IEnumerable<SwSector> GetSectors()
-    {
-        foreach (var item in Sectors.Values)
+        if(!data.TryGet("iid", out Id)) throw new("missing field");
+        if(!data.TryGet("worldX", out int xPx)) throw new("missing field");
+        if(!data.TryGet("worldY", out int yPx)) throw new("missing field");
+        if(!data.TryGet("pxWid", out int widthPx)) throw new("missing field");
+        if(!data.TryGet("pxHei", out int heightPx)) throw new("missing field");
+        if(!data.TryGet("layerInstances", out PriList layers)) throw new("missing field");
+        if(!data.TryGet("fieldInstances", out PriList fields)) throw new("missing field");
+        RectSectors = new ErRect2I(xPx, yPx, widthPx, heightPx) / map.SectorSizePx;
+        foreach (var item in RectSectors.GetInnerCoords())
         {
-            yield return item;
+            SectorCoords.Add(item);
         }
+        RectTiles = RectSectors * map.SectorSizeTiles;
+        RectPx = (ErRect2)(RectTiles * map.TileSize);
+        PriDict props = [];
+        foreach (var val in fields.Data)
+        {
+            if(!val.TryGet("__identifier", out string key)) throw new("missing field");
+            var value = val.Get("__value");
+            props.TrySet(key, value);
+        }
+        Props = new(props);
+        int layerIdx = 0;
+        foreach (var layer in layers.Values)
+        {
+            if(!layer.Get("__type").TryAs(out string layerType)) throw new("malformed layer");
+            if(layerType == "Entities")
+            {
+                if(!TryAddEntityLayer(layer)) throw new("bad");
+            }
+            else if(layerType == "Tiles")
+            {
+                if(!TryAddTileLayer(layer, map.NumTileLayers - 1 - layerIdx)) throw new("bad");
+                layerIdx++;
+            }
+            else throw new($"bad layer type '{layerType}'.");
+        }
+        // if(props.TryGet("room_auto_mode", out string autoMode))
+        // {
+        //     switch (autoMode)
+        //     {
+        //         case "none":
+        //             break;
+        //         case "walled_grassy":
+        //             AutoWalledGrassy();
+        //             break;
+        //         default:
+        //             ErEngine.LogWarning("unknown auto mode ", autoMode);
+        //             break;
+        //     }
+        // }
     }
     public void Update()
     {
@@ -47,7 +90,6 @@ public class SwRoom
     {
         var entList = layerData.Get("entityInstances");
         if(entList is PriNull) return ErEngine.LogWarning("entity layer has no instances field");
-        // if(!layerData.TryGet("entityInstances").TryAs(out PriList entList)) return false;
         foreach (var entData in entList.Values)
         {
             if(!SwMapObject.TryFromLdtkData(Map.TileSize, entData, Map.Dirpath, out var mapObject))
@@ -55,8 +97,9 @@ public class SwRoom
                 ErEngine.LogWarning("malformed map object");
                 continue;
             }
-            if(mapObject.IsGlobal) Map.AddGlobalObject(mapObject);
-            else AddMapObject(mapObject);
+            Map.AddGlobalObject(mapObject);
+            // if(mapObject.IsGlobal) Map.AddGlobalObject(mapObject);
+            // else AddMapObject(mapObject);
         }
         return true;
     }
@@ -69,28 +112,49 @@ public class SwRoom
             if(!tileData.Get("px").Get(1).TryAs(out int yPx)) return false;
             if(!tileData.Get("src").Get(0).TryAs(out int srcX)) return false;
             int tileId = ErMath.FloorToInt(srcX / 32);
-            ErVec2I tilePos = RectTiles.Position + new ErVec2I(xPx, yPx) / Map.TileSize;
-            ErVec2I sectorPos = tilePos / Map.SectorSizeTiles;
-            if(!Sectors.TryGetValue(sectorPos, out var sector))
-            {
-                sector = new(Map, sectorPos);
-                Sectors[sectorPos] = sector;
-            }
-            sector.SetTile(layerIdx, tilePos, tileId);
+            ErVec2I tileCoord = RectTiles.Position + new ErVec2I(xPx, yPx) / Map.TileSize;
+            TileLookup[(layerIdx, tileCoord)] = tileId;
         }
         return true;
+    }
+    private static IEnumerable<ErVec2I> GetEdgeCoords(ErRect2I rect)
+    {
+        // Note: this is split up like this for sector coherency
+        for (int xi = rect.Left; xi < rect.Right; xi++)
+        {
+            yield return new(xi, rect.Top);
+        }
+        for (int xi = rect.Left; xi < rect.Right; xi++)
+        {
+            yield return new(xi, rect.Bottom - 1);
+        }
+        for (int yi = rect.Top; yi < rect.Bottom; yi++)
+        {
+            yield return new(rect.Left, yi);
+        }
+        for (int yi = rect.Top; yi < rect.Bottom; yi++)
+        {
+            yield return new(rect.Right - 1, yi);
+        }
+    }
+    private void AutoWalledGrassy()
+    {
+        foreach (var coord in RectTiles.GetInnerCoords())
+        {
+            TileLookup.TryAdd((2, coord), 4);
+        }
+        foreach (var coord in GetEdgeCoords(RectTiles))
+        {
+            TileLookup.TryAdd((3, coord), 6);
+        }
     }
     public void Clean()
     {
         if(!IsDirty) return;
         IsDirty = false;
     }
-    public void Load()
+    public void LoadObjects()
     {
-        foreach (var item in Sectors.Values)
-        {
-            item.Load(Map);
-        }
         foreach (var item in MapObjects.GetObjects())
         {
             item.Load();
@@ -107,28 +171,14 @@ public class SwRoom
     public static bool TryFromData(SwMap map, PriNode data, out SwRoom room)
     {
         room = null!;
-        if(!data.Get("iid").TryAs(out string id)) return false;
-        if(!data.Get("worldX").TryAs(out int xPx)) return false;
-        if(!data.Get("worldY").TryAs(out int yPx)) return false;
-        if(!data.Get("pxWid").TryAs(out int widthPx)) return false;
-        if(!data.Get("pxHei").TryAs(out int heightPx)) return false;
-        if(!data.Get("layerInstances").TryAs(out PriList layers)) return false;
-        room = new(map, id, new ErRect2I(xPx, yPx, widthPx, heightPx) / map.SectorSizePx);
-        int layerIdx = 0;
-        foreach (var layer in layers.Values)
+        try
         {
-            if(!layer.Get("__type").TryAs(out string layerType)) return ErEngine.LogWarning("malformed layer");
-            if(layerType == "Entities")
-            {
-                if(!room.TryAddEntityLayer(layer)) return false;
-            }
-            else if(layerType == "Tiles")
-            {
-                if(!room.TryAddTileLayer(layer, map.NumTileLayers - 1 - layerIdx)) return false;
-                layerIdx++;
-            }
-            else return ErEngine.LogWarning("bad layer type '", layerType, "'.");
+            room = new(map, data);
         }
-        return true;
+        catch (Exception e)
+        {
+            ErEngine.LogWarning(e);
+        }
+        return room is not null;
     }
 }

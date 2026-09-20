@@ -12,6 +12,14 @@ public class ErRenderer
     public string WindowName{get; private set;} = "Eris Engine";
     public ErVec2I WindowSize{get; private set;} = new(800, 600);
     public SDL.WindowFlags WindowFlags{get; private set;}
+    // public bool ShowCursor
+    // {
+    //     set
+    //     {
+    //         nint cursor = SDL.GetCursor();
+    //         SDL.HideCursor()
+    //     }
+    // }
     public bool IsFullscreen{get; private set;}
     public nint Handle{get; private set;}
     public ErRect2 ViewportTransform{get; private set;}
@@ -55,13 +63,14 @@ public class ErRenderer
             return;
         }
         CleanupStack.Push(SDL.Quit);
-        if (!SDL.CreateWindowAndRenderer(WindowName, WindowSize.X, WindowSize.Y, 0, out Window, out var renderer))
+        if (!SDL.CreateWindowAndRenderer(WindowName, WindowSize.X, WindowSize.Y, WindowFlags, out Window, out var renderer))
         {
             ErEngine.LogError($"Error creating window and rendering: {SDL.GetError()}");
             return;
         }
         CleanupStack.Push(()=>SDL.DestroyWindow(Window));
         CleanupStack.Push(()=>SDL.DestroyRenderer(Handle));
+        SDL.HideCursor();
         if (!TTF.Init())
         {
             ErEngine.LogError($"Error initializing font renderer: {SDL.GetError()}");
@@ -72,6 +81,7 @@ public class ErRenderer
         Handle = renderer;
         SDL.SetRenderVSync(Handle, 1);
         SDL.SetDefaultTextureScaleMode(Handle, SDL.ScaleMode.Nearest);
+        SDL.SetRenderDrawBlendMode(Handle, SDL.BlendMode.Blend);
         ResetViewport();
         TextureManager = new(Handle);
         CleanupStack.Push(TextureManager.Cleanup);
@@ -137,5 +147,13 @@ public class ErRenderer
             SDL.RenderLine(Handle, (float)start.X, (float)start.Y, (float)end.X, (float)end.Y);
         }
         DebugDrawQueue.Enqueue(fn);
+    }
+    public void DrawRect(ErRect2 rect, ErColor color, double alpha = 1, bool filled = true)
+    {
+        rect = rect.Translate(-ViewportTransform.Position);
+        byte a = (byte)(alpha * 255);
+        SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, a);
+        if (filled)SDL.RenderFillRect(Handle, rect.ToSdlRect());
+        else SDL.RenderRect(Handle, rect.ToSdlRect());
     }
 }

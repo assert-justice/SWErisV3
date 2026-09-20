@@ -24,16 +24,14 @@ public class SwTileData
     public readonly uint CollisionMask;
     public readonly bool IsAnimated;
     public readonly bool IsArable;
+    public readonly bool IsVisible = true;
     public const int ATLAS_WIDTH = 4;
     public const int ATLAS_HEIGHT = 4;
     public double Fps = 4;
     private readonly ErRect2[][][] Frames;
     private static readonly SwTileMask[] TileMasks;
-    private static readonly ErVec2I[] CoordLookup;
     static SwTileData()
     {
-        CoordLookup = new ErVec2I[ATLAS_WIDTH * ATLAS_HEIGHT];
-        Array.Fill(CoordLookup, ErVec2I.Neg);
         TileMasks = new SwTileMask[ATLAS_WIDTH * ATLAS_HEIGHT];
         AddTilemask(2,1, SwTileMask.TopLeft | SwTileMask.TopRight | SwTileMask.BottomLeft | SwTileMask.BottomRight); // All corners
         AddTilemask(1,3, SwTileMask.BottomRight); // Outer bottom-right corner
@@ -57,7 +55,6 @@ public class SwTileData
     }
     private static void AddTilemask(int x, int y, SwTileMask mask)
     {
-        CoordLookup[(int)mask] = new(x,y);
         TileMasks[GetMaskIdx(x,y)] = mask;
     }
     private static bool TryGetMask(int x, int y, out SwTileMask mask)
@@ -79,14 +76,24 @@ public class SwTileData
     }
     private SwTileData(string filepath, PriNode priNode, ErVec2I tileSize)
     {
-        if(!priNode.Get("source").TryAs(out string texPath)) throw new("no source field provided");
-        string? dirpath = Path.GetDirectoryName(filepath);
-        texPath = Path.Join(dirpath, texPath);
-        if(!ErTexture.TryFromPath(texPath, out Texture, out nint surfaceHandle)) throw new("source path invalid2");
         IsSolid = priNode.TryGet("is_solid", out bool is_solid) && is_solid;
         IsOpaque = priNode.TryGet("is_opaque", out bool is_opaque) && is_opaque;
+        CollisionMask = 0;
+        if(is_solid) CollisionMask |= 1;
+        if(is_opaque) CollisionMask |= 2;
         MoveSpeedMul = priNode.TryGet("move_speed_mul", out double mul) ? mul : 1;
         IsArable = priNode.TryGet("is_arable", out bool b) && b;
+        if(priNode.TryGet("is_visible", out b)) IsVisible = b;
+        if(!IsVisible || !priNode.Get("source").TryAs(out string texPath))
+        {
+            IsVisible = false;
+            Frames = null!;
+            Texture = null!;
+            return;
+        }
+        string? dirpath = Path.GetDirectoryName(filepath);
+        texPath = Path.Join(dirpath, texPath);
+        if(!ErTexture.TryFromPath(texPath, out Texture, out nint surfaceHandle)) throw new("cannot read texture");
         IsAnimated = priNode.TryGet("is_animated", out bool is_animated) && is_animated;
         if (IsAnimated)
         {
@@ -124,9 +131,6 @@ public class SwTileData
             }
             Frames[frameIdx] = frame;
         }
-        CollisionMask = 0;
-        if(is_solid) CollisionMask |= 1;
-        if(is_opaque) CollisionMask |= 2;
     }
     public bool TryDraw(ErVec2 position, SwTileMask mask, ushort seed)
     {

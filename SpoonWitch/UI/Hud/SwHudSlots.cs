@@ -18,6 +18,8 @@ public class SwHudSlots
         get => _Value;
         set
         {
+            if(_Value == value) return;
+            value = Math.Clamp(value, 0, MaxValue);
             FrameProgress = 0;
             TargetFrameIdx = value * NUM_FRAMES;
             _Value = value;
@@ -49,16 +51,17 @@ public class SwHudSlots
     }
     public void Draw()
     {
-        foreach (var item in Sprites)
+        for (int idx = 0; idx < MaxValue; idx++)
         {
-            item.Draw();
+            if(idx >= Sprites.Count) break;
+            Sprites[idx].Draw();
         }
     }
     public static bool TryLoad(out SwHudSlots slots, string dirpath, PriNode priNode)
     {
         slots = new();
         if(!SwHudSprite.TryLoadList(dirpath, priNode, slots.Sprites)) return false;
-        slots.MaxValue = slots.Sprites.Count;
+        // slots.MaxValue = slots.Sprites.Count;
         return true;
     }
 }

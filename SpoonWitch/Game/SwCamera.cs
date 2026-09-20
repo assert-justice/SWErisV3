@@ -15,7 +15,7 @@ public class SwCamera
     private static readonly ErColor ClearColor = default;
     private ErRect2 Bounds;
     public bool UseBounds = false;
-    private ErVec2 TargetPos;
+    public ErVec2 TargetPos{get; private set;}
     private ErVec2 CurrentPos;
     public ErVec2 Position => CurrentPos;
     private ErVec2 NextPos;
@@ -43,6 +43,10 @@ public class SwCamera
         SetTargetPosition(position);
         CurrentPos = NextPos;
         NextPos = TargetPos;
+    }
+    public bool IsPointVisible(ErVec2 point)
+    {
+        return ErRect2.Centered(Position, Size).Contains(point);
     }
     public bool IsInBounds()
     {

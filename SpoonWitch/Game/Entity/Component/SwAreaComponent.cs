@@ -1,13 +1,16 @@
 using Eris;
 using ErisMath;
+using ErisPhysics2D.Collider;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Game.Map.Collision;
 
 namespace SpoonWitch.Game.Entity.Component;
 
-public class SwAreaComponent(SwEntity parent, string name, uint mask, ErVec2 size, ErVec2? offset = null, bool enabled = false) : SwComponent(parent, name)
+public class SwAreaComponent(SwEntity parent, 
+    string name, uint mask, ErVec2 size, ErVec2? offset = null, bool enabled = false,
+    Action<SwEntity>? onBodyEnter = null, Action<SwEntity>? onBodyExit = null) : SwComponent(parent, name)
 {
-    public SwColliderArea Area = new() { };
+    private SwColliderArea Area = new() { };
     private int _Id;
     public int Id => _Id;
     private bool WasEnabled = false;
@@ -15,10 +18,14 @@ public class SwAreaComponent(SwEntity parent, string name, uint mask, ErVec2 siz
     public uint Mask = mask;
     public ErVec2 Offset = offset ?? ErVec2.Zero;
     public ErVec2 Size = size;
+    public Action<SwEntity>? OnBodyEnter{private get; set;} = onBodyEnter;
+    public Action<SwEntity>? OnBodyExit{private get; set;} = onBodyExit;
     public override void Ready()
     {
         base.Ready();
         _Id = SwApp.GetNextId();
+        Area.OnBodyEnterFn = OnEnter;
+        Area.OnBodyExitFn = OnExit;
     }
     public override void Update()
     {
@@ -35,26 +42,40 @@ public class SwAreaComponent(SwEntity parent, string name, uint mask, ErVec2 siz
         Area.ParentId = Parent.Id;
         SwGame.GetMap().PhysicsWorld.SetArea(_Id, Area);
     }
-    public override void Read(SwByteStream byteStream)
+    private void OnEnter(SwColliderArea area, int bodyId, ErColliderBody body)
     {
-        base.Read(byteStream);
-        if(!byteStream.TryReadI32(out _Id)) throw new("bad area id");
-        if(!byteStream.TryReadBool(out WasEnabled)) throw new("bad area was enabled");
-        if(!byteStream.TryReadBool(out Enabled)) throw new("bad area enabled");
-        if(!byteStream.TryReadU32(out Mask)) throw new("bad area mask");
-        if(!byteStream.TryReadVec2(out Offset)) throw new("bad area offset");
-        if(!byteStream.TryReadVec2(out Size)) throw new("bad area offset");
+        if(OnBodyEnter is null) return;
+        if(body is not SwColliderBody b) return;
+        if(!SwGame.Game.EntityLookup.TryGet<SwEntity>(body.ParentId.ToString(), out var entity)) return;
+        OnBodyEnter(entity);
     }
-    public override void Write(SwByteStream byteStream)
+    private void OnExit(SwColliderArea area, int bodyId, ErColliderBody body)
     {
-        base.Write(byteStream);
-        byteStream.WriteI32(_Id);
-        byteStream.WriteBool(WasEnabled);
-        byteStream.WriteBool(Enabled);
-        byteStream.WriteU32(Mask);
-        byteStream.WriteVec2(Offset);
-        byteStream.WriteVec2(Size);
+        if(OnBodyExit is null) return;
+        if(body is not SwColliderBody b) return;
+        if(!SwGame.Game.EntityLookup.TryGet<SwEntity>(body.ParentId.ToString(), out var entity)) return;
+        OnBodyExit(entity);
     }
+    // public override void Read(SwByteStream byteStream)
+    // {
+    //     base.Read(byteStream);
+    //     if(!byteStream.TryReadI32(out _Id)) throw new("bad area id");
+    //     if(!byteStream.TryReadBool(out WasEnabled)) throw new("bad area was enabled");
+    //     if(!byteStream.TryReadBool(out Enabled)) throw new("bad area enabled");
+    //     if(!byteStream.TryReadU32(out Mask)) throw new("bad area mask");
+    //     if(!byteStream.TryReadVec2(out Offset)) throw new("bad area offset");
+    //     if(!byteStream.TryReadVec2(out Size)) throw new("bad area offset");
+    // }
+    // public override void Write(SwByteStream byteStream)
+    // {
+    //     base.Write(byteStream);
+    //     byteStream.WriteI32(_Id);
+    //     byteStream.WriteBool(WasEnabled);
+    //     byteStream.WriteBool(Enabled);
+    //     byteStream.WriteU32(Mask);
+    //     byteStream.WriteVec2(Offset);
+    //     byteStream.WriteVec2(Size);
+    // }
     public override void Cleanup()
     {
         base.Cleanup();

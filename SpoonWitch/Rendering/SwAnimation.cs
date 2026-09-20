@@ -86,7 +86,6 @@ public readonly struct SwAnimation(string name, SwFrame[] frames, ErVec2 size, S
             if(!frame.TryGet("y", out double y)) return false;
             if(!frame.TryGet("w", out double w)) return false;
             if(!frame.TryGet("h", out double h)) return false;
-            // if(!frames.Data[idx].TryGet("duration", out double duration)) return false;
             fs[idx] = new(textureStore, new(x,y,w,h));
         }
         foreach (var item in frameTags.Data)
@@ -95,7 +94,7 @@ public readonly struct SwAnimation(string name, SwFrame[] frames, ErVec2 size, S
             if(blacklist.Contains(animName)) continue;
             if(!item.TryGet("from", out int first_frame)) return false;
             if(!item.TryGet("to", out int last_frame)) return false;
-            bool loops = item.TryGet("repeats", out string _);
+            bool loops = !item.TryGet("repeat", out string _);
             bool hFlip = item.TryGet("data", out string tagData) && tagData == "fliph";
             SwAnimationState defaultState = new();
             SwAnimationState.Set(ref defaultState, fps: 8, hFlip:hFlip, isLooping: loops);

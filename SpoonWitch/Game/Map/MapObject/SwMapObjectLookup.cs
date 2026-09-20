@@ -49,4 +49,11 @@ public class SwMapObjectLookup
             yield return t;
         }
     }
+    public bool Unload(string id)
+    {
+        if(!MapObjects.TryGetValue(id, out var obj)) return false;
+        if(TypeLookup.TryGetValue(obj.GetType(), out var lookup)) lookup.Remove(id);
+        obj.Unload();
+        return MapObjects.Remove(id);
+    }
 }
