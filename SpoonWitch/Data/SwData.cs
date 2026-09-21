@@ -18,6 +18,19 @@ public static class SwData
     public static readonly PriDb Manifest = new();
     public static readonly PriDb Prototypes = new();
     private static readonly List<nint> PalletLookup = [];
+    private static readonly Dictionary<string, Func<string,PriNode?>> Converters;
+    static SwData()
+    {
+        static PriNode? json(string filepath)
+        {
+            if(!TryLoadPrion(filepath, out var node)) return null;
+            return node;
+        }
+        Converters = new()
+        {
+            {".json", json},
+        };
+    }
     public static bool TryInit()
     {
         if(!ErTexture.TryGetPaletteHandles(out var palletHandles, "game_data/palettes.png")) return ErEngine.LogError("unable to load palettes");
@@ -25,7 +38,8 @@ public static class SwData
         {
             PalletLookup.Add(item);
         }
-        if(!TryLoadDb(Prototypes, Path.Join(GAME_DATA_PATH, "prototypes.json"))) return ErEngine.LogError("unable to load prototypes");
+        if(!TryLoadAndExpand(out var data, Path.Join(GAME_DATA_PATH, "prototypes.json"))) return ErEngine.LogError("unable to load prototypes");
+        Prototypes.SetData(data);
         return true;
     }
     public static int PaletteCount => PalletLookup.Count;
@@ -139,5 +153,51 @@ public static class SwData
         texture = default!;
         if(!priNode.TryGet(key, out string filepath)) return false;
         return ErTexture.TryFromPath(Path.Join(dirpath, filepath), out texture);
+    }
+    public static bool TryLoadAndExpand(out PriNode data, string filepath)
+    {
+        data = PriNull.Null;
+        string dp = Path.GetDirectoryName(filepath)!;
+        if(!TryLoadPrion(filepath, out var src)) return false;
+        data = Expand(src, dp);
+        return true;
+    }
+    private static PriNode Expand(PriNode srcNode, string dirpath)
+    {
+        if(srcNode.TryAs(out string filepath))
+        {
+            filepath = Path.Join(dirpath, filepath);
+            dirpath = Path.GetDirectoryName(filepath)!;
+            if(TryConvert(out var node, filepath)) return Expand(node, dirpath);
+        }
+        else if(srcNode is PriDict srcDict)
+        {
+            PriDict dict = [];
+            foreach (var (key, value) in srcDict.Data)
+            {
+                dict.Data.Add(key, Expand(value, dirpath));
+            }
+            return dict;
+        }
+        else if(srcNode is PriList srcList)
+        {
+            PriList list = [];
+            foreach (var item in srcList.Data)
+            {
+                list.Data.Add(Expand(item, dirpath));
+            }
+            return list;
+        }
+        return srcNode.DeepCopy();
+    }
+    private static bool TryConvert(out PriNode node, string filepath)
+    {
+        node = PriNull.Null;
+        if(!Path.HasExtension(filepath)) return false;
+        string ext = Path.GetExtension(filepath);
+        if(!Converters.TryGetValue(ext, out var fn)) return false;
+        if(fn(filepath) is not PriNode n) return false;
+        node = n;
+        return true;
     }
 }

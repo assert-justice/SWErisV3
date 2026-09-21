@@ -20,6 +20,10 @@ public class PriDb
         }
         return p;
     }
+    public void SetData(PriNode data)
+    {
+        Data = data;
+    }
     public bool TryMerge(string path, PriNode node)
     {
         if(node is PriDict || node is PriList)

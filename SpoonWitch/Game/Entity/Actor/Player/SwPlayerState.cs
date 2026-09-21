@@ -274,15 +274,13 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             if(CanAttack() && Controls.AttackJustPressed) StateMachine.SetState("attack");
             else if(Controls.IsCharging && Inventory.GetCount("sling_ammo") > 0) StateMachine.SetState("charging");
             else if(CanDodge() && Controls.DodgeJustPressed) StateMachine.SetState("dodging");
-            else if(Entity.CurrentSpell is not null)
+            else if(Entity.CurrentSpell is not null && !Entity.CurrentSpell.IsActive && CanCast() && Controls.CastJustPressed)
             {
-                // if(Entity.CurrentSpell.IsActive && Controls.CastJustPressed) Entity.CurrentSpell.End();
-                if(!Entity.CurrentSpell.IsActive && CanCast() && Controls.CastJustPressed)
-                {
-                    Entity.CurrentSpell.Begin();
-                    Entity.Mana -= Entity.CurrentSpell.ManaCost;
-                }
+                Entity.CurrentSpell.Begin();
+                Entity.Mana -= Entity.CurrentSpell.ManaCost;
             }
+            else if(Entity.CurrentSpell is not null && Entity.CurrentSpell.IsActive && Controls.CastJustPressed){}
+            else if(ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.T)) StateMachine.SetState("dancing");
             if(Entity.DodgeCooldownClock > 0) Entity.DodgeCooldownClock -= SwGame.DeltaTime;
             if(Entity.AttackCooldownClock > 0) Entity.AttackCooldownClock -= SwGame.DeltaTime;
         }
@@ -474,6 +472,21 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             Entity.PickupTexture = null;
         }
     }
+    public class Dancing: SwPlayerState
+    {
+        public override string Name => "dancing";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            PlayBodyAnim("dance");
+            Entity.Velocity = ErVec2.Zero;
+        }
+        public override void Update()
+        {
+            base.Update();
+            if(Controls.DodgeJustPressed) StateMachine.SetState("default");
+        }
+    }
     public static SwStateMachine GetStateMachine(SwPlayer parent, string name)
     {
         return new(parent, name, [
@@ -487,6 +500,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             new Dodging(),
             new Dead(),
             new ItemGet(),
+            new Dancing(),
         ]);
     }
 }

@@ -120,8 +120,14 @@ public class SwPlayer: SwActor
         Props.TrySet("bullet/collision_mask", 3);
         Props.TrySet("bullet/texture_filepath", "game_data/entities/actors/player/images/bella_sling_ammo_shot.png");
         Props.TrySet("bullet/impact_particles", impactParticles);
+        PriDict cometSprite = [];
+        cometSprite.TrySet("filepath_ase", "game_data/particles/particles.json");
+        cometSprite.TrySet("anim_name", "spell_orb");
         Props.TrySet("comet/damage", slingDamage.ToPri());
         Props.TrySet("comet/collision_mask", 3);
+        // Props.TrySet("comet/sprite")
+        // Props.TrySet("comet/animation_filepath", "game_data/entities/actors/player/images/bella_sling_ammo_shot.png");
+        // Props.TrySet("comet/animation_name", "");
         Props.TrySet("comet/texture_filepath", "game_data/entities/actors/player/images/bella_sling_ammo_shot.png");
         Props.TrySet("comet/impact_particles", impactParticles);
         Props.TrySet("comet/flying_particles", flyingParticles);

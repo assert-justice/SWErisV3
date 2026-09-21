@@ -6,5 +6,7 @@
             "texture_filepath": "entities/actors/player/images/bella_spoon_item.png"
         }
     },
-    "entities":{}
+    "entities":{
+        "player": "entities/actors/player/player_properties.json"
+    }
 }
