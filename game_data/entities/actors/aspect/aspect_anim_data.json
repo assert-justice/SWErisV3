@@ -1,0 +1,11 @@
+{
+    "sprites": {
+        "body": {
+            "ase_animations": [
+                {
+                    "filepath": "aspect_body.json"
+                }
+            ]
+        }
+    }
+}

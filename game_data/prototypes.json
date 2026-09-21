@@ -7,6 +7,7 @@
         }
     },
     "entities":{
-        "player": "entities/actors/player/player_properties.json"
+        "player": "entities/actors/player/player_properties.json",
+        "aspect": "entities/actors/aspect/aspect_properties.json"
     }
 }

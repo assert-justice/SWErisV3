@@ -203,7 +203,6 @@ public class SwGame
     }
     private void SpawnEnt(PriNode command)
     {
-        if(!command.TryAs(out PriDict dict)) throw new("should be unreachable");
         if(!command.TryGet("entity_type", out string entityType))
         {
             ErEngine.LogWarning("spawn entity command missing entity_type field");
@@ -232,12 +231,18 @@ public class SwGame
             ErEngine.LogWarning("failed to spawn entity with command '", command, "'");
             return;
         }
-        dict.Data.Remove("verb");
-        PriDict props = [];
+        PriDict props = new()
+        {
+            {"entity_type", command.Get("entity_type")},
+            {"x", command.Get("x")},
+            {"y", command.Get("y")},
+            {"width_px", command.Get("width_px")},
+            {"height_px", command.Get("height_px")},
+            {"is_passive", command.Get("is_passive")},
+        };
         var prototype = SwData.Prototypes.Get($"entities/{entityType}");
         props.Merge(prototype);
-        props.Merge(dict);
-        // Todo: loading / saving goes here?
+        // Todo: loading goes here?
         entity.SetProps(props);
         AddEntity(entity);
     }
