@@ -13,6 +13,6 @@ public class SwMapTrigger : SwMapObject
         base.Load();
         SwTrigger trigger = new();
         trigger.SetProps(GetProps());
-        SwGame.Game.AddEntity(trigger);
+        SwGame.Game?.AddEntity(trigger);
     }
 }

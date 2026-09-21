@@ -1,9 +1,10 @@
 using Eris;
-using Eris.Renderer;
 using ErisMath;
 using Prion.Node;
+using SpoonWitch.Data;
 using SpoonWitch.Game;
 using SpoonWitch.Rendering;
+using SpoonWitch.Utils;
 
 namespace SpoonWitch.UI.Hud;
 
@@ -15,15 +16,12 @@ public class SwHudSprite
     private readonly ErVec2 Offset;
     public int FrameIdx;
     public bool Visible = true;
-    private SwHudSprite(ErVec2 offset, string dirpath, PriNode node)
+    private SwHudSprite(ErVec2 offset, PriNode node)
     {
         Offset = offset;
-        if(!node.TryGet("texture_filepath", out string filepath)) throw new("bad filepath");
-        filepath = Path.Join(dirpath, filepath);
-        if(!ErTexture.TryFromPath(filepath, out ErTexture tex)) throw new("bad tex");
-        double width = node.TryGet("width", out double d) ? d : tex.Size.X;
-        double height = node.TryGet("height", out d) ? d : tex.Size.Y;
-        Frames = [..SwFrame.GetAllFrames(new(tex), new(width, height))];
+        if(!SwData.TryLoadTexture(out var tex, node.Get("texture_filepath"))) throw new("bad texture");
+        if(!SwPrion.TryGetVec2(out ErVec2 size, node, "width", "height")) size = tex.Size;
+        Frames = [..SwFrame.GetAllFrames(new(tex), size)];
     }
     public void Update()
     {
@@ -41,12 +39,12 @@ public class SwHudSprite
         if(!Visible) return;
         Frames[FrameIdx].Draw(Offset);
     }
-    public static bool TryLoad(ErVec2 offset, string dirpath, PriNode node, out SwHudSprite hudSprite)
+    public static bool TryLoad(out SwHudSprite hudSprite, ErVec2 offset, PriNode node)
     {
         hudSprite = default!;
         try
         {
-            hudSprite = new(offset, dirpath, node);
+            hudSprite = new(offset, node);
             return true;
         }
         catch(Exception e)
@@ -54,15 +52,13 @@ public class SwHudSprite
             return ErEngine.LogWarning(e);
         }
     }
-    public static bool TryLoadList(string dirpath, PriNode node, in List<SwHudSprite> sprites)
+    public static bool TryLoadList(in List<SwHudSprite> sprites, ErVec2 offset, PriNode node)
     {
-        // Todo: add origin to arguments
         if(!node.TryGet("slots", out PriList list)) return ErEngine.LogWarning("no slots found");
         foreach (var item in list.Values)
         {
-            double x = item.TryGet("x", out double d) ? d : 0;
-            double y = item.TryGet("y", out d) ? d : 0;
-            if(!TryLoad(new(x,y), dirpath, node, out var sprite)) return false;
+            var pos = SwPrion.GetVec2(item);
+            if(!TryLoad(out var sprite, offset + pos, node)) return false;
             sprites.Add(sprite);
         }
         return true;

@@ -1,7 +1,6 @@
 using System.Text.Json.Nodes;
 using Eris;
 using Eris.Renderer;
-using ErisMath;
 using Prion.Db;
 using Prion.Node;
 using Prion.Parser;
@@ -13,6 +12,7 @@ public static class SwData
     private static readonly Dictionary<float,ErFont> FontLookup = [];
     public static string FontPath{get; set;} = "game_data/fonts/PixAntiqua.ttf";
     public const string GAME_DATA_PATH = "game_data";
+    public static readonly string ManifestPath = "game_data/manifest.json";
     public static readonly PriDb Settings = new();
     public static readonly PriDb SaveData = new();
     public static readonly PriDb Manifest = new();
@@ -35,13 +35,14 @@ public static class SwData
     }
     public static bool TryInit()
     {
+        if(!TryLoadAndExpand(out var data, ManifestPath)) return ErEngine.LogError("unable to load manifest");
+        Manifest.SetData(data);
+        Prototypes.SetData(data.Get("prototypes"));
         if(!ErTexture.TryGetPaletteHandles(out var palletHandles, "game_data/palettes.png")) return ErEngine.LogError("unable to load palettes");
         foreach (var item in palletHandles)
         {
             PalletLookup.Add(item);
         }
-        if(!TryLoadAndExpand(out var data, Path.Join(GAME_DATA_PATH, "prototypes.json"))) return ErEngine.LogError("unable to load prototypes");
-        Prototypes.SetData(data);
         return true;
     }
     public static int PaletteCount => PalletLookup.Count;
@@ -77,62 +78,12 @@ public static class SwData
         }
         return true;
     }
-    public static bool TryParseJsonToPrion(string src, out PriNode priNode)
-    {
-        priNode = PriNull.Null;
-        try
-        {
-            var json = JsonNode.Parse(src);
-            priNode = PriParser.Parser.JsonToPrion(json);
-        }
-        catch(Exception e)
-        {
-            return ErEngine.LogWarning(e);
-        }
-        return true;
-    }
-    public static bool TryGetFont(float size, out ErFont font)
-    {
-        if(!FontLookup.TryGetValue(size, out font!))
-        {
-            if(!ErFont.TryLoad(FontPath, size, out font)) return false;
-            FontLookup[size] = font; 
-        }
-        return true;
-    }
-    public static bool TryGetManPath(string dbPath, out string filepath)
-    {
-        filepath = string.Empty;
-        if(!Manifest.TryGet(dbPath, out string fPath)) return false;
-        filepath = Path.Join(GAME_DATA_PATH, fPath);
-        return true;
-    }
-    public static bool TryGetManJsonPath(string dbPath, out PriNode node, out string filepath)
-    {
-        node = PriNull.Null;
-        if(!TryGetManPath(dbPath, out filepath)) return false;
-        return TryLoadPrion(filepath, out node);
-    }
-    public static bool TryGetManJsonDirpath(string dbPath, out PriNode node, out string dirpath)
-    {
-        dirpath = string.Empty;
-        if(!TryGetManJsonPath(dbPath, out node, out var filepath)) return false;
-        var path = Path.GetDirectoryName(filepath);
-        if(path is null) return false;
-        dirpath = path;
-        return true;
-    }
-    public static bool TryGetTex(PriNode priNode, string key, out ErTexture texture)
+    public static bool TryLoadTexture(out ErTexture texture, PriNode filepathPri)
     {
         texture = default!;
-        if(!priNode.TryGet(key, out string filepath)) return false;
-        return ErTexture.TryFromPath(filepath, out texture);
-    }
-    public static bool TryGetTex(PriNode priNode, string key, string dirpath, out ErTexture texture)
-    {
-        texture = default!;
-        if(!priNode.TryGet(key, out string filepath)) return false;
-        return ErTexture.TryFromPath(Path.Join(dirpath, filepath), out texture);
+        if(!filepathPri.TryAs(out string filepath)) return ErEngine.LogWarning("failed to load texture, missing filepath");
+        if(!ErTexture.TryFromPath(filepath, out texture)) return ErEngine.LogWarning("failed to load texture at path ", filepath);
+        return true;
     }
     public static bool TryLoadAndExpand(out PriNode data, string filepath)
     {

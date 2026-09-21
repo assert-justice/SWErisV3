@@ -14,7 +14,6 @@ public class SwAspect: SwEnemy
     public override void SetProps(PriNode props)
     {
         base.SetProps(props);
-        ErEngine.Log(props);
     }
     public override void Ready()
     {

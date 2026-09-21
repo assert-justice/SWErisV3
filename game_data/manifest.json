@@ -1,4 +1,14 @@
 {
-    "default_font": "fonts/PixAntiqua.ttf",
-    "hud_config": "hud/hud_config.json"
+    "game_title": "Spoon Witch",
+    "game_version": "0.0.1",
+    "authors":[],
+    "description": "",
+    "ui":{
+        "default_font": "fonts/PixAntiqua.ttf",
+        "hud_config": "hud/hud_config.json"
+    },
+    "prototypes": "prototypes.json",
+    "default_settings": "settings/default_settings.json",
+    "menu_config": "menus/menus.json",
+    "pallets": "pallets.png"
 }

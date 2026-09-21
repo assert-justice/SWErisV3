@@ -1,4 +1,5 @@
 using Eris;
+using ErisMath;
 using Prion.Node;
 using SpoonWitch.Game;
 
@@ -57,11 +58,10 @@ public class SwHudSlots
             Sprites[idx].Draw();
         }
     }
-    public static bool TryLoad(out SwHudSlots slots, string dirpath, PriNode priNode)
+    public static bool TryLoad(out SwHudSlots slots, ErVec2 offset, PriNode priNode)
     {
         slots = new();
-        if(!SwHudSprite.TryLoadList(dirpath, priNode, slots.Sprites)) return false;
-        // slots.MaxValue = slots.Sprites.Count;
+        if(!SwHudSprite.TryLoadList(slots.Sprites, offset, priNode)) return false;
         return true;
     }
 }

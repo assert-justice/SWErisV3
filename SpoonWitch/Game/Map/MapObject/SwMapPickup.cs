@@ -11,6 +11,6 @@ public class SwMapPickup : SwMapObject
         base.Load();
         SwPickup pickup = new();
         pickup.SetProps(GetProps());
-        SwGame.Game.AddEntity(pickup);
+        SwGame.Game?.AddEntity(pickup);
     }
 }
