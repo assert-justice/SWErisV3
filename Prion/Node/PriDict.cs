@@ -33,6 +33,17 @@ public class PriDict: PriNode, IEnumerable
     {
         Data.Add(key, value);
     }
+    public void Merge(PriNode node)
+    {
+        int idx = 0;
+        foreach (var (key,value) in node.Entries)
+        {
+            if(!key.TryAs(out string k)) k = key.ToString()!;
+            if(value is PriNull) Data.Remove(k);
+            else Data[k] = value.DeepCopy();
+            idx++;
+        }
+    }
     public override PriNode DeepCopy()
     {
         PriDict copy = new(Count);

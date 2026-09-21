@@ -14,7 +14,7 @@ public abstract class SwEntity
 {
     private readonly Dictionary<(Type,string), SwComponent> ComponentLookup = [];
     private readonly List<SwComponent> Components = [];
-    public PriDb Props{get; private set;} = new();
+    public PriDb Props{get; private set;} = new(new PriDict());
     public virtual int RenderLayer => 1;
     private int _Id;
     public int Id => _Id;
@@ -63,8 +63,30 @@ public abstract class SwEntity
     // }
     public virtual void SetProps(PriNode props)
     {
+        // ErEngine.Log("props in: ", props, " type: ", props.GetType());
+        // if(!props.TryAs(out PriDict dict)) throw new("fuck off");
+        // ErEngine.Log("first run");
+        // foreach (var (key, value) in dict.Data)
+        // {
+        //     ErEngine.Log("\tkey: ", key, " value: ", value);
+        // }
+        // ErEngine.Log("second run");
+        // foreach (var (key, value) in dict.Data)
+        // {
+        //     ErEngine.Log("\tkey: ", key, " value: ", value);
+        // }
+        // dict.Data.TryGetValue("x", out var val);
+        // if(val is null) ErEngine.Log($"extra dumb null: {props}");
+        // else ErEngine.Log($"not dumb: {props}");
+        // ErEngine.Log("val: ", val?.GetType().ToString() ?? $"extra dumb null: {props}");
         Props = new(props);
+        // ErEngine.Log("props data: ", Props.Data);
+        // ErEngine.Log("x: ", props.Get("x"));
         Position = SwPrion.GetVec2(Props.Data);
+        if(!Props.TryGet("x", out double x)) x = 10;
+        if(!Props.TryGet("y", out double y)) y = 10;
+        Position = new(x,y);
+        // ErEngine.Log("base set props\n", Props.Data, "\n", Position);
     }
     public virtual void Ready()
     {

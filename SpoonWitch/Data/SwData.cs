@@ -103,15 +103,15 @@ public static class SwData
         if(!TryLoadPrion(path, out var node)) return false;
         return db.TrySet("", node);
     }
-    public static bool TryLoadDb(PriDb db, string path, string defaultPath)
-    {
-        if(!TryLoadDb(db, defaultPath)) return false;
-        if(TryLoadPrion(path, out var node))
-        {
-            if(!db.TryMerge("", node)) return ErEngine.LogWarning("failed to merge");
-        }
-        return true;
-    }
+    // public static bool TryLoadDb(PriDb db, string path, string defaultPath)
+    // {
+    //     if(!TryLoadDb(db, defaultPath)) return false;
+    //     if(TryLoadPrion(path, out var node))
+    //     {
+    //         if(!db.TryMerge("", node)) return ErEngine.LogWarning("failed to merge");
+    //     }
+    //     return true;
+    // }
     public static bool TrySaveDb(string path, PriDb db)
     {
         return false;

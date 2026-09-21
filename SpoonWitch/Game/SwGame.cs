@@ -2,12 +2,14 @@ using System.Text.Json.Nodes;
 using Eris;
 using Eris.Renderer;
 using ErisMath;
+using Prion.Db;
 using Prion.Node;
 using Prion.Parser;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Command;
 using SpoonWitch.Data;
 using SpoonWitch.Game.Entity;
+using SpoonWitch.Game.Entity.Actor.Enemy.Aspect;
 using SpoonWitch.Game.Entity.Actor.Enemy.Knight;
 using SpoonWitch.Game.Entity.Actor.Enemy.Slume;
 using SpoonWitch.Game.Entity.Actor.Player;
@@ -201,29 +203,43 @@ public class SwGame
     }
     private void SpawnEnt(PriNode command)
     {
+        if(!command.TryAs(out PriDict dict)) throw new("should be unreachable");
         if(!command.TryGet("entity_type", out string entityType))
         {
             ErEngine.LogWarning("spawn entity command missing entity_type field");
             return;
         }
+        SwEntity? entity = null;
         switch (entityType)
         {
             case "none":
                 break;
             case "slume":
-                var slume = new SwSlume();
-                slume.SetProps(command);
-                AddEntity(slume);
+                entity = new SwSlume();
                 break;
             case "knight":
-                SwKnight knight = new();
-                knight.SetProps(command);
-                AddEntity(knight);
+                entity = new SwKnight();
+                break;
+            case "aspect":
+                entity = new SwAspect();
                 break;
             default:
                 ErEngine.LogWarning("tried to spawn unknown entity type '", entityType, "'");
                 break;
         }
+        if(entity is null)
+        {
+            ErEngine.LogWarning("failed to spawn entity with command '", command, "'");
+            return;
+        }
+        dict.Data.Remove("verb");
+        PriDict props = [];
+        var prototype = SwData.Prototypes.Get($"entities/{entityType}");
+        props.Merge(prototype);
+        props.Merge(dict);
+        // Todo: loading / saving goes here?
+        entity.SetProps(props);
+        AddEntity(entity);
     }
     public void Launch(int numPlayers = 1)
     {
