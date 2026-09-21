@@ -19,6 +19,8 @@ public static class SwData
     public static readonly PriDb Prototypes = new();
     private static readonly List<nint> PalletLookup = [];
     private static readonly Dictionary<string, Func<string,PriNode?>> Converters;
+    // Note: these are the file extensions where the path is extended relative to the game data path
+    private static readonly HashSet<string> NormalizedExtensions = [".png"];
     static SwData()
     {
         static PriNode? json(string filepath)
@@ -98,24 +100,6 @@ public static class SwData
         }
         return true;
     }
-    public static bool TryLoadDb(PriDb db, string path)
-    {
-        if(!TryLoadPrion(path, out var node)) return false;
-        return db.TrySet("", node);
-    }
-    // public static bool TryLoadDb(PriDb db, string path, string defaultPath)
-    // {
-    //     if(!TryLoadDb(db, defaultPath)) return false;
-    //     if(TryLoadPrion(path, out var node))
-    //     {
-    //         if(!db.TryMerge("", node)) return ErEngine.LogWarning("failed to merge");
-    //     }
-    //     return true;
-    // }
-    public static bool TrySaveDb(string path, PriDb db)
-    {
-        return false;
-    }
     public static bool TryGetManPath(string dbPath, out string filepath)
     {
         filepath = string.Empty;
@@ -128,10 +112,6 @@ public static class SwData
         node = PriNull.Null;
         if(!TryGetManPath(dbPath, out filepath)) return false;
         return TryLoadPrion(filepath, out node);
-    }
-    public static bool TryGetManJson(string dbPath, out PriNode node)
-    {
-        return TryGetManJsonPath(dbPath, out node, out _);
     }
     public static bool TryGetManJsonDirpath(string dbPath, out PriNode node, out string dirpath)
     {
@@ -166,9 +146,7 @@ public static class SwData
     {
         if(srcNode.TryAs(out string filepath))
         {
-            filepath = Path.Join(dirpath, filepath);
-            dirpath = Path.GetDirectoryName(filepath)!;
-            if(TryConvert(out var node, filepath)) return Expand(node, dirpath);
+            if(TryExpand(out var node, filepath, dirpath)) return node;
         }
         else if(srcNode is PriDict srcDict)
         {
@@ -190,14 +168,23 @@ public static class SwData
         }
         return srcNode.DeepCopy();
     }
-    private static bool TryConvert(out PriNode node, string filepath)
+    private static bool TryExpand(out PriNode node, string filepath, string dirpath)
     {
         node = PriNull.Null;
+        filepath = Path.Join(dirpath, filepath);
         if(!Path.HasExtension(filepath)) return false;
         string ext = Path.GetExtension(filepath);
-        if(!Converters.TryGetValue(ext, out var fn)) return false;
-        if(fn(filepath) is not PriNode n) return false;
-        node = n;
-        return true;
+        if(Converters.TryGetValue(ext, out var fn))
+        {
+            if(fn(filepath) is not PriNode n) return false;
+            node = Expand(n, Path.GetDirectoryName(filepath)!);
+            return true;
+        }
+        else if (NormalizedExtensions.Contains(ext))
+        {
+            node = new PriString(filepath);
+            return true;
+        }
+        return false;
     }
 }
