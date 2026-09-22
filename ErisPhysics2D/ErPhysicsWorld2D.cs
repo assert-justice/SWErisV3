@@ -200,12 +200,15 @@ public partial class ErPhysicsWorld2D
     }
     private IEnumerable<(int,ErColliderBody)> GetBodies(uint mask, ErRect2 rect)
     {
+        IntSet.Clear();
         foreach (var cell in GetExtantCells(rect))
         {
             foreach (var (bodyId, body) in cell.Bodies)
             {
+                if(IntSet.Contains(bodyId)) continue;
                 if((mask & body.Mask) == 0) continue;
                 if(!rect.Overlaps(body.Rect)) continue;
+                IntSet.Add(bodyId);
                 yield return(bodyId, body);
             }
         }

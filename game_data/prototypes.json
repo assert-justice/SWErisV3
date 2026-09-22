@@ -3,7 +3,21 @@
     "spell_bullet": {},
     "pickups":{
         "spoon":{
-            "texture_filepath": "entities/actors/player/images/bella_spoon_item.png"
+            "texture_filepath": "entities/actors/player/images/bella_spoon_item.png",
+            "count": 1,
+            "max_uses": 1,
+            "on_enter_global":{
+                "verb": "player_add_item",
+                "pickup_type": "spoon"
+            }
+        },
+        "sling_ammo":{
+            "texture_filepath": "entities/actors/player/images/bella_sling_ammo_pickup.png",
+            "count": 4,
+            "on_enter":{
+                "verb": "ent_offer_item",
+                "pickup_type": "sling_ammo"
+            }
         }
     },
     "entities":{

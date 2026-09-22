@@ -244,7 +244,7 @@ public class SwPlayer: SwActor
     {
         StateMachine?.SetState("item_get");
         if(!command.TryGet("pickup_type", out string pickup_type)) return;
-        if(!command.TryGet("text", out string text)) text = string.Empty;
+        // if(!command.TryGet("text", out string text)) text = string.Empty;
         if(SwData.Prototypes.TryGet($"pickups/{pickup_type}/texture_filepath", out string texture_filepath))
         {
             if(!ErTexture.TryFromPath(texture_filepath, out PickupTexture)) ErEngine.Log("bad pickup texture path");
