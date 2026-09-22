@@ -1,9 +1,12 @@
 using Eris;
 using ErisMath;
+using SpoonWitch.Data;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
+using SpoonWitch.Game.Entity.Projectile;
 using SpoonWitch.Game.Inventory;
 using SpoonWitch.Rendering;
+using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Entity.Actor.Player;
 
@@ -375,18 +378,15 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         }
         private void Fire()
         {
-            // var pos = Entity.Position;
-            // var b = Entity.Props.Get("bullet").DeepCopy();
-            // if(!b.TryAs(out PriDict bullet)) throw new("fuck off");
-            // bullet.TrySet("x", pos.X);
-            // bullet.TrySet("y", pos.Y);
-            // bullet.TrySet("x_velocity", Controls.Aim.X * Entity.BulletSpeed);
-            // bullet.TrySet("y_velocity", Controls.Aim.Y * Entity.BulletSpeed);
-            // SwProjectile projectile = new();
-            // projectile.SetProps(bullet);
-            // SwGame.Game.AddEntity(projectile);
-            // Entity.AttackCooldownClock = 0.1;
-            // Entity.Ammo--;
+            Entity.SpoonCooldownClock = 0.1;
+            Entity.Ammo--;
+            var sling = Entity.Props.Get("sling");
+            if(!Entity.Props.TryGet("sling/projectile", out string slingProto)) return;
+            var props = SwData.Prototypes.Get($"projectiles/{slingProto}");
+            SwPrion.TrySetVec2(props, "velocity", Controls.Aim * Entity.SlingBulletSpeed);
+            SwPrion.TrySetVec2(props, Entity.Position);
+            props.TrySet("damage", sling.Get("sling_damage"));
+            SwGame.Game.LoadEntity<SwProjectile>(props);
         }
         public override void Update()
         {

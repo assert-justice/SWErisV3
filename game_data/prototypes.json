@@ -28,7 +28,7 @@
     },
     "projectiles":{
         "sling":{
-            "mask": 4,
+            "mask": 3,
             "damage": null,
             "body":{
                 "texture_filepath": "entities/actors/player/images/bella_sling_ammo_shot.png"

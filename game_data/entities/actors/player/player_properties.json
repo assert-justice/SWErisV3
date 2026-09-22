@@ -55,14 +55,8 @@
                 }
             ]
         },
-        "sling_damages":[
-            {
-                "type": "Bludgeoning",
-                "value": 30
-            }
-        ],
-        "sling_projectile":"sling",
-        "sling_bullet_speed": 600,
+        "projectile":"sling",
+        "sling_bullet_speed": 400,
         "sling_charge_time": 0.75
     },
     "inventory":[

@@ -26,6 +26,12 @@ public static class SwPrion
         if(!priNode.TrySet(yName, value.Y)) return false;
         return true;
     }
+    public static bool TrySetVec2(PriNode priNode, string key, ErVec2 value, string xName = "x", string yName = "y")
+    {
+        PriDict dict = [];
+        TrySetVec2(dict, value, xName, yName);
+        return priNode.TrySet(key, dict);
+    }
     public static ErVec2 GetVec2I(PriNode priNode, string xName = "x", string yName = "y", ErVec2I? defaultVec = null)
     {
         var def = defaultVec ?? ErVec2I.Zero;
