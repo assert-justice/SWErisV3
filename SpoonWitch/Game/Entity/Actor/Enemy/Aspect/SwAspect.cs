@@ -8,10 +8,10 @@ public class SwAspect: SwEnemy
 {
     public SwAspect()
     {
-        TryLoadSprites("game_data/entities/actors/aspect/aspect_anim_data.json");
+        // TryLoadSprites("game_data/entities/actors/aspect/aspect_anim_data.json");
         AddGlobalHandler("boss_wake", Wake);
     }
-    public override void SetProps(PriNode props)
+    protected override void SetProps(PriNode props)
     {
         base.SetProps(props);
     }

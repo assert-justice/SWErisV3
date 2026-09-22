@@ -2,9 +2,7 @@ using Eris;
 using ErisMath;
 using Prion.Db;
 using Prion.Node;
-using SpoonWitch.ByteStream;
 using SpoonWitch.Game.Entity.Component;
-using SpoonWitch.Game.Map.Collision;
 using SpoonWitch.Rendering;
 using SpoonWitch.Utils;
 
@@ -13,11 +11,10 @@ namespace SpoonWitch.Game.Entity;
 public abstract class SwEntity
 {
     private readonly Dictionary<(Type,string), SwComponent> ComponentLookup = [];
-    private readonly List<SwComponent> Components = [];
+    private IEnumerable<SwComponent> Components => ComponentLookup.Values;
     public PriDb Props{get; private set;} = new(new PriDict());
     public virtual int RenderLayer => 1;
-    private int _Id;
-    public int Id => _Id;
+    public int Id{get; private set;}
     public ErVec2 Position;
     public bool Visible = true;
     public bool IsFreeQueued{get; private set;}
@@ -28,7 +25,6 @@ public abstract class SwEntity
     private readonly Dictionary<string,Action<PriNode>> GlobalHandlers = [];
     public SwEntity()
     {
-        _Id = SwApp.GetNextId();
         Clocks = new double[NumClocks];
         Array.Fill(Clocks, 0);
     }
@@ -46,47 +42,13 @@ public abstract class SwEntity
     }
     protected SwComponent RegisterComponent(SwComponent component)
     {
-        // Note: this method should only really be used from the entity's constructor
-        // Todo: make improper use throw an exception? or log a warning?
-        if(ComponentLookup.TryAdd((component.GetType(), component.Name), component)) Components.Add(component);
-        else ErEngine.LogError("Failed to register component of name '", component.Name, "' and type '", component.GetType(), "'.");
+        if(!ComponentLookup.TryAdd((component.GetType(), component.Name), component)) ErEngine.LogError("Failed to register component of name '", component.Name, "' and type '", component.GetType(), "'.");
         return component;
     }
-    // public void Init(SwEntPropsBase entProps)
-    // {
-    //     _Id = entProps.Id;
-    //     EntProps = entProps;
-    //     _CurrentHeadIndex = -1;
-    //     _LastHeadIndex = -1;
-    //     Array.Fill(Clocks, 0);
-    //     Ready();
-    // }
-    public virtual void SetProps(PriNode props)
+    protected virtual void SetProps(PriNode props)
     {
-        // ErEngine.Log("props in: ", props, " type: ", props.GetType());
-        // if(!props.TryAs(out PriDict dict)) throw new("fuck off");
-        // ErEngine.Log("first run");
-        // foreach (var (key, value) in dict.Data)
-        // {
-        //     ErEngine.Log("\tkey: ", key, " value: ", value);
-        // }
-        // ErEngine.Log("second run");
-        // foreach (var (key, value) in dict.Data)
-        // {
-        //     ErEngine.Log("\tkey: ", key, " value: ", value);
-        // }
-        // dict.Data.TryGetValue("x", out var val);
-        // if(val is null) ErEngine.Log($"extra dumb null: {props}");
-        // else ErEngine.Log($"not dumb: {props}");
-        // ErEngine.Log("val: ", val?.GetType().ToString() ?? $"extra dumb null: {props}");
         Props = new(props);
-        // ErEngine.Log("props data: ", Props.Data);
-        // ErEngine.Log("x: ", props.Get("x"));
         Position = SwPrion.GetVec2(Props.Data);
-        if(!Props.TryGet("x", out double x)) x = 10;
-        if(!Props.TryGet("y", out double y)) y = 10;
-        Position = new(x,y);
-        // ErEngine.Log("base set props\n", Props.Data, "\n", Position);
     }
     public virtual void Ready()
     {
@@ -95,29 +57,6 @@ public abstract class SwEntity
             item.Ready();
         }
     }
-    public virtual void Read(SwByteStream byteStream)
-    {
-        // read type byte
-        // if(!byteStream.TryReadByte(out _)) throw new("no type id");
-        // if(!byteStream.TryReadI32(out _Id)) throw new("jerkbag");
-        // if(!byteStream.TryReadI32(out _CurrentHeadIndex)) throw new("oops2");
-        // if(!byteStream.TryReadI32(out _LastHeadIndex)) throw new("oops3");
-        // if(!byteStream.TryReadVec2(out Position)) throw new("oops4");
-        // if(!byteStream.TryReadVec2(out Velocity)) throw new("oops5");
-        // if(!byteStream.TryReadBool(out Visible)) throw new("oops6");
-        // // if(!byteStream.TryReadBool(out WasBodyEnabled)) throw new("oops7");
-        // // if(!byteStream.TryReadBool(out BodyEnabled)) throw new("oops7");
-        // // Position = BodyEnabled ? pos + Size * 0.5 : pos;
-        // // read clocks
-        // if(!byteStream.TryReadF64s(in Clocks)) throw new("bad clocks");
-        // // read components
-        // foreach (var item in Components)
-        // {
-        //     item.Read(byteStream);
-        // }
-        // if(!SwGame.TryGetEntProps(Id, out var entProps)) ErEngine.LogError("no properties found for for entity ", Id);
-        // EntProps = entProps!;
-    }
     public void QueueFree()
     {
         IsFreeQueued = true;
@@ -125,7 +64,6 @@ public abstract class SwEntity
     protected void HandleCommands()
     {
         while(CommandQueue.TryDequeue(out var command))
-        // foreach(var command in EntProps.GetCommands())
         {
             if(!command.TryGet("verb", out string verb))
             {
@@ -143,40 +81,8 @@ public abstract class SwEntity
             }
         }
     }
-    public virtual void Write(SwByteStream byteStream)
-    {
-        // if(IsFreeQueued) return; // Game does not call Write on entities with queue free set
-        // int head = byteStream.Head;
-        // // write type byte
-        // byteStream.WriteByte(GetTypeId);
-        // byteStream.WriteI32(_Id);
-        // // write head position as current head index
-        // byteStream.WriteI32(head);
-        // // write current head index as last head index
-        // // Note: if it is negative, that means there is no valid last head index. this is relevant for drawing.
-        // byteStream.WriteI32(_CurrentHeadIndex);
-        // Body.ParentId = Id;
-        // Body.Rect = ErRect2.Centered(Position, Size);
-        // Body.Velocity = Velocity;
-        // Body.Mask = Mask;
-        // Body.Head = byteStream.Head;
-        // SwGame.Map.PhysicsWorld.SetBody(Id, Body);
-        // // }
-        // byteStream.WriteVec2(Position);
-        // byteStream.WriteVec2(Velocity);
-        // byteStream.WriteBool(Visible);
-        // // clocks
-        // byteStream.WriteF64s(in Clocks);
-        // // write components
-        // foreach (var item in Components)
-        // {
-        //     item.Write(byteStream);
-        // }
-    }
     public virtual void Update()
     {
-        // CommandHandler.Dispatch();
-        // IsFreeQueued = false;
         HandleCommands();
         foreach (var comp in Components)
         {
@@ -186,15 +92,11 @@ public abstract class SwEntity
     public void Draw(SwEntity nextState)
     {
         if(!Visible) return;
-        if(nextState.GetType() != GetType()) throw new Exception("type mismatch");
-        if(nextState.Components.Count != Components.Count) throw new Exception("component mismatch");
         SwGame.RenderLayer = RenderLayer;
         DrawImpl(nextState);
-        for (int idx = 0; idx < Components.Count; idx++)
+        foreach (var item in Components)
         {
-            var comp = Components[idx];
-            var nextComp = nextState.Components[idx];
-            comp.Draw(nextComp);
+            item.Draw(item);
         }
         DrawImplLate(nextState);
     }
@@ -219,25 +121,40 @@ public abstract class SwEntity
         }
         return null;
     }
-    protected bool TryLoadSprites(string filepath)
+    protected void LoadSprites(string propsPath)
     {
-        if(!SwApp.TryLoadPrion(filepath, out var priNode)) return false;
-        string dirpath = Path.GetDirectoryName(filepath)!;
-        if(!priNode.TryGet("sprites", out PriDict dict)) return false;
-        foreach (var (name, node) in dict.Data)
+        foreach (var item in Props.Get(propsPath).Values)
         {
-            if(!SwSprite.TryFromData(out var sprite, name, dirpath, node)) ErEngine.LogWarning("failed to parse sprite '", name, "'");
-            else RegisterComponent(new SwSpriteComponent(this, sprite));
+            if(!SwSprite.TryFromData(out var sprite, item)) continue;
+            RegisterComponent(new SwSpriteComponent(this, sprite));
         }
-        return true;
     }
+    // protected bool TryLoadSprites(string filepath)
+    // {
+    //     if(!SwApp.TryLoadPrion(filepath, out var priNode)) return false;
+    //     string dirpath = Path.GetDirectoryName(filepath)!;
+    //     if(!priNode.TryGet("sprites", out PriDict dict)) return false;
+    //     foreach (var (name, node) in dict.Data)
+    //     {
+    //         if(!SwSprite.TryFromData(out var sprite, name, dirpath, node)) ErEngine.LogWarning("failed to parse sprite '", name, "'");
+    //         else RegisterComponent(new SwSpriteComponent(this, sprite));
+    //     }
+    //     return true;
+    // }
     public virtual void GameCleanup()
     {
         // Note: this method should only be called by game
-        // SwGame.Map.PhysicsWorld.RemoveBody(Id);
         foreach (var item in Components)
         {
             item.Cleanup();
         }
+    }
+    public static T GameLoad<T>(PriNode props) where T: SwEntity, new()
+    {
+        T ent = new();
+        if(props.TryGet("id", out int id)) ent.Id = id;
+        else ent.Id = SwApp.GetNextId();
+        ent.SetProps(props);
+        return ent;
     }
 }

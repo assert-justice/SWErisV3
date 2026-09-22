@@ -17,11 +17,10 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     private SwSprite SpoonSprite = null!;
     private SwSprite SlingSprite = null!;
     private SwSprite ReticleSprite = null!;
-    private SwPlayerControls Controls = null!;
-    private SwAreaComponent SpoonHurtbox = null!;
+    private SwPlayerControls Controls => Entity.Controls;
+    private SwAreaComponent SpoonHurtbox => Entity.SpoonHurtbox;
     private SwParticleComponent DustParticles = null!;
-    private SwInventoryComponent _Inventory = null!;
-    private SwInventory Inventory => _Inventory.Entries!;
+    private SwInventory Inventory => Entity.InventoryComp.Entries;
     protected virtual double StaminaRegenClockMul => 1;
     protected virtual double ManaRegenMul => 1;
     // name, hands, facing
@@ -99,18 +98,22 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         if(Entity.CurrentSpell.IsActive) return false;
         return true;
     }
-    public override void Init(SwStateMachine stateMachine)
+    // public override void Init(SwStateMachine stateMachine)
+    // {
+    //     base.Init(stateMachine);
+    //     // Controls => Entity.Controls;  //Entity.GetComponent<SwPlayerControls>("controls")!;
+    //     // SpoonHurtbox = Entity.GetComponent<SwAreaComponent>("spoon_hurtbox")!;
+    //     // DustParticles = Entity.GetComponent<SwParticleComponent>("dust_1")!;
+    //     // _Inventory = Entity.GetComponent<SwInventoryComponent>("inventory")!;
+    // }
+    public override void Ready()
     {
-        base.Init(stateMachine);
+        base.Ready();
         BodySprite = Entity.GetComponent<SwSpriteComponent>("body")?.Sprite!;
         HatSprite = Entity.GetComponent<SwSpriteComponent>("hat")?.Sprite!;
         SpoonSprite = Entity.GetComponent<SwSpriteComponent>("spoon")?.Sprite!;
         SlingSprite = Entity.GetComponent<SwSpriteComponent>("sling")?.Sprite!;
         ReticleSprite = Entity.GetComponent<SwSpriteComponent>("reticle")?.Sprite!;
-        Controls = Entity.GetComponent<SwPlayerControls>("controls")!;
-        SpoonHurtbox = Entity.GetComponent<SwAreaComponent>("spoon_hurtbox")!;
-        DustParticles = Entity.GetComponent<SwParticleComponent>("dust_1")!;
-        _Inventory = Entity.GetComponent<SwInventoryComponent>("inventory")!;
     }
     private void SetBodyHandedAnim(int animIdx, int hands, int facing)
     {
@@ -222,7 +225,10 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
                 return;
             }
             double distance = Entity.MoveToward(SwGame.ActiveCheckpoint.RectPx.Center, Entity.BaseSpeed);
-            if(distance == 0) PlayBodyAnim("respawn");
+            if(distance == 0)
+            {
+                PlayBodyAnim("respawn");
+            }
         }
     }
     public class Respawn: SwPlayerState
@@ -377,18 +383,18 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         }
         private void Fire()
         {
-            var pos = Entity.Position;
-            var b = Entity.Props.Get("bullet").DeepCopy();
-            if(!b.TryAs(out PriDict bullet)) throw new("fuck off");
-            bullet.TrySet("x", pos.X);
-            bullet.TrySet("y", pos.Y);
-            bullet.TrySet("x_velocity", Controls.Aim.X * Entity.BulletSpeed);
-            bullet.TrySet("y_velocity", Controls.Aim.Y * Entity.BulletSpeed);
-            SwProjectile projectile = new();
-            projectile.SetProps(bullet);
-            SwGame.Game.AddEntity(projectile);
-            Entity.AttackCooldownClock = 0.1;
-            Entity.Ammo--;
+            // var pos = Entity.Position;
+            // var b = Entity.Props.Get("bullet").DeepCopy();
+            // if(!b.TryAs(out PriDict bullet)) throw new("fuck off");
+            // bullet.TrySet("x", pos.X);
+            // bullet.TrySet("y", pos.Y);
+            // bullet.TrySet("x_velocity", Controls.Aim.X * Entity.BulletSpeed);
+            // bullet.TrySet("y_velocity", Controls.Aim.Y * Entity.BulletSpeed);
+            // SwProjectile projectile = new();
+            // projectile.SetProps(bullet);
+            // SwGame.Game.AddEntity(projectile);
+            // Entity.AttackCooldownClock = 0.1;
+            // Entity.Ammo--;
         }
         public override void Update()
         {

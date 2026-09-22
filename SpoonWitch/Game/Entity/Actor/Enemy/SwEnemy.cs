@@ -39,18 +39,4 @@ public abstract class SwEnemy: SwActor
         base.Update();
         if(Velocity.IsNonzero()) FacingIdx = (byte)ErMath.RoundAngleToInt(Velocity.GetAngle(), 4);
     }
-    public override void Read(SwByteStream byteStream)
-    {
-        base.Read(byteStream);
-        if(!byteStream.TryReadVec2(out TargetPosition)) ErEngine.LogWarning("bad target pos");
-        if(!byteStream.TryReadBool(out IsPassive)) ErEngine.LogWarning("bad is_passive");
-        if(!byteStream.TryReadByte(out FacingIdx)) ErEngine.LogWarning("bad facing");
-    }
-    public override void Write(SwByteStream byteStream)
-    {
-        base.Write(byteStream);
-        byteStream.WriteVec2(TargetPosition);
-        byteStream.WriteBool(IsPassive);
-        byteStream.WriteByte(FacingIdx);
-    }
 }

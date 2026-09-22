@@ -208,29 +208,6 @@ public class SwGame
             ErEngine.LogWarning("spawn entity command missing entity_type field");
             return;
         }
-        SwEntity? entity = null;
-        switch (entityType)
-        {
-            case "none":
-                break;
-            case "slume":
-                entity = new SwSlume();
-                break;
-            case "knight":
-                entity = new SwKnight();
-                break;
-            case "aspect":
-                entity = new SwAspect();
-                break;
-            default:
-                ErEngine.LogWarning("tried to spawn unknown entity type '", entityType, "'");
-                break;
-        }
-        if(entity is null)
-        {
-            ErEngine.LogWarning("failed to spawn entity with command '", command, "'");
-            return;
-        }
         PriDict props = new()
         {
             {"entity_type", command.Get("entity_type")},
@@ -242,19 +219,32 @@ public class SwGame
         };
         var prototype = SwData.Prototypes.Get($"entities/{entityType}");
         props.Merge(prototype);
-        // Todo: loading goes here?
-        entity.SetProps(props);
-        AddEntity(entity);
+        switch (entityType)
+        {
+            case "none":
+                break;
+            case "slume":
+                LoadEntity<SwSlume>(props);
+                break;
+            case "knight":
+                LoadEntity<SwKnight>(props);
+                break;
+            case "aspect":
+                LoadEntity<SwAspect>(props);
+                break;
+            default:
+                ErEngine.LogWarning("tried to spawn unknown entity type '", entityType, "'");
+                break;
+        }
     }
     public void Launch(int numPlayers = 1)
     {
         FadeIn();
         for (int idx = 0; idx < numPlayers; idx++)
         {
-            SwPlayer player = new();
-            player.SetProps(SwData.Prototypes.Get("entities/player"));
+            var player = LoadEntity<SwPlayer>(SwData.Prototypes.Get("entities/player"));
             Hud.Player = player;
-            AddEntity(player);
+            player.PlayerIdx = idx;
         }
         if(!Map.TryGetDefaultCheckpoint(out var checkpoint))
         {
@@ -326,9 +316,15 @@ public class SwGame
         ErRect2 rect = new(0, SwApp.HUD_HEIGHT, SwApp.INTERNAL_WIDTH, SwApp.INTERNAL_HEIGHT);
         if(FadeState > 0) ErEngine.Renderer.DrawRect(rect, ErColor.Black, ErMath.Ease(FadeState, 1));
     }
-    public void AddEntity(SwEntity entity)
+    // public void AddEntity(SwEntity entity)
+    // {
+    //     NewEntities.Enqueue(entity);
+    // }
+    public T LoadEntity<T>(PriNode props) where T: SwEntity, new()
     {
-        NewEntities.Enqueue(entity);
+        T ent = SwEntity.GameLoad<T>(props);
+        NewEntities.Enqueue(ent);
+        return ent;
     }
     public bool TryLoadMap(string filepath)
     {

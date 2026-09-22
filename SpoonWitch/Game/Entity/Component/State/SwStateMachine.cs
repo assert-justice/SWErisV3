@@ -22,6 +22,14 @@ public class SwStateMachine: SwComponent
             States[idx].Init(this);
         }
     }
+    public override void Ready()
+    {
+        base.Ready();
+        foreach (var item in States)
+        {
+            item.Ready();
+        }
+    }
     public void SetState(string state)
     {
         // if (!string.IsNullOrEmpty(NextState))

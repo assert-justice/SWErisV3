@@ -2,6 +2,7 @@ using Eris;
 using ErisMath;
 using Prion.Node;
 using SpoonWitch.ByteStream;
+using SpoonWitch.Data;
 using SpoonWitch.Game;
 using SpoonWitch.Utils;
 
@@ -135,6 +136,7 @@ public class SwSprite(string name)
             ErEngine.LogError("bad frame idx ", NextAnimationState.FrameIdx, " for anim ", CurrentAnimation.Name);
             return;
         }
+        // if(debug) ErEngine.Log("anim: ", CurrentAnimation.Name, frame.SourceRect);
         ErVec2 origin = Centered ? frame.SourceRect.Size * 0.5 : ErVec2.Zero;
         bool hFlip = HFlip ? !NextAnimationState.HFlip : NextAnimationState.HFlip;
         bool vFlip = VFlip ? !NextAnimationState.VFlip : NextAnimationState.VFlip;
@@ -161,42 +163,106 @@ public class SwSprite(string name)
         byteStream.WriteByte((byte)Flags);
         byteStream.WriteI32(PalletIdx);
     }
-    public static bool TryFromData(out SwSprite sprite, string name, string dirpath, PriNode priNode)
+    public static bool TryFromData(out SwSprite sprite, PriNode priNode)
     {
         sprite = default!;
+        if(!priNode.TryGet("name", out string spriteName)) spriteName = "defaultSprite";
         if(!priNode.TryGet("visible", out bool visible)) visible = true;
         var offset = SwPrion.GetVec2(priNode, "offset_x", "offset_y");
         if(!priNode.TryGet("centered", out bool centered)) centered = true;
-        sprite = new(name)
+        var frameSize = SwPrion.GetVec2(priNode, "width", "height", new(64, 64));
+        // if(!SwPrion.TryGetVec2(out var frameSize, priNode, "width", "height"))
+        sprite = new(spriteName)
         {
             Visible = visible,
             Offset = offset,
             Centered = centered,
         };
         List<SwAnimation> animations = [];
-        if(priNode.TryGet("animations", out PriDict dict))
+        if(priNode.TryGet("animations", out PriList list))
         {
-            foreach (var animName in dict.Data.Keys)
+            foreach (var item in list.Data)
             {
-                if(!SwAnimation.TryFromPri(out var animation, animName, dirpath, priNode)) ErEngine.LogWarning("bad animation '", animName, "'");
-                else animations.Add(animation); // sprite.AddAnimation(animation);
+                if(SwAnimation.TryFromData(out var animation, item, frameSize)) animations.Add(animation);
             }
         }
-        if (priNode.TryGet("ase_animations", out PriNode aseAnim))
+        if(priNode.TryGet("ase_animations", out PriDict dict))
         {
-            foreach (var item in aseAnim.Values)
+            HashSet<string> blacklist = [];
+            foreach (var item in dict.Get("blacklist").Values)
             {
-                if(!SwAnimation.TryFromPriAse(ref animations, dirpath, item))
+                if(!item.TryAs(out string animName)) ErEngine.LogWarning("bad anim blacklist entry");
+                blacklist.Add(animName);
+            }
+            var data = dict.Get("filepath");
+            var meta = data.Get("meta");
+            if(!SwData.TryLoadTexture(out var texture, meta.Get("image"))) return ErEngine.LogWarning("bad texture for ase sprite");
+            SwTextureStore textureStore = new(texture);
+            if(!data.TryGet("frames", out PriList frameList)) return ErEngine.LogWarning("bad frames for ase sprite");
+            foreach (var item in meta.Get("frameTags").Values)
+            {
+                if(!item.TryGet("name", out string animName)) return ErEngine.LogWarning("bad anim");
+                if(blacklist.Contains(animName)) continue;
+                if(!item.TryGet("from", out int from)) return ErEngine.LogWarning("bad anim");
+                if(!item.TryGet("to", out int to)) return ErEngine.LogWarning("bad anim");
+                bool loops = !item.TryGet("repeat", out string _);
+                bool hFlip = item.TryGet("data", out string _);
+                var firstFrame = frameList.Data[from];
+                frameSize = SwPrion.GetVec2(firstFrame.Get("frame"), "w", "h");
+                if(!firstFrame.TryGet("duration", out double duration)) duration = 125;
+                SwFrame[] frames = new SwFrame[to - from + 1];
+                for (int frameIdx = from; frameIdx <= to; frameIdx++)
                 {
-                    ErEngine.LogWarning("failed to read ase animation for sprite ", name);
-                    continue;
+                    var pos = SwPrion.GetVec2(frameList.Data[frameIdx].Get("frame"));
+                    frames[frameIdx - from] = new(textureStore, new(pos, frameSize));
                 }
+                SwAnimationState defaultState = new();
+                SwAnimationState.Set(ref defaultState, hFlip:hFlip, isLooping: loops, fps:1000/duration);
+                animations.Add(new(animName, frames, frameSize, defaultState));
             }
         }
         foreach (var item in animations)
         {
             sprite.AddAnimation(item);
         }
+        // ErEngine.Log("sprite name: ", spriteName, " num anims: ", sprite.Animations.Count);
+        // if(spriteName == "body")
+        // {
+        //     ErEngine.Log("body anims");
+        //     foreach (var item in sprite.Animations)
+        //     {
+        //         ErEngine.Log(item.Name, " num frames: ", item.NumFrames);
+        //     }
+        //     ErEngine.Log("num anims: ", sprite.Animations.Count);
+        // }
         return true;
     }
+    // public static bool TryFromData(out SwSprite sprite, string name, string dirpath, PriNode priNode)
+    // {
+    //     sprite = default!;
+    //     if(priNode.TryGet("animations", out PriDict dict))
+    //     {
+    //         foreach (var animName in dict.Data.Keys)
+    //         {
+    //             if(!SwAnimation.TryFromPri(out var animation, animName, dirpath, priNode)) ErEngine.LogWarning("bad animation '", animName, "'");
+    //             else animations.Add(animation); // sprite.AddAnimation(animation);
+    //         }
+    //     }
+    //     if (priNode.TryGet("ase_animations", out PriNode aseAnim))
+    //     {
+    //         foreach (var item in aseAnim.Values)
+    //         {
+    //             if(!SwAnimation.TryFromPriAse(ref animations, dirpath, item))
+    //             {
+    //                 ErEngine.LogWarning("failed to read ase animation for sprite ", name);
+    //                 continue;
+    //             }
+    //         }
+    //     }
+    //     foreach (var item in animations)
+    //     {
+    //         sprite.AddAnimation(item);
+    //     }
+    //     return true;
+    // }
 }

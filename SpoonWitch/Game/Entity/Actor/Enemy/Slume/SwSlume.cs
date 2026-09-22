@@ -20,8 +20,8 @@ public class SwSlume : SwEnemy
 
     public SwSlume()
     {
-        string path = "game_data/entities/actors/slume/slume_anim_data.json";
-        if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load slume sprites");
+        // string path = "game_data/entities/actors/slume/slume_anim_data.json";
+        // if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load slume sprites");
         SwAreaComponent hurtbox = new(this, "hurtbox", 2, new(18, 18), onBodyEnter: OnEnterHurtbox);
         RegisterComponent(hurtbox);
         StateMachine = SwSlumeState.GetStateMachine(this, "state_machine");
@@ -39,16 +39,6 @@ public class SwSlume : SwEnemy
     {
         base.Die();
         StateMachine.SetState("dead");
-    }
-    public override void Read(SwByteStream byteStream)
-    {
-        base.Read(byteStream);
-        byteStream.TryReadF64(out TimeoutClock);
-    }
-    public override void Write(SwByteStream byteStream)
-    {
-        base.Write(byteStream);
-        byteStream.WriteF64(TimeoutClock);
     }
     protected override double Damage(SwDamage damage)
     {

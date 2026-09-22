@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.Reflection;
+using System.Text.Json.Nodes;
 using Eris;
 using Eris.App;
 using Eris.Renderer;
@@ -37,6 +38,18 @@ public class SwApp : IErApp
     private readonly SwCommandHandler CommandHandler = new(CommandStore);
     public static int Main()
     {
+        // get loaders
+        // Assembly assembly = System.Reflection.AppDomain.CurrentDomain.GetAssemblies()
+        // var instances = from t in Assembly.GetExecutingAssembly().GetTypes()
+        //         where t.GetInterfaces().Contains(typeof(ISwSerialize))
+        //                  && t.GetConstructor(Type.EmptyTypes) != null
+        //         select Activator.CreateInstance(t) as ISwSerialize;
+        // foreach (var item in Assembly.GetExecutingAssembly().GetTypes())
+        // {
+        //     if(!item.GetInterfaces().Contains(typeof(ISwSerialize))) continue;
+        //     var info = item.GetMethod("TryLoad");
+        //     info.
+        // }
         SwApp app = new();
         ErEngine.Renderer.SetWindow("Spoon Witch", new(1920, 1080));
         ErEngine.Run(app);

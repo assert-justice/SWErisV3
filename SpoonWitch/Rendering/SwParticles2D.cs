@@ -155,10 +155,10 @@ public class SwParticles2D
         if(!data.TryGet("name", out string name)) return false;
         if(data.TryGet("filepath_ase", out string filepath))
         {
-            string dirpath = Path.GetDirectoryName(filepath)!;
-            if(!SwApp.TryLoadPrion(filepath, out var aseData)) return false;
-            if(!SwAnimation.TryFromPriAse(out SwAnimation animation, name, dirpath, aseData)) return false;
-            particles = new(animation);
+            // string dirpath = Path.GetDirectoryName(filepath)!;
+            // if(!SwApp.TryLoadPrion(filepath, out var aseData)) return false;
+            // if(!SwAnimation.TryFromPriAse(out SwAnimation animation, name, dirpath, aseData)) return false;
+            // particles = new(animation);
         }
         else if(data.TryGet("filepath_texture", out filepath))
         {

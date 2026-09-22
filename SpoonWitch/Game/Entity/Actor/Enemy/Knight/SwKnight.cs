@@ -15,8 +15,8 @@ public class SwKnight : SwEnemy
     public double TimeoutClock;
     public SwKnight()
     {
-        string path = "game_data/entities/actors/knight/knight_anim_data.json";
-        if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load knight sprites");
+        // string path = "game_data/entities/actors/knight/knight_anim_data.json";
+        // if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load knight sprites");
         SwAreaComponent hurtbox = new(this, "hurtbox", 2, new(32,32), onBodyEnter: OnEnterHurtbox);
         RegisterComponent(hurtbox);
         StateMachine = SwKnightState.GetStateMachine(this, "state_machine");
@@ -28,16 +28,6 @@ public class SwKnight : SwEnemy
         if(!IsPassive) StateMachine.SetState("wandering");
         SwDamage damage = new([(SwDamageType.Untyped, 30)]);
         Props.TrySet("damage", damage.ToPri());
-    }
-    public override void Read(SwByteStream byteStream)
-    {
-        base.Read(byteStream);
-        byteStream.TryReadF64(out TimeoutClock);
-    }
-    public override void Write(SwByteStream byteStream)
-    {
-        base.Write(byteStream);
-        byteStream.WriteF64(TimeoutClock);
     }
     protected override void Die()
     {

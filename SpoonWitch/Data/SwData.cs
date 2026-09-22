@@ -9,7 +9,8 @@ namespace SpoonWitch.Data;
 
 public static class SwData
 {
-    private static readonly Dictionary<float,ErFont> FontLookup = [];
+    // private static readonly Dictionary<float,ErFont> FontLookup = [];
+    private static readonly Dictionary<string, Func<PriNode,object?>> Loaders = [];
     public static string FontPath{get; set;} = "game_data/fonts/PixAntiqua.ttf";
     public const string GAME_DATA_PATH = "game_data";
     public static readonly string ManifestPath = "game_data/manifest.json";
@@ -20,7 +21,7 @@ public static class SwData
     private static readonly List<nint> PalletLookup = [];
     private static readonly Dictionary<string, Func<string,PriNode?>> Converters;
     // Note: these are the file extensions where the path is extended relative to the game data path
-    private static readonly HashSet<string> NormalizedExtensions = [".png"];
+    private static readonly HashSet<string> NormalizedExtensions = [".png", ".ttf"];
     static SwData()
     {
         static PriNode? json(string filepath)

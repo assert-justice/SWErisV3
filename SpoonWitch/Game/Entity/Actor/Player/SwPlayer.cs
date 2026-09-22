@@ -57,10 +57,11 @@ public class SwPlayer: SwActor
     public double AttackCooldownClock{get => Clocks[base.NumClocks+2]; set {Clocks[base.NumClocks+2] = value;}}
     public double SpoonAttackStaminaCost = 30;
     public SwSpell? CurrentSpell;
-    private readonly SwStateMachine StateMachine;
-    private readonly SwPlayerControls Controls;
-    private readonly SwInventoryComponent InventoryComp;
+    public readonly SwStateMachine StateMachine;
+    public readonly SwPlayerControls Controls;
+    public readonly SwInventoryComponent InventoryComp;
     public ErTexture? PickupTexture;
+    public readonly SwAreaComponent SpoonHurtbox;
     public SwPlayer()
     {
         Controls = new SwPlayerControls(this);
@@ -68,16 +69,16 @@ public class SwPlayer: SwActor
         InventoryComp = new SwInventoryComponent(this, "inventory");
         RegisterComponent(InventoryComp);
         if(!SwApp.TryLoadPrion("game_data/particles/particles.json", out var animData)) throw new("bad");
-        SwAnimation.TryFromPriAse(out var animation, "dust_1", "game_data/particles", animData);
-        SwParticleComponent particles = new(this, "dust_1", animation)
-        {
-            Offset = new(0, 9)
-        };
-        RegisterComponent(particles);
-        string path = "game_data/entities/actors/player/player_anim_data.json";
-        if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load player sprites");
-        SwAreaComponent spoonHurtbox = new(this, "spoon_hurtbox", 4, new(32, 32), onBodyEnter: OnEnterSpoonHurtbox);
-        RegisterComponent(spoonHurtbox);
+        // SwAnimation.TryFromPriAse(out var animation, "dust_1", "game_data/particles", animData);
+        // SwParticleComponent particles = new(this, "dust_1", animation)
+        // {
+        //     Offset = new(0, 9)
+        // };
+        // RegisterComponent(particles);
+        // string path = "game_data/entities/actors/player/player_anim_data.json";
+        // if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load player sprites");
+        SpoonHurtbox = new(this, "spoon_hurtbox", 4, new(32, 32), onBodyEnter: OnEnterSpoonHurtbox);
+        RegisterComponent(SpoonHurtbox);
         StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
         AddHandler("ent_offer_item", EntOfferItem);
@@ -89,6 +90,11 @@ public class SwPlayer: SwActor
         if(!Props.TryGet("spoon_damage", out PriNode spoonDamage)) return;
         ErEngine.Log(spoonDamage);
         entity.AddCommand(spoonDamage);
+    }
+    protected override void SetProps(PriNode props)
+    {
+        base.SetProps(props);
+        LoadSprites("anim_data/sprites");
     }
     public override void Ready()
     {
