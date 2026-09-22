@@ -53,5 +53,12 @@
             "quantity": 0,
             "capacity": 4
         }
-    ]
+    ],
+    "dust_particles":{
+        "ase_data":{
+            "name": "dust_1",
+            "filepath": "../../../particles/particles.json",
+            "offset": {"x": 0, "y": 9}
+        }
+    }
 }

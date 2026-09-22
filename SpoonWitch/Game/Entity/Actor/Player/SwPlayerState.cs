@@ -17,10 +17,10 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     private SwSprite SpoonSprite = null!;
     private SwSprite SlingSprite = null!;
     private SwSprite ReticleSprite = null!;
-    private SwPlayerControls Controls => Entity.Controls;
-    private SwAreaComponent SpoonHurtbox => Entity.SpoonHurtbox;
+    private SwPlayerControls Controls = null!;
+    private SwAreaComponent SpoonHurtbox = null!;
     private SwParticleComponent DustParticles = null!;
-    private SwInventory Inventory => Entity.InventoryComp.Entries;
+    private SwInventory Inventory => Entity.Inventory;
     protected virtual double StaminaRegenClockMul => 1;
     protected virtual double ManaRegenMul => 1;
     // name, hands, facing
@@ -101,9 +101,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     // public override void Init(SwStateMachine stateMachine)
     // {
     //     base.Init(stateMachine);
-    //     // Controls => Entity.Controls;  //Entity.GetComponent<SwPlayerControls>("controls")!;
     //     // SpoonHurtbox = Entity.GetComponent<SwAreaComponent>("spoon_hurtbox")!;
-    //     // DustParticles = Entity.GetComponent<SwParticleComponent>("dust_1")!;
     //     // _Inventory = Entity.GetComponent<SwInventoryComponent>("inventory")!;
     // }
     public override void Ready()
@@ -114,6 +112,9 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         SpoonSprite = Entity.GetComponent<SwSpriteComponent>("spoon")?.Sprite!;
         SlingSprite = Entity.GetComponent<SwSpriteComponent>("sling")?.Sprite!;
         ReticleSprite = Entity.GetComponent<SwSpriteComponent>("reticle")?.Sprite!;
+        DustParticles = Entity.GetComponent<SwParticleComponent>("dust_particles")!;
+        Controls = Entity.GetComponent<SwPlayerControls>("controls")!;
+        SpoonHurtbox = Entity.GetComponent<SwAreaComponent>("spoon_hurtbox")!;
     }
     private void SetBodyHandedAnim(int animIdx, int hands, int facing)
     {

@@ -23,6 +23,7 @@ public class SwParticles2D
     private double SpawnDelay = 0;
     private double CurrentTime;
     public ErVec2 Origin;
+    public ErVec2 Offset;
     public int Amount = 8;
     public double Lifetime = 1;
     public double LifetimeRandomness = 0;
@@ -138,7 +139,7 @@ public class SwParticles2D
     }
     public void Draw(double dt)
     {
-        ErVec2 origin = (UseLocalCoordinates ? Origin : ErVec2.Zero) - Animation.Size * 0.5;
+        ErVec2 origin = (UseLocalCoordinates ? Origin : ErVec2.Zero) - Animation.Size * 0.5 + Offset;
         SwAnimationState state = default;
         for (int idx = 0; idx < Positions.Count; idx++)
         {
@@ -152,21 +153,21 @@ public class SwParticles2D
     public static bool TryFromData(out SwParticles2D particles, PriNode data)
     {
         particles = default!;
-        if(!data.TryGet("name", out string name)) return false;
-        if(data.TryGet("filepath_ase", out string filepath))
+        if(data.TryGet("ase_data", out PriDict dict))
         {
-            // string dirpath = Path.GetDirectoryName(filepath)!;
-            // if(!SwApp.TryLoadPrion(filepath, out var aseData)) return false;
-            // if(!SwAnimation.TryFromPriAse(out SwAnimation animation, name, dirpath, aseData)) return false;
-            // particles = new(animation);
+            if(!dict.TryGet("name", out string name)) return ErEngine.LogWarning("no name found for particle ase animation");
+            if(!SwAseImporter.TryFromPriData(out var aseImporter, dict.Get("filepath"))) return false;
+            if(!aseImporter.TryGetAnimation(out var animation, name)) return ErEngine.LogWarning("invalid name for particle ase animation");
+            particles = new(animation);
         }
-        else if(data.TryGet("filepath_texture", out filepath))
+        else if(data.TryGet("filepath_texture", out string filepath))
         {
             if(!ErTexture.TryFromPath(filepath, out var texture)) return false;
             particles = new(texture);
         }
         if(data.TryGet("spawn_delay", out double d)) particles.SpawnDelay = d;
         if(SwPrion.TryGetVec2(out var v, data.Get("origin"))) particles.Origin = v;
+        if(SwPrion.TryGetVec2(out v, data.Get("offset"))) particles.Offset = v;
         if(data.TryGet("amount", out int i)) particles.Amount = i;
         if(data.TryGet("lifetime", out d)) particles.Lifetime = d;
         if(data.TryGet("lifetime_randomness", out d)) particles.LifetimeRandomness = d;

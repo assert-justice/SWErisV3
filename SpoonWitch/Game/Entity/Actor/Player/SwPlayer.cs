@@ -9,6 +9,7 @@ using SpoonWitch.Data;
 using SpoonWitch.Game.Effect.Spell;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
+using SpoonWitch.Game.Inventory;
 using SpoonWitch.Game.Map.Collision;
 using SpoonWitch.Rendering;
 using SpoonWitch.Utils;
@@ -30,18 +31,19 @@ public class SwPlayer: SwActor
     public double DodgeSpeedMul => 1.5;
     public double DodgeStaminaCost = 20;
     public double BulletSpeed => 100;
+    public readonly SwInventory Inventory = new();
     public int Ammo
     {
-        get => InventoryComp.Entries.GetCount("sling_ammo");
-        set => InventoryComp.Entries.SetCount("sling_ammo", value);
+        get => Inventory.GetCount("sling_ammo");
+        set => Inventory.SetCount("sling_ammo", value);
     }
     public int MaxAmmo
     {
-        get => InventoryComp.Entries.GetMax("sling_ammo");
-        set => InventoryComp.Entries.SetCount("sling_ammo", Ammo, value);
+        get => Inventory.GetMax("sling_ammo");
+        set => Inventory.SetCount("sling_ammo", Ammo, value);
     }
-    public int Roots => InventoryComp.Entries.GetCount("roots");
-    public int MaxRoots => InventoryComp.Entries.GetMax("roots");
+    public int Roots => Inventory.GetCount("roots");
+    public int MaxRoots => Inventory.GetMax("roots");
     public double Stamina = 100;
     public double MaxStamina = 100;
     public double StaminaRegen = 30;
@@ -57,34 +59,28 @@ public class SwPlayer: SwActor
     public double AttackCooldownClock{get => Clocks[base.NumClocks+2]; set {Clocks[base.NumClocks+2] = value;}}
     public double SpoonAttackStaminaCost = 30;
     public SwSpell? CurrentSpell;
-    public readonly SwStateMachine StateMachine;
-    public readonly SwPlayerControls Controls;
-    public readonly SwInventoryComponent InventoryComp;
+    public SwStateMachine? StateMachine{get; private set;}
+    // public readonly SwPlayerControls Controls;
+    // public readonly SwInventoryComponent InventoryComp;
     public ErTexture? PickupTexture;
-    public readonly SwAreaComponent SpoonHurtbox;
-    public SwPlayer()
-    {
-        Controls = new SwPlayerControls(this);
-        RegisterComponent(Controls);
-        InventoryComp = new SwInventoryComponent(this, "inventory");
-        RegisterComponent(InventoryComp);
-        if(!SwApp.TryLoadPrion("game_data/particles/particles.json", out var animData)) throw new("bad");
-        // SwAnimation.TryFromPriAse(out var animation, "dust_1", "game_data/particles", animData);
-        // SwParticleComponent particles = new(this, "dust_1", animation)
-        // {
-        //     Offset = new(0, 9)
-        // };
-        // RegisterComponent(particles);
-        // string path = "game_data/entities/actors/player/player_anim_data.json";
-        // if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load player sprites");
-        SpoonHurtbox = new(this, "spoon_hurtbox", 4, new(32, 32), onBodyEnter: OnEnterSpoonHurtbox);
-        RegisterComponent(SpoonHurtbox);
-        StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
-        RegisterComponent(StateMachine);
-        AddHandler("ent_offer_item", EntOfferItem);
-        AddGlobalHandler("player_add_item", PlayerAddItem);
-        Size = new(28, 28);
-    }
+    // public readonly SwAreaComponent SpoonHurtbox;
+
+    // public SwPlayer()
+    // {
+    //     var Controls = new SwPlayerControls(this);
+    //     RegisterComponent(Controls);
+    //     var InventoryComp = new SwInventoryComponent(this, "inventory");
+    //     RegisterComponent(InventoryComp);
+    //     if(!SwParticles2D.TryFromData(out var particles, Props.Get("dust_particles"))) ErEngine.LogWarning("unable to read player dust particles");
+    //     else RegisterComponent(new SwParticleComponent(this, "dust_particles", particles));
+    //     var SpoonHurtbox = new SwAreaComponent(this, "spoon_hurtbox", 4, new(32, 32), onBodyEnter: OnEnterSpoonHurtbox);
+    //     RegisterComponent(SpoonHurtbox);
+    //     StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
+    //     RegisterComponent(StateMachine);
+    //     AddHandler("ent_offer_item", EntOfferItem);
+    //     AddGlobalHandler("player_add_item", PlayerAddItem);
+    //     Size = new(28, 28);
+    // }
     private void OnEnterSpoonHurtbox(SwEntity entity)
     {
         if(!Props.TryGet("spoon_damage", out PriNode spoonDamage)) return;
@@ -94,7 +90,20 @@ public class SwPlayer: SwActor
     protected override void SetProps(PriNode props)
     {
         base.SetProps(props);
+        var Controls = new SwPlayerControls(this);
+        RegisterComponent(Controls);
+        var InventoryComp = new SwInventoryComponent(this, "inventory");
+        RegisterComponent(InventoryComp);
+        if(!SwParticles2D.TryFromData(out var particles, Props.Get("dust_particles"))) ErEngine.LogWarning("unable to read player dust particles");
+        else RegisterComponent(new SwParticleComponent(this, "dust_particles", particles));
         LoadSprites("anim_data/sprites");
+        var SpoonHurtbox = new SwAreaComponent(this, "spoon_hurtbox", 4, new(32, 32), onBodyEnter: OnEnterSpoonHurtbox);
+        RegisterComponent(SpoonHurtbox);
+        StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
+        RegisterComponent(StateMachine);
+        AddHandler("ent_offer_item", EntOfferItem);
+        AddGlobalHandler("player_add_item", PlayerAddItem);
+        Size = new(28, 28);
     }
     public override void Ready()
     {
@@ -103,7 +112,7 @@ public class SwPlayer: SwActor
         SwDamage spoonDamage = new([(SwDamageType.Untyped, 10)]);
         var d = spoonDamage.ToPri();
         Props.TrySet("spoon_damage", d);
-        InventoryComp.Entries.SetCount("sling_ammo", 0, 10);
+        Inventory.SetCount("sling_ammo", 0, 10);
         SwDamage slingDamage = new([(SwDamageType.Untyped,10)]);
         PriDict impactParticles = [];
         impactParticles.TrySet("name", "rock_chunks");
@@ -142,8 +151,8 @@ public class SwPlayer: SwActor
             ProjectileData = Props.Get("comet"),
         };
         CurrentSpell = spell;
-        InventoryComp.Entries.SetCount("sling_ammo", 0, 8);
-        InventoryComp.Entries.SetCount("roots", 0, 1);
+        Inventory.SetCount("sling_ammo", 0, 8);
+        Inventory.SetCount("roots", 0, 1);
 
     }
     public override void Update()
@@ -173,7 +182,7 @@ public class SwPlayer: SwActor
     protected override void Die()
     {
         base.Die();
-        StateMachine.SetState("dead");
+        StateMachine?.SetState("dead");
     }
     public override void GameCleanup()
     {
@@ -190,7 +199,7 @@ public class SwPlayer: SwActor
         if(!SwGame.Game.EntityLookup.TryGet<SwEntity>(id.ToString(), out var entity)) return;
         if(!command.TryGet("count", out int count)) return;
         if(!command.TryGet("pickup_type", out string pickup_type)) return;
-        if(!InventoryComp.Entries.TryAdd(pickup_type, count, out int rem)) return;
+        if(!Inventory.TryAdd(pickup_type, count, out int rem)) return;
         PriDict com = [];
         com.TrySet("verb", "pickup_set_rem");
         com.TrySet("rem", rem);
@@ -198,12 +207,12 @@ public class SwPlayer: SwActor
     }
     private void PlayerAddItem(PriNode command)
     {
-        StateMachine.SetState("item_get");
+        StateMachine?.SetState("item_get");
         if(!command.TryGet("pickup_type", out string pickup_type)) return;
         if(!command.TryGet("text", out string text)) text = string.Empty;
         if(SwData.Prototypes.TryGet($"pickups/{pickup_type}/texture_filepath", out string texture_filepath))
         {
-            if(!ErTexture.TryFromPath(Path.Join(SwData.GAME_DATA_PATH, texture_filepath), out PickupTexture)) ErEngine.Log("bad pickup texture path");
+            if(!ErTexture.TryFromPath(texture_filepath, out PickupTexture)) ErEngine.Log("bad pickup texture path");
         }
     }
 }
