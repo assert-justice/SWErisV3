@@ -50,6 +50,8 @@ public abstract class SwEntity
         Props = new(props);
         Position = SwPrion.GetVec2(Props.Data);
     }
+    // Note: Init is called after the initial props have been set but before ready is called
+    public virtual void Init(){}
     public virtual void Ready()
     {
         foreach (var item in Components)
@@ -143,6 +145,7 @@ public abstract class SwEntity
         if(props.TryGet("id", out int id)) ent.Id = id;
         else ent.Id = SwApp.GetNextId();
         ent.SetProps(props);
+        ent.Init();
         return ent;
     }
 }

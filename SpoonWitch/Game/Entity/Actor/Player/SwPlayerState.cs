@@ -1,10 +1,7 @@
 using Eris;
-using Eris.Utils;
 using ErisMath;
-using Prion.Node;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
-using SpoonWitch.Game.Entity.Projectile;
 using SpoonWitch.Game.Inventory;
 using SpoonWitch.Rendering;
 
@@ -87,7 +84,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     }
     private bool CanAttack()
     {
-        if(Entity.AttackCooldownClock > 0) return false;
+        if(Entity.SpoonCooldownClock > 0) return false;
         if(Entity.Stamina <= 0) return false;
         return true;
     }
@@ -98,12 +95,6 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         if(Entity.CurrentSpell.IsActive) return false;
         return true;
     }
-    // public override void Init(SwStateMachine stateMachine)
-    // {
-    //     base.Init(stateMachine);
-    //     // SpoonHurtbox = Entity.GetComponent<SwAreaComponent>("spoon_hurtbox")!;
-    //     // _Inventory = Entity.GetComponent<SwInventoryComponent>("inventory")!;
-    // }
     public override void Ready()
     {
         base.Ready();
@@ -289,7 +280,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             else if(Entity.CurrentSpell is not null && Entity.CurrentSpell.IsActive && Controls.CastJustPressed){}
             else if(ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.T)) StateMachine.SetState("dancing");
             if(Entity.DodgeCooldownClock > 0) Entity.DodgeCooldownClock -= SwGame.DeltaTime;
-            if(Entity.AttackCooldownClock > 0) Entity.AttackCooldownClock -= SwGame.DeltaTime;
+            if(Entity.SpoonCooldownClock > 0) Entity.SpoonCooldownClock -= SwGame.DeltaTime;
         }
     }
     public class Attack: SwPlayerState
@@ -305,7 +296,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             SetBodyHandedAnim(0, 0, Controls.LastFacingIdx);
             Entity.Velocity = ErVec2.Zero;
             SetHurtbox();
-            Entity.Stamina -= Entity.SpoonAttackStaminaCost;
+            Entity.Stamina -= Entity.SpoonStaminaCost;
             Entity.StaminaRegenClock = Entity.StaminaRegenDelay;
             if(Entity.Stamina < 0) Entity.StaminaRegenClock += Entity.StaminaRegenDelayPenalty;
             SpoonSprite.HFlip = !SpoonSprite.HFlip;
@@ -339,7 +330,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             SlingSprite.Visible = true;
             SlingSprite.Play("charging");
             ReticleSprite.Play(ReticleAnims[0]);
-            Entity.Clock0 = 0;
+            Entity.SlingChargeClock = 0;
         }
         public override void Update()
         {
@@ -347,7 +338,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
             
             SetBodyHandedAnim(animIdx, 1, Controls.LastFacingIdx);
-            Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.ChargeSpeedMul;
+            Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.SlowedSpeedMul;
             if (!Controls.IsCharging)
             {
                 SlingSprite.Visible = false;
@@ -356,9 +347,9 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
                 StateMachine.SetState("default");
                 return;
             }
-            int lastThresh = ErMath.FloorToInt(Entity.Clock0 * 3 / Entity.ChargeTime);
-            Entity.Clock0 += SwGame.DeltaTime;
-            int nextThresh = ErMath.FloorToInt(Entity.Clock0 * 3 / Entity.ChargeTime);
+            int lastThresh = ErMath.FloorToInt(Entity.SlingChargeClock * 3 / Entity.SlingChargeTime);
+            Entity.SlingChargeClock += SwGame.DeltaTime;
+            int nextThresh = ErMath.FloorToInt(Entity.SlingChargeClock * 3 / Entity.SlingChargeTime);
             if(lastThresh == nextThresh) return;
             int frame = ReticleSprite.FrameIdx;
             double progress = ReticleSprite.FrameProgress;
@@ -402,7 +393,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             base.Update();
             int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
             SetBodyHandedAnim(animIdx, 1, Controls.LastFacingIdx);
-            Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.ChargeSpeedMul;
+            Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.SlowedSpeedMul;
             if (!Controls.IsCharging) StateMachine.SetState("default");
             else if (CanFire())
             {
@@ -427,7 +418,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             base.BeginState(lastState);
             BodySprite.Stop();
             SetBodyDodgeAnim(Controls.LastFacingIdx);
-            Entity.Clock0 = 0;
+            Entity.DodgeCooldownClock = 0;
             // set and lock in velocity
             Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.DodgeSpeedMul;
             if(DustParticles.Particles is SwParticles2D particles)
@@ -446,12 +437,11 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         public override void Update()
         {
             base.Update();
-            double elapsed = Entity.Clock0;
-            Entity.Clock0 += SwGame.DeltaTime;
+            double elapsed = Entity.DodgeCooldownClock;
+            Entity.DodgeCooldownClock += SwGame.DeltaTime;
             if(!BodySprite.IsPlaying) StateMachine.SetState("default");
-            // if(Entity.Clock0 > Entity.DodgeDuration) StateMachine.SetState("default");
             // Note: edge detection. fires when the clock is now past invuln delay
-            else if(Entity.Clock0 >= Entity.DodgeInvulnDelay && elapsed < Entity.DodgeInvulnDelay) Entity.InvulnClock = Entity.DodgeInvulnWindow;
+            else if(Entity.DodgeCooldownClock >= Entity.DodgeInvulnDelay && elapsed < Entity.DodgeInvulnDelay) Entity.InvulnClock = Entity.DodgeInvulnDuration;
         }
         public override void EndState(string nextState)
         {

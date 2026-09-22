@@ -11,5 +11,57 @@
         "aspect": "entities/actors/aspect/aspect_properties.json",
         "slume": "entities/actors/slume/slume_properties.json",
         "knight": "entities/actors/knight/knight_properties.json"
-    }
+    },
+    "projectiles":{
+        "sling":{
+            "mask": 3,
+            "damage": null,
+            "body":{
+                "texture_filepath": "entities/actors/player/images/bella_sling_ammo_shot.png"
+            },
+            "impact_particles":{
+                "explosiveness": 0.75,
+                "one_shot": true,
+                "lifetime": 0.1,
+                "amount": 20,
+                "speed": 100,
+                "randomize_frames": true,
+                "ase_data":{
+                    "name": "rock_chunks",
+                    "filepath": "particles/particles.json"
+                }
+            }
+        },
+        "comet":{
+            "mask": 3,
+            "damage": {
+                "verb": "damage",
+                "entries":[
+                    {
+                        "type": "Space",
+                        "value": 50
+                    }
+                ]
+            },
+            "body":{
+                "ase_data":{
+                    "name": "spell_orb",
+                    "filepath": "particles/particles.json"
+                }
+            },
+            "flying_particles":{
+                "explosiveness": 0.75,
+                "lifetime": 0.3,
+                "amount": 20,
+                "speed": 100,
+                "use_local_coordinates": false,
+                "emitting": true,
+                "ase_data":{
+                    "name": "magic",
+                    "filepath": "particles/particles.json"
+                }
+            }
+        }
+    },
+    "spells":{}
 }

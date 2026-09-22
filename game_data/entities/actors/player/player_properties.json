@@ -4,55 +4,77 @@
     "health":{
         "health": 100,
         "max_health": 100,
-        "heal_amount": 30,
-        "heal_time": 1,
-        "heal_movement_speed_mul": 0.25
+        "heal_amount": 30
+    },
+    "stamina":{
+        "stamina": 100,
+        "max_stamina": 100,
+        "stamina_regen": 30,
+        "stamina_regen_delay": 0.1,
+        "stamina_regen_delay_penalty": 0.3
+    },
+    "mana":{
+        "mana": 100,
+        "max_mana": 100,
+        "mana_regen": 10
     },
     "speed":{
-        "speed": 300
+        "base_speed": 150,
+        "slowed_speed_mul": 0.5
     },
     "dodge":{
         "dodge_speed_mul": 1.5,
         "dodge_duration": 0.625,
-        "dodge_invuln_window_start": 0.2,
-        "dodge_invuln_window_end": 0.4,
-        "dodge_cooldown": 0.25
+        "dodge_invuln_delay": 0.2,
+        "dodge_invuln_duration": 0.4,
+        "dodge_cooldown": 0.25,
+        "dodge_stamina_cost": 20
     },
     "spoon":{
-        "spoon_damages":[
-            {
-                "type": "Bludgeoning",
-                "value": 55
-            }
-        ],
-        "spoon_damage_mul": 1,
+        "spoon_damage":{
+            "verb": "damage",
+            "entries":[
+                {
+                    "type": "Bludgeoning",
+                    "value": 55
+                }
+            ]
+        },
         "spoon_swing_duration":0.625,
-        "spoon_hurt_window_start": 0.125,
+        "spoon_hurt_window_delay": 0.125,
         "spoon_hurt_window_end": 0.25,
         "spoon_recovery_time": 0.25
     },
     "sling":{
+        "sling_damage":{
+            "verb": "damage",
+            "entries":[
+                {
+                    "type": "Bludgeoning",
+                    "value": 55
+                }
+            ]
+        },
         "sling_damages":[
             {
                 "type": "Bludgeoning",
                 "value": 30
             }
         ],
+        "sling_projectile":"sling",
         "sling_bullet_speed": 600,
-        "sling_damage_mul": 1,
-        "sling_movement_speed_mul": 0.5,
         "sling_charge_time": 0.75
     },
     "inventory":[
         {
-            "type": "SlingBullet",
-            "quantity": 0,
-            "capacity": 8
+            "type": "sling_ammo",
+            "count": 0,
+            "max": 8
         },
         {
-            "type": "Root",
-            "quantity": 0,
-            "capacity": 4
+            "type": "root",
+            "count": 0,
+            "max": 4
         }
     ],
     "dust_particles":{

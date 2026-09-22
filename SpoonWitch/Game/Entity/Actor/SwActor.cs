@@ -1,8 +1,7 @@
 using Eris;
 using ErisMath;
-using ErisPhysics2D.Collider;
 using Prion.Node;
-using SpoonWitch.ByteStream;
+using SpoonWitch.Game.Effect;
 using SpoonWitch.Game.Map.Collision;
 using SpoonWitch.Utils;
 
@@ -10,19 +9,19 @@ namespace SpoonWitch.Game.Entity.Actor;
 
 public abstract class SwActor: SwEntity
 {
-    public virtual double BaseSpeed => 150;
-    public virtual double MaxHealth => 100;
-    public virtual double InvulnTime => 0.5;
-    public double InvulnClock{get => Clocks[base.NumClocks+0]; set{Clocks[base.NumClocks+0] = value;}}
+    public double BaseSpeed = 150;
+    public double MaxHealth = 100;
+    public double InvulnTime = 0.5;
+    public double InvulnClock = 0;
     public virtual bool IsInvuln => InvulnClock > 0;
-    public virtual double KnockbackFactor => 10;
-    public virtual double KnockbackTime => 0.5;
-    public double KnockbackClock{get => Clocks[base.NumClocks+1]; set{Clocks[base.NumClocks+1] = value;}}
+    public double KnockbackFactor = 10;
+    public double KnockbackTime = 0.5;
+    public double KnockbackClock = 0;
     public virtual bool IsKnockback => KnockbackClock > 0;
-    public virtual double FlickerTime => 0.5;
-    private double FlickerClock{get => Clocks[base.NumClocks+2]; set{Clocks[base.NumClocks+2] = value;}}
-    public virtual double FlickerLen => 1.0/8;
-    private double FlickerCycle{get => Clocks[base.NumClocks+3]; set{Clocks[base.NumClocks+3] = value;}}
+    public double FlickerTime = 0.5;
+    private double FlickerClock = 0;
+    public double FlickerLen = 1.0/8;
+    private double FlickerCycle = 0;
     public double Health;
     private bool _IsAlive = true;
     public bool IsAlive
@@ -33,8 +32,6 @@ public abstract class SwActor: SwEntity
     public ErVec2 Velocity;
     public ErVec2 Size = new (32, 32);
     public virtual uint Mask => 0;
-
-    protected override int NumClocks => base.NumClocks + 4;
     private readonly SwColliderBody Body;
     public SwActor()
     {

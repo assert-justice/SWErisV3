@@ -3,6 +3,7 @@ using ErisMath;
 using ErisPhysics2D.Collider;
 using Prion.Node;
 using SpoonWitch.ByteStream;
+using SpoonWitch.Game.Effect;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
 using SpoonWitch.Game.Map.Collision;
@@ -14,9 +15,9 @@ public class SwSlume : SwEnemy
     public ErVec2 HurtboxSize = new(20, 20);
     public double TimeoutClock;
     private SwStateMachine? StateMachine;
-    public override double BaseSpeed => 100;
+    // public double BaseSpeed = 100;
     public double WanderSpeedMul = 0.5;
-    public override double MaxHealth => 20;
+    // public double MaxHealth = 100;
     protected override void SetProps(PriNode props)
     {
         base.SetProps(props);

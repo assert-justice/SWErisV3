@@ -1,5 +1,6 @@
 using Eris;
 using Prion.Node;
+using SpoonWitch.Game.Effect;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
 

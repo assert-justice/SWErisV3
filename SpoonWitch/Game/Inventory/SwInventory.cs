@@ -1,3 +1,5 @@
+using Prion.Node;
+
 namespace SpoonWitch.Game.Inventory;
 
 public class SwInventory
@@ -72,5 +74,21 @@ public class SwInventory
         entry.Count = newCount - rem;
         Data[key] = entry;
         return true;
+    }
+    public void SetData(PriNode data)
+    {
+        Data.Clear();
+        MergeData(data);
+    }
+    public void MergeData(PriNode data)
+    {
+        foreach (var item in data.Values)
+        {
+            if(!item.TryGet("type", out string type)) continue; // Todo: add a warning?
+            if(!Data.TryGetValue(type, out var entry)) entry = new();
+            if(item.TryGet("max", out int max)) entry.Max = max;
+            if(item.TryGet("count", out int count)) entry.Count = count;
+            Data[type] = entry;
+        }
     }
 }
