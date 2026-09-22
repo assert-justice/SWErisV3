@@ -12,6 +12,10 @@ public abstract class SwEnemy: SwActor
     public bool IsPassive;
     public ErVec2 TargetPosition;
     public byte FacingIdx;
+    public SwEnemy()
+    {
+        AddGlobalHandler("get_mad", (_)=>GetMad());
+    }
     protected override void SetProps(PriNode props)
     {
         base.SetProps(props);
@@ -39,5 +43,9 @@ public abstract class SwEnemy: SwActor
     {
         base.Update();
         if(Velocity.IsNonzero()) FacingIdx = (byte)ErMath.RoundAngleToInt(Velocity.GetAngle(), 4);
+    }
+    public virtual void GetMad()
+    {
+        IsPassive = false;
     }
 }

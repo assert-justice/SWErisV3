@@ -46,4 +46,9 @@ public class SwSlume : SwEnemy
         if(!Props.TryGet("damage", out PriNode damage)) return;
         entity.AddCommand(damage);
     }
+    public override void GetMad()
+    {
+        base.GetMad();
+        StateMachine?.SetState("wandering");
+    }
 }

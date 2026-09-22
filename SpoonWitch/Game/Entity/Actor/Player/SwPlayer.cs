@@ -79,6 +79,7 @@ public class SwPlayer: SwActor
     public SwSpell? CurrentSpell;
     public SwStateMachine? StateMachine{get; private set;}
     public ErTexture? PickupTexture;
+    private bool GotMad = false;
     public SwPlayer()
     {
         AddHandler("ent_offer_item", EntOfferItem);
@@ -129,46 +130,7 @@ public class SwPlayer: SwActor
         SlingChargeTime = Props.TryGet("sling/sling_charge_time", out d) ? d : 0.75;
         // Inventory
         Inventory.SetData(Props.Get("inventory"));
-        // SwDamage spoonDamage = new([(SwDamageType.Untyped, 10)]);
-        // var d = spoonDamage.ToPri();
-        // Props.TrySet("spoon_damage", d);
-        // Inventory.SetCount("sling_ammo", 0, 10);
-        // SwDamage slingDamage = new([(SwDamageType.Untyped,10)]);
-        // PriDict impactParticles = [];
-        // impactParticles.TrySet("name", "rock_chunks");
-        // impactParticles.TrySet("filepath_ase", "game_data/particles/particles.json");
-        // impactParticles.TrySet("explosiveness", 0.75);
-        // impactParticles.TrySet("one_shot", true);
-        // impactParticles.TrySet("lifetime", 0.1);
-        // impactParticles.TrySet("amount", 20);
-        // impactParticles.TrySet("speed", 100);
-        // impactParticles.TrySet("randomize_frames", true);
-        // PriDict flyingParticles = [];
-        // flyingParticles.TrySet("name", "sparkles");
-        // flyingParticles.TrySet("filepath_texture", "game_data/particles/blue_sparkle.png");
-        // flyingParticles.TrySet("lifetime", 0.3);
-        // flyingParticles.TrySet("use_local_coordinates", false);
-        // flyingParticles.TrySet("amount", 20);
-        // flyingParticles.TrySet("speed", 100);
-        // flyingParticles.TrySet("emitting", true);
-        // Props.TrySet("bullet/damage", slingDamage.ToPri());
-        // Props.TrySet("bullet/collision_mask", 3);
-        // Props.TrySet("bullet/texture_filepath", "game_data/entities/actors/player/images/bella_sling_ammo_shot.png");
-        // Props.TrySet("bullet/impact_particles", impactParticles);
-        // PriDict cometSprite = [];
-        // cometSprite.TrySet("filepath_ase", "game_data/particles/particles.json");
-        // cometSprite.TrySet("anim_name", "spell_orb");
-        // Props.TrySet("comet/damage", slingDamage.ToPri());
-        // Props.TrySet("comet/collision_mask", 3);
-        // Props.TrySet("comet/texture_filepath", "game_data/entities/actors/player/images/bella_sling_ammo_shot.png");
-        // Props.TrySet("comet/impact_particles", impactParticles);
-        // Props.TrySet("comet/flying_particles", flyingParticles);
-        // Inventory.SetCount("sling_ammo", 0, 8);
-        // Inventory.SetCount("roots", 0, 1);
         var spell = new SwCometShield(this);
-        // {
-        //     ProjectileData = Props.Get("comet"),
-        // };
         CurrentSpell = spell;
     }
     public override void Init()
@@ -199,6 +161,11 @@ public class SwPlayer: SwActor
         CurrentSpell?.Update();
         if(IsAlive && ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Semicolon)) TestDamage(1000);
         if(IsAlive) SwGame.SetCameraTarget(Position);
+        if(!GotMad && ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.M))
+        {
+            SwApp.CommandStore.AddCommandVerb("get_mad");
+            GotMad = true;
+        }
     }
     protected override void DrawImpl(SwEntity nextState)
     {

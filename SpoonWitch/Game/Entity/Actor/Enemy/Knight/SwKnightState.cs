@@ -171,14 +171,6 @@ public abstract class SwKnightState: SwEntState<SwKnight>
     private class Attacking: SwKnightState
     {
         public override string Name => "attacking";
-        // private ErRect2 GetHurtbox()
-        // {
-        //     var dir = ErVec2.FromAngle(Entity.FacingIdx * ErMath.HALF_PI);
-        //     double dis = 32;
-        //     ErVec2 size = new(32, 32);
-        //     var pos = Parent.Position + dir * dis;
-        //     return ErRect2.Centered(pos, size);
-        // }
         private void SetHurtbox()
         {
             var dir = ErVec2.FromAngle(Entity.FacingIdx * ErMath.HALF_PI);
