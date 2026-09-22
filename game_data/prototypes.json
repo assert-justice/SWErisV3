@@ -28,7 +28,7 @@
     },
     "projectiles":{
         "sling":{
-            "mask": 3,
+            "mask": 4,
             "damage": null,
             "body":{
                 "texture_filepath": "entities/actors/player/images/bella_sling_ammo_shot.png"
@@ -47,7 +47,7 @@
             }
         },
         "comet":{
-            "mask": 3,
+            "mask": 4,
             "damage": {
                 "verb": "damage",
                 "entries":[
@@ -64,10 +64,9 @@
                 }
             },
             "flying_particles":{
-                "explosiveness": 0.75,
                 "lifetime": 0.3,
                 "amount": 20,
-                "speed": 100,
+                "speed": 30,
                 "use_local_coordinates": false,
                 "emitting": true,
                 "ase_data":{
