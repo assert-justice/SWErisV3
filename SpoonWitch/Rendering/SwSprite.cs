@@ -185,7 +185,7 @@ public class SwSprite(string name)
         }
         if(priNode.TryGet("ase_animations", out PriDict dict))
         {
-            if(!SwAseImporter.TryFromPriData(out var aseImporter, dict.Get("filepath"))) return false;
+            if(!SwAseImporter.TryFromPriData(out var aseImporter, dict.Get("filepath"))) return ErEngine.LogWarning("bad ase anim data");
             HashSet<string> blacklist = [];
             foreach (var item in dict.Get("blacklist").Values)
             {

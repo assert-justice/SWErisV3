@@ -6,7 +6,7 @@ public abstract class SwState
 {
     public abstract string Name{get;}
     protected SwStateMachine StateMachine{get; private set;} = null!;
-    public virtual void Init(SwStateMachine stateMachine)
+    public void Init(SwStateMachine stateMachine)
     {
         StateMachine = stateMachine;
     }

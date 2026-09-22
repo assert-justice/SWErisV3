@@ -3344,6 +3344,32 @@
 							],
 							"__worldX": 928,
 							"__worldY": 128
+						},
+						{
+							"__identifier": "trigger",
+							"__grid": [13,1],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FEE761",
+							"iid": "05a3b1b0-96d0-11f1-a632-81e100ce0dda",
+							"width": 192,
+							"height": 224,
+							"defUid": 13,
+							"px": [416,32],
+							"fieldInstances": [
+								{ "__identifier": "single_use", "__type": "Bool", "__value": true, "__tile": null, "defUid": 14, "realEditorValues": [] },
+								{ "__identifier": "whitelist", "__type": "String", "__value": null, "__tile": null, "defUid": 15, "realEditorValues": [] },
+								{ "__identifier": "blacklist", "__type": "String", "__value": null, "__tile": null, "defUid": 16, "realEditorValues": [] },
+								{ "__identifier": "on_enter_json", "__type": "String", "__value": "{\n  \"verb\": \"boss_wake\"\n}", "__tile": null, "defUid": 17, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["{\\n  \"verb\": \"boss_wake\"\\n}"]
+								}] },
+								{ "__identifier": "mask", "__type": "Int", "__value": 2, "__tile": null, "defUid": 92, "realEditorValues": [] },
+								{ "__identifier": "is_command_global", "__type": "Bool", "__value": true, "__tile": null, "defUid": 93, "realEditorValues": [] }
+							],
+							"__worldX": 1056,
+							"__worldY": 32
 						}
 					]
 				},
@@ -3392,6 +3418,34 @@
 							],
 							"__worldX": 944,
 							"__worldY": 240
+						},
+						{
+							"__identifier": "spawner",
+							"__grid": [60,16],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FF0044",
+							"iid": "60858960-96d0-11f1-a632-33d20a0be329",
+							"width": 32,
+							"height": 32,
+							"defUid": 8,
+							"px": [480,128],
+							"fieldInstances": [
+								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "aspect", "__tile": null, "defUid": 49, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["aspect"]
+								}] },
+								{ "__identifier": "trigger_on_load", "__type": "Bool", "__value": true, "__tile": null, "defUid": 9, "realEditorValues": [] },
+								{ "__identifier": "property_overrides_json", "__type": "String", "__value": null, "__tile": null, "defUid": 12, "realEditorValues": [] },
+								{ "__identifier": "max_uses", "__type": "Int", "__value": null, "__tile": null, "defUid": 50, "realEditorValues": [] },
+								{ "__identifier": "is_passive", "__type": "Bool", "__value": true, "__tile": null, "defUid": 119, "realEditorValues": [{
+									"id": "V_Bool",
+									"params": [ true ]
+								}] }
+							],
+							"__worldX": 1120,
+							"__worldY": 128
 						}
 					]
 				},

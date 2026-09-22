@@ -33,9 +33,9 @@ public abstract class SwKnightState: SwEntState<SwKnight>
         ],
     ];
     const double CLOSE_ENOUGH = 5;
-    public override void Init(SwStateMachine stateMachine)
+    public override void Ready()
     {
-        base.Init(stateMachine);
+        base.Ready();
         BodySprite = Entity.GetComponent<SwSpriteComponent>("body")?.Sprite!;
         SwordSprite = Entity.GetComponent<SwSpriteComponent>("sword")?.Sprite!;
         Hurtbox = Entity.GetComponent<SwAreaComponent>("hurtbox")!;
@@ -72,6 +72,7 @@ public abstract class SwKnightState: SwEntState<SwKnight>
         {
             base.Update();
             BodySprite.Play("move_2h_d");
+            BodySprite.Stop();
         }
     }
     private class Wandering: SwKnightState

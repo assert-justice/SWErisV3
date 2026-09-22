@@ -8,6 +8,8 @@
     },
     "entities":{
         "player": "entities/actors/player/player_properties.json",
-        "aspect": "entities/actors/aspect/aspect_properties.json"
+        "aspect": "entities/actors/aspect/aspect_properties.json",
+        "slume": "entities/actors/slume/slume_properties.json",
+        "knight": "entities/actors/knight/knight_properties.json"
     }
 }

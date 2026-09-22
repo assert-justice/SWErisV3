@@ -4,6 +4,7 @@ using ErisPhysics2D.Collider;
 using Prion.Node;
 using SpoonWitch.ByteStream;
 using SpoonWitch.Game.Map.Collision;
+using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Entity.Actor;
 
@@ -30,10 +31,6 @@ public abstract class SwActor: SwEntity
         set => _IsAlive = value;
     }
     public ErVec2 Velocity;
-    // {
-    //     get => Body.Velocity;
-    //     set => Body.Velocity = value;
-    // }
     public ErVec2 Size = new (32, 32);
     public virtual uint Mask => 0;
 
@@ -44,6 +41,11 @@ public abstract class SwActor: SwEntity
         AddHandler("damage", DamageHandler);
         Body = new();
     }
+    protected override void SetProps(PriNode props)
+    {
+        base.SetProps(props);
+        if(SwPrion.TryGetVec2(out var size, Props.Get("size"))) Size = size;
+    }
     public override void Ready()
     {
         base.Ready();
@@ -51,18 +53,6 @@ public abstract class SwActor: SwEntity
         _IsAlive = true;
         Body.ParentId = Id;
     }
-    // public override void Read(SwByteStream byteStream)
-    // {
-    //     base.Read(byteStream);
-    //     if(!byteStream.TryReadF64(out Health)) throw new($"no health for {GetType()}");
-    //     if(!byteStream.TryReadBool(out _IsAlive))  throw new("no is alive clock");
-    // }
-    // public override void Write(SwByteStream byteStream)
-    // {
-    //     base.Write(byteStream);
-    //     byteStream.WriteF64(Health);
-    //     byteStream.WriteBool(_IsAlive);
-    // }
     private void HandleFlicker()
     {
         if(FlickerClock <= 0) return;
@@ -84,8 +74,6 @@ public abstract class SwActor: SwEntity
         HandleFlicker();
         Body.Mask = Mask;
         Body.Rect = ErRect2.Centered(Position, Size);
-        // Body.Size = Size;
-        // Body.Position = Position;
         Body.Velocity = Velocity;
         SwGame.Map.PhysicsWorld.MoveAndSlide(SwGame.DeltaTime, Id, Body);
         Position = Body.Rect.Center;

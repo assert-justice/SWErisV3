@@ -103,7 +103,6 @@ public class SwPlayer: SwActor
         RegisterComponent(StateMachine);
         AddHandler("ent_offer_item", EntOfferItem);
         AddGlobalHandler("player_add_item", PlayerAddItem);
-        Size = new(28, 28);
     }
     public override void Ready()
     {

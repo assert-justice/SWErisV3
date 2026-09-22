@@ -125,22 +125,10 @@ public abstract class SwEntity
     {
         foreach (var item in Props.Get(propsPath).Values)
         {
-            if(!SwSprite.TryFromData(out var sprite, item)) continue;
-            RegisterComponent(new SwSpriteComponent(this, sprite));
+            if(!SwSprite.TryFromData(out var sprite, item)) ErEngine.LogWarning("failed to load sprite");
+            else RegisterComponent(new SwSpriteComponent(this, sprite));
         }
     }
-    // protected bool TryLoadSprites(string filepath)
-    // {
-    //     if(!SwApp.TryLoadPrion(filepath, out var priNode)) return false;
-    //     string dirpath = Path.GetDirectoryName(filepath)!;
-    //     if(!priNode.TryGet("sprites", out PriDict dict)) return false;
-    //     foreach (var (name, node) in dict.Data)
-    //     {
-    //         if(!SwSprite.TryFromData(out var sprite, name, dirpath, node)) ErEngine.LogWarning("failed to parse sprite '", name, "'");
-    //         else RegisterComponent(new SwSpriteComponent(this, sprite));
-    //     }
-    //     return true;
-    // }
     public virtual void GameCleanup()
     {
         // Note: this method should only be called by game

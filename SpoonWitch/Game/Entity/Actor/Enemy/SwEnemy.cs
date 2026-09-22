@@ -1,5 +1,6 @@
 using Eris;
 using ErisMath;
+using Prion.Node;
 using SpoonWitch.ByteStream;
 
 namespace SpoonWitch.Game.Entity.Actor.Enemy;
@@ -11,9 +12,9 @@ public abstract class SwEnemy: SwActor
     public bool IsPassive;
     public ErVec2 TargetPosition;
     public byte FacingIdx;
-    public override void Ready()
+    protected override void SetProps(PriNode props)
     {
-        base.Ready();
+        base.SetProps(props);
         IsPassive = Props.TryGet("is_passive", out bool isPassive) && isPassive;
     }
     public bool CanSeePoint(ErVec2 point)

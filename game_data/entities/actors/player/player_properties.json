@@ -1,5 +1,6 @@
 {
     "anim_data": "player_anim_data.json",
+    "size":{"x": 28, "y": 28},
     "health":{
         "health": 100,
         "max_health": 100,
