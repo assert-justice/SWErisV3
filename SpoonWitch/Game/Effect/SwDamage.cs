@@ -30,7 +30,7 @@ public readonly struct SwDamage
         foreach (var (type,value) in Entries)
         {
             PriDict entry = [];
-            entry.TrySet("type", nameof(type));
+            entry.TrySet("type", type.ToString());
             entry.TrySet("value", value);
             damageList.Add(entry);
         }
@@ -48,7 +48,7 @@ public readonly struct SwDamage
         {
             var item = list.Data[idx];
             if(!item.TryGet("type", out string typeStr)) return false;
-            if(Enum.TryParse(typeStr, true, out SwDamageType type)) return false;
+            if(!Enum.TryParse(typeStr, true, out SwDamageType type)) return false;
             if(!item.TryGet("value", out double value)) return false;
             damages[idx] = (type, value);
         }

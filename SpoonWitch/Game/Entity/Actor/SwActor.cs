@@ -14,7 +14,7 @@ public abstract class SwActor: SwEntity
     public double InvulnTime = 0.5;
     public double InvulnClock = 0;
     public virtual bool IsInvuln => InvulnClock > 0;
-    public double KnockbackFactor = 10;
+    public double KnockbackFactor = 1;
     public double KnockbackTime = 0.5;
     public double KnockbackClock = 0;
     public virtual bool IsKnockback => KnockbackClock > 0;
