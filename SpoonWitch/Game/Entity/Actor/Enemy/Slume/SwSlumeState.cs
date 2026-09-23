@@ -60,6 +60,19 @@ public abstract class SwSlumeState: SwEntState<SwSlume>
             PlayBodyAnim();
         }
     }
+    private class Fleeing : SwSlumeState
+    {
+        public override string Name => "fleeing";
+        public override void Update()
+        {
+            base.Update();
+            Entity.TargetPosition = SwGame.PlayerPos;
+            // if(!Entity.CanSeePlayer())StateMachine.SetState("wandering");
+            // Note: flee from target
+            Entity.MoveToTarget(-Entity.BaseSpeed);
+            PlayBodyAnim();
+        }
+    }
     private class Seeking: SwSlumeState
     {
         public override string Name => "seeking";
@@ -168,6 +181,7 @@ public abstract class SwSlumeState: SwEntState<SwSlume>
     {
         return new(parent, name, [
             new Default(),
+            new Fleeing(),
             new Chasing(),
             new Seeking(),
             new Wandering(),

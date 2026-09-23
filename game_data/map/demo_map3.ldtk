@@ -3385,9 +3385,9 @@
 							"defUid": 8,
 							"px": [480,128],
 							"fieldInstances": [
-								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "slume", "__tile": null, "defUid": 49, "realEditorValues": [{
+								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "knight", "__tile": null, "defUid": 49, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["slume"]
+									"params": ["knight"]
 								}] },
 								{ "__identifier": "trigger_on_load", "__type": "Bool", "__value": true, "__tile": null, "defUid": 9, "realEditorValues": [] },
 								{ "__identifier": "property_overrides_json", "__type": "String", "__value": null, "__tile": null, "defUid": 12, "realEditorValues": [] },

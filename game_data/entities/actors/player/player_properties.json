@@ -62,12 +62,12 @@
     "inventory":[
         {
             "type": "sling_ammo",
-            "count": 0,
+            "count": 8,
             "max": 8
         },
         {
             "type": "root",
-            "count": 0,
+            "count": 1,
             "max": 4
         }
     ],

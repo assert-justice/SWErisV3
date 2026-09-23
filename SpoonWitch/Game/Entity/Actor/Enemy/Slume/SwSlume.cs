@@ -21,6 +21,7 @@ public class SwSlume : SwEnemy
     protected override void SetProps(PriNode props)
     {
         base.SetProps(props);
+        BaseSpeed = 50;
         SwAreaComponent hurtbox = new(this, "hurtbox", 2, new(18, 18), onBodyEnter: OnEnterHurtbox);
         RegisterComponent(hurtbox);
         StateMachine = SwSlumeState.GetStateMachine(this, "state_machine");
@@ -49,6 +50,6 @@ public class SwSlume : SwEnemy
     public override void GetMad()
     {
         base.GetMad();
-        StateMachine?.SetState("wandering");
+        StateMachine?.SetState("fleeing");
     }
 }

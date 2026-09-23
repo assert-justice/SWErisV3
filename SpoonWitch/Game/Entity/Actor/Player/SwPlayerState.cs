@@ -191,6 +191,22 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             if(SwGame.Game.FadeState == 1 && !isVisible) StateMachine.SetState("respawn_fade_in");
         }
     }
+    public class RespawnQuick: SwPlayerState
+    {
+        public override string Name => "quick_spawn";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            SwGame.SetCameraTarget(SwGame.ActiveCheckpoint.RectPx.Center, true);
+            Entity.Position = SwGame.ActiveCheckpoint.RectPx.Center;
+        }
+        public override void Update()
+        {
+            base.Update();
+            Entity.IsAlive = true;
+            StateMachine.SetState("default");
+        }
+    }
     public class RespawnFadeIn: SwPlayerState
     {
         public override string Name => "respawn_fade_in";
@@ -264,7 +280,8 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
-            if(Entity.PlayerIdx == 1) BodySprite.SetPallet(0);
+            BodySprite.SetPallet(Entity.PlayerIdx);
+            HatSprite.SetPallet(Entity.PlayerIdx);
         }
         public override void Update()
         {
@@ -418,6 +435,8 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             base.BeginState(lastState);
             BodySprite.Stop();
             SetBodyDodgeAnim(Controls.LastFacingIdx);
+            SwAnimationState.Set(ref BodySprite.AnimationState, fps: 12);
+            SwAnimationState.Set(ref HatSprite.AnimationState, fps: 12);
             Entity.DodgeCooldownClock = 0;
             // set and lock in velocity
             Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.DodgeSpeedMul;
@@ -487,6 +506,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     public static SwStateMachine GetStateMachine(SwPlayer parent, string name)
     {
         return new(parent, name, [
+            new RespawnQuick(),
             new RespawnFadeIn(),
             new RespawnFadeOut(),
             new Respawn(),

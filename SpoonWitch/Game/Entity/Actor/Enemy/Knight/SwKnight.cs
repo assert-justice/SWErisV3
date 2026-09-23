@@ -9,11 +9,12 @@ namespace SpoonWitch.Game.Entity.Actor.Enemy.Knight;
 public class SwKnight : SwEnemy
 {
     private SwStateMachine? StateMachine;
-    public double WanderSpeedMul = 0.25;
+    public double WanderSpeedMul = 0.5;
     public double TimeoutClock;
     protected override void SetProps(PriNode props)
     {
         base.SetProps(props);
+        BaseSpeed = 100;
         LoadSprites("anim_data/sprites");
         SwAreaComponent hurtbox = new(this, "hurtbox", 2, new(32,32), onBodyEnter: OnEnterHurtbox);
         RegisterComponent(hurtbox);

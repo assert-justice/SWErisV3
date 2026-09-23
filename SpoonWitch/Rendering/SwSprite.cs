@@ -22,7 +22,7 @@ public class SwSprite(string name)
     private readonly Dictionary<string, int> AnimationLookup = [];
     private SwAnimationState NextAnimationState;
     // These need to be serialized
-    private SwAnimationState AnimationState;
+    public SwAnimationState AnimationState;
     private int CurrentAnimIdx;
     public int PalletIdx{get; private set;}
     public double Angle = 0;
