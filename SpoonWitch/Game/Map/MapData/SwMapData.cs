@@ -7,7 +7,7 @@ namespace SpoonWitch.Game.Map.MapData;
 
 public class SwMapData
 {
-    public string Id{get; init;} = string.Empty;
+    public string Iid{get; init;} = string.Empty;
     public SwTileData[] TileData{get; init;} = [];
     public ErVec2I TileSize{get; private set;}
     public ErVec2I SectorSizeTiles{get; private set;}
@@ -16,12 +16,7 @@ public class SwMapData
     public readonly Dictionary<ErVec2I, SwSectorData> Sectors = [];
     public readonly Dictionary<string, SwRoomData> Rooms = [];
     public readonly Dictionary<string, SwMapObjectData> Objects = [];
-    public readonly HashSet<string> GlobalObjectIds = [];
     private SwMapData(){}
-    // private bool TryAddObjectLayerLdtk(SwRoomData roomData, PriNode layerData)
-    // {
-    //     return true;
-    // }
     private bool TryAddTileLayerLdtk(int layerIdx, SwRoomData roomData, PriNode layerData)
     {
         if(!layerData.TryGet("gridTiles", out PriList tiles)) return false;
@@ -46,7 +41,7 @@ public class SwMapData
         if(!data.TryGet("iid", out string id)) return ErEngine.LogWarning("map missing id");
         mapData = new()
         {
-            Id = id,
+            Iid = id,
             TileData = tileData,
             TileSize = data.TryGet("defaultGridSize", out int tileWidth) ? new(tileWidth, tileWidth) : new(32,32),
             SectorSizePx = SwPrion.GetVec2I(data, "worldGridWidth", "worldGridHeight", new(640, 320)),
@@ -69,18 +64,17 @@ public class SwMapData
             var rectPx = SwPrion.GetRect2I(roomDataLdtk, "worldX", "worldY", "pxWid", "pxHei");
             SwRoomData roomData = new()
             {
-                Id = roomId,
+                Iid = roomId,
                 RectPx = rectPx,
                 RectTiles = rectPx / mapData.TileSize,
                 RectSectors = rectPx / mapData.SectorSizePx,
             };
-            if(!mapData.Rooms.TryAdd(roomData.Id, roomData)) return ErEngine.LogWarning("duplicate room id: ", roomData.Id);
+            if(!mapData.Rooms.TryAdd(roomData.Iid, roomData)) return ErEngine.LogWarning("duplicate room id: ", roomData.Iid);
             foreach (var sectorCoord in roomData.RectSectors.GetInnerCoords())
             {
                 SwSectorData sectorData = new(sectorCoord, mapData.SectorSizeTiles, mapData.NumTileLayers);
                 if(!mapData.Sectors.TryAdd(sectorCoord, sectorData)) return ErEngine.LogWarning("duplicate sector coord : ", sectorCoord);
             }
-            // Dictionary<ErVec2I, List<(ErVec2I tileCoord, int layerIdx, )>>
             int tileLayerIdx = 0;
             foreach (var layer in roomDataLdtk.Get("layerInstances").Values)
             {
@@ -88,14 +82,19 @@ public class SwMapData
                 switch (layerType)
                 {
                     case "Entities":
-                        // mapData.TryAddObjectLayerLdtk(roomData, layer);
+                        foreach (var item in layer.Get("entityInstances").Values)
+                        {
+                            if(!SwMapObjectData.TryFromLdtkData(out var mapObjectData, mapData.TileSize, item)) {ErEngine.LogWarning("failed to parse map object"); continue;}
+                            if(!mapData.Objects.TryAdd(mapObjectData.Iid, mapObjectData)){ErEngine.LogWarning("duplicate map object ids"); continue;}
+                            roomData.ObjectIds.Add(mapObjectData.Iid);
+                        }
                         break;
                     case "Tiles":
                         if(!mapData.TryAddTileLayerLdtk(tileLayerIdx, roomData, layer)) return ErEngine.LogWarning("bad tile layer");
                         tileLayerIdx++;
                         break;
                     default:
-                        // ErEngine.LogWarning("map layer unsupported type: ", layerType);
+                        ErEngine.LogWarning("map layer unsupported type: ", layerType);
                         break;
                 };
             }

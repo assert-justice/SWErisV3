@@ -139,4 +139,18 @@ public static class SwData
         }
         return false;
     }
+    public static bool TryParseJsonToPrion(string src, out PriNode priNode)
+    {
+        priNode = PriNull.Null;
+        try
+        {
+            var json = JsonNode.Parse(src);
+            priNode = PriParser.Parser.JsonToPrion(json);
+        }
+        catch(Exception e)
+        {
+            return ErEngine.LogWarning(e);
+        }
+        return true;
+    }
 }
