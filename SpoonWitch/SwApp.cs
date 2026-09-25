@@ -10,6 +10,7 @@ using Prion.Parser;
 using SpoonWitch.Command;
 using SpoonWitch.Data;
 using SpoonWitch.Game;
+using SpoonWitch.Game.Map.MapData;
 using SpoonWitch.UI.Node;
 
 namespace SpoonWitch;
@@ -72,8 +73,15 @@ public class SwApp : IErApp
             ErEngine.LogError("no manifest found");
             return;
         }
-        // if(!TryLoadDb(Settings, "game_data/settings/example_settings.json", "game_data/settings/default_settings.json")) ErEngine.LogWarning("bad settings");
-        TryInitMenu();
+        if(!Temp()) ErEngine.LogWarning("failed to load map");
+        else ErEngine.Log("map loaded!");
+        ErEngine.Quit();
+        // TryInitMenu();
+    }
+    private static bool Temp()
+    {
+        if(!SwData.TryLoadPrion("game_data/map/demo_map3.ldtk", out var priNode)) return false;
+        return SwMapData.TryFromLdtkData(out _, [], priNode);
     }
     private bool TryInitMenu()
     {

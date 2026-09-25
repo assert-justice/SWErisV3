@@ -32,12 +32,19 @@ public static class SwPrion
         TrySetVec2(dict, value, xName, yName);
         return priNode.TrySet(key, dict);
     }
-    public static ErVec2 GetVec2I(PriNode priNode, string xName = "x", string yName = "y", ErVec2I? defaultVec = null)
+    public static ErVec2I GetVec2I(PriNode priNode, string xName = "x", string yName = "y", ErVec2I? defaultVec = null)
     {
         var def = defaultVec ?? ErVec2I.Zero;
         if(!priNode.TryGet(xName, out int x)) x = def.X;
         if(!priNode.TryGet(yName, out int y)) y = def.Y;
         return new(x,y);
+    }
+    public static ErRect2I GetRect2I(PriNode priNode, string xName = "x", string yName = "y", string wName = "w", string hName = "h", ErRect2I? defaultRect = null)
+    {
+        var def = defaultRect ?? default;
+        var pos = GetVec2I(priNode, xName, yName, def.Position);
+        var size = GetVec2I(priNode, wName, hName, def.Size);
+        return new(pos, size);
     }
     public static bool TryGetVec2I(out ErVec2I value, PriNode priNode, string xName = "x", string yName = "y")
     {
