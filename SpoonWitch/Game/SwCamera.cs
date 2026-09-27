@@ -11,7 +11,7 @@ public class SwCamera
     public double Speed = 1200;
     public Action DrawFn = ()=>{};
     private static readonly ErVec2 Offset = new(0,SwApp.HUD_HEIGHT);
-    private static readonly ErColor CamColor = new(100, 149, 237);
+    private static readonly ErColor CamColor = default;// new(100, 149, 237);
     private static readonly ErColor ClearColor = default;
     private ErRect2 Bounds;
     public bool UseBounds = false;

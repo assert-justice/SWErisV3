@@ -18,12 +18,9 @@ public class SwMapProp : SwMapObject
         if(!ErTexture.TryFromPath(Path.Join(dirpath, filepath), out var texture)) throw new("could not load texture");
         IsSolid = Fields.TryGet("prop_collision_mode", out string collisionMode) && collisionMode == "tile_aligned";
         Sprite = new("sprite_" + Id);
-        var properties = Fields.Get("properties_json");
-        ErVec2 tileSize = SwPrion.GetVec2(properties, "tile_width", "tile_height", texture.Size);
-        if(!properties.TryGet("randomize", out bool randomize)) randomize = false;
-        SwAnimation animation = new("default", [..SwFrame.GetAllFrames(new(texture), tileSize)],tileSize,default);
+        SwAnimation animation = new("default", [..SwFrame.GetAllFrames(new(texture), texture.Size)],texture.Size,default);
         Sprite.AddAnimation(animation);
-        if(randomize) Sprite.FrameIdx = ErMath.FloorToInt(Random.Shared.NextDouble() * animation.NumFrames);
+        if(Fields.TryGet("randomize", out bool randomize) && randomize) Sprite.FrameIdx = ErMath.FloorToInt(Random.Shared.NextDouble() * animation.NumFrames);
     }
     public override void Load()
     {

@@ -18,9 +18,9 @@ public abstract class SwSlumeState: SwEntState<SwSlume>
         "move_dl",
         "move_u",
     ];
-    public override void Init(SwStateMachine stateMachine)
+    public override void Ready()
     {
-        base.Init(stateMachine);
+        base.Ready();
         BodySprite = Entity.GetComponent<SwSpriteComponent>("body")?.Sprite!;
         Hurtbox = Entity.GetComponent<SwAreaComponent>("hurtbox")!;
     }
@@ -33,11 +33,6 @@ public abstract class SwSlumeState: SwEntState<SwSlume>
     // {
     //     base.BeginState(lastState);
     //     ErEngine.Log(Name);
-    // }
-    // public override void Update()
-    // {
-    //     base.Update();
-    //     if(Slume.IsKnockback) ErEngine.Log(Name, " ", Slume.Velocity);
     // }
     private class Default : SwSlumeState
     {
@@ -62,7 +57,19 @@ public abstract class SwSlumeState: SwEntState<SwSlume>
             Entity.TargetPosition = SwGame.PlayerPos;
             if(!Entity.CanSeePlayer())StateMachine.SetState("seeking");
             Entity.MoveToTarget(Entity.BaseSpeed);
-            // Entity.DoDamage();
+            PlayBodyAnim();
+        }
+    }
+    private class Fleeing : SwSlumeState
+    {
+        public override string Name => "fleeing";
+        public override void Update()
+        {
+            base.Update();
+            Entity.TargetPosition = SwGame.PlayerPos;
+            // if(!Entity.CanSeePlayer())StateMachine.SetState("wandering");
+            // Note: flee from target
+            Entity.MoveToTarget(-Entity.BaseSpeed);
             PlayBodyAnim();
         }
     }
@@ -81,7 +88,6 @@ public abstract class SwSlumeState: SwEntState<SwSlume>
             else if(Entity.TimeoutClock > 0) Entity.TimeoutClock -= SwGame.DeltaTime;
             else StateMachine.SetState("wandering");
             Entity.MoveToTarget(Entity.BaseSpeed);
-            // Entity.DoDamage();
             PlayBodyAnim();
         }
     }
@@ -175,6 +181,7 @@ public abstract class SwSlumeState: SwEntState<SwSlume>
     {
         return new(parent, name, [
             new Default(),
+            new Fleeing(),
             new Chasing(),
             new Seeking(),
             new Wandering(),

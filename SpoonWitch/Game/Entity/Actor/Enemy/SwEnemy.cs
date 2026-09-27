@@ -1,5 +1,6 @@
 using Eris;
 using ErisMath;
+using Prion.Node;
 using SpoonWitch.ByteStream;
 
 namespace SpoonWitch.Game.Entity.Actor.Enemy;
@@ -11,9 +12,13 @@ public abstract class SwEnemy: SwActor
     public bool IsPassive;
     public ErVec2 TargetPosition;
     public byte FacingIdx;
-    public override void Ready()
+    public SwEnemy()
     {
-        base.Ready();
+        AddGlobalHandler("get_mad", (_)=>GetMad());
+    }
+    protected override void SetProps(PriNode props)
+    {
+        base.SetProps(props);
         IsPassive = Props.TryGet("is_passive", out bool isPassive) && isPassive;
     }
     public bool CanSeePoint(ErVec2 point)
@@ -39,18 +44,8 @@ public abstract class SwEnemy: SwActor
         base.Update();
         if(Velocity.IsNonzero()) FacingIdx = (byte)ErMath.RoundAngleToInt(Velocity.GetAngle(), 4);
     }
-    public override void Read(SwByteStream byteStream)
+    public virtual void GetMad()
     {
-        base.Read(byteStream);
-        if(!byteStream.TryReadVec2(out TargetPosition)) ErEngine.LogWarning("bad target pos");
-        if(!byteStream.TryReadBool(out IsPassive)) ErEngine.LogWarning("bad is_passive");
-        if(!byteStream.TryReadByte(out FacingIdx)) ErEngine.LogWarning("bad facing");
-    }
-    public override void Write(SwByteStream byteStream)
-    {
-        base.Write(byteStream);
-        byteStream.WriteVec2(TargetPosition);
-        byteStream.WriteBool(IsPassive);
-        byteStream.WriteByte(FacingIdx);
+        IsPassive = false;
     }
 }

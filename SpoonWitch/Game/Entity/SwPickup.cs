@@ -1,47 +1,44 @@
 using Eris;
 using Eris.Renderer;
 using ErisMath;
-using ErisPhysics2D.Collider;
 using Prion.Node;
+using SpoonWitch.Data;
 using SpoonWitch.Game.Entity.Component;
-using SpoonWitch.Game.Map.Collision;
 using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Entity;
 
 public class SwPickup : SwEntity
 {
-    private readonly SwAreaComponent Area;
+    private SwAreaComponent Area = null!;
     private ErTexture? Texture;
+    public int Count;
+    public int MaxUses = 0;
+    public int Uses = 0;
     public SwPickup()
     {
-        Area = new(this, "area", 2, new(32, 32), enabled: true, onBodyEnter: OnEnter);
-        RegisterComponent(Area);
         AddHandler("pickup_set_rem", SetRem);
     }
-    public override void Ready()
+    protected override void SetProps(PriNode props)
     {
-        base.Ready();
-        PriDict command = [];
-        command.TrySet("verb", "ent_offer_item");
-        command.TrySet("pickup_type", Props.Get("pickup_type"));
-        command.TrySet("count", Props.Get("count"));
-        command.TrySet("ent_id", Id);
-        Props.TrySet("ent_offer_item", command);
-        // Todo: obviously don't hardcode this
-        string texture_filepath = "game_data/entities/actors/player/images/bella_sling_ammo_pickup.png";
-        if(!ErTexture.TryFromPath(texture_filepath, out Texture)) return;
-        var size = SwPrion.GetVec2(Props.Data, "width_px", "height_px");
-        Area.Size = size;
-        if(Props.TryGet("mask", out uint mask)) Area.Mask = mask;
+        base.SetProps(props);
+        if(Props.TryGet("count", out int i)) Count = i;
+        if(Props.TryGet("max_uses", out i)) MaxUses = i;
+    }
+    public override void Init()
+    {
+        base.Init();
+        SwData.TryLoadTexture(out Texture, Props.Get("texture_filepath"));
+        if(!Props.TryGet("mask", out uint mask)) mask = 2;
+        Area = new(this, "area", mask, SwPrion.GetVec2(Props.Data, "width_px", "height_px", new ErVec2(32,32)), enabled: true, onBodyEnter: OnEnter);
+        RegisterComponent(Area);
     }
     protected override void DrawImpl(SwEntity nextState)
     {
         base.DrawImpl(nextState);
-        if(!Props.TryGet("count", out int count)) return;
         if(Texture is null) return;
         var center = Texture.Size * 0.5;
-        for (int idx = 0; idx < count; idx++)
+        for (int idx = 0; idx < Count; idx++)
         {
             double dis = idx * center.X;
             double angle = idx * ErMath.TAU / 6;
@@ -53,11 +50,31 @@ public class SwPickup : SwEntity
     {
         if(!command.TryGet("rem", out int rem)) return;
         Props.TrySet("count", rem);
+        Count = rem;
         if(rem == 0) Area.Enabled = false;
     }
     private void OnEnter(SwEntity entity)
     {
-        if(!Props.TryGet("ent_offer_item", out PriNode command)) return;
-        entity.AddCommand(command);
+        if(Props.Get("on_enter").DeepCopy().TryAs(out PriDict command))
+        {
+            if(!command.TryGet("verb", out string verb)) return;
+            switch (verb)
+            {
+                case "ent_offer_item":
+                    command.TrySet("ent_id", Id);
+                    command.TrySet("count", Count);
+                    break;
+                default:
+                    break;
+            }
+            entity.AddCommand(command);
+        }
+        if(Props.TryGet("on_enter_global", out command)) SwApp.CommandStore.AddCommand(command);
+        Uses++;
+        if(MaxUses > 0 && Uses >= MaxUses)
+        {
+            Area.Enabled = false;
+            Visible = false;
+        }
     }
 }

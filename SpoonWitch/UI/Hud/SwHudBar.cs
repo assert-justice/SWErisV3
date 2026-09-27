@@ -2,7 +2,9 @@ using Eris;
 using Eris.Renderer;
 using ErisMath;
 using Prion.Node;
+using SpoonWitch.Data;
 using SpoonWitch.Game;
+using SpoonWitch.Utils;
 
 namespace SpoonWitch.UI.Hud;
 
@@ -31,20 +33,20 @@ public class SwHudBar
     }
     private double BgValue = 100;
     public double BgUpdateSpeed = 50;
-    // public double Regen = 0;
     public double HScale = 1;
-    private SwHudBar(ErVec2 offset, string dirpath, string name, PriNode node)
+    private SwHudBar(ErVec2 offset, string name, PriNode node)
     {
-        if(!node.Get("bar_common").TryAs(out PriNode common)) throw new("bad common bar");
-        if(!node.Get("bars").Get(name).TryAs(out PriNode data)) throw new("bad bars");
-        if(!data.Get("fill_filepath").TryAs(out string fill_filename)) throw new("bad fill_filepath");
-        if(!ErTexture.TryFromPath(Path.Join(dirpath, fill_filename), out Fill)) throw new("bad fill_filepath");
-        if(!data.Get("cap_filepath").TryAs(out string cap_filename)) throw new("bad cap_filepath");
-        if(!ErTexture.TryFromPath(Path.Join(dirpath, cap_filename), out Cap)) throw new("bad cap_filepath");
-        if(!data.Get("segment_filepath").TryAs(out string segment_filename)) throw new("bad segment_filepath");
-        if(!ErTexture.TryFromPath(Path.Join(dirpath, segment_filename), out Seg)) throw new("bad segment_filepath");
-        if(!data.Get("bg_filepath").TryAs(out string bg_filename)) throw new("bad bg_filepath");
-        if(!ErTexture.TryFromPath(Path.Join(dirpath, bg_filename), out Bg)) throw new("bad bg_filepath");
+        var common = node.Get("bar_common");
+        var data = node.Get("bars").Get(name);
+        if(!SwData.TryLoadTexture(out Fill, data.Get("fill_filepath"))) throw new("bad fill_filepath");
+        if(!SwData.TryLoadTexture(out Cap, data.Get("cap_filepath"))) throw new("bad cap_filepath");
+        if(!SwData.TryLoadTexture(out Seg, data.Get("segment_filepath"))) throw new("bad segment_filepath");
+        if(!SwData.TryLoadTexture(out Bg, data.Get("bg_filepath"))) throw new("bad bg_filepath");
+        Offset = SwPrion.GetVec2(data) + offset;
+        FillOff = SwPrion.GetVec2(common, "fill_x", "fill_y");
+        CapOff = SwPrion.GetVec2(common, "cap_x", "cap_y");
+        SegOff = SwPrion.GetVec2(common, "segment_x", "segment_y");
+        SegLen = common.TryGet("segment_length_offset", out double d) ? d : 0;
         if(!data.Get("x").TryAs(out double ox)) ox = 0;
         if(!data.Get("y").TryAs(out double oy)) oy = 0;
         Offset = new ErVec2(ox, oy) + offset;
@@ -61,7 +63,6 @@ public class SwHudBar
     }
     public void Update()
     {
-        // Value = Math.Clamp(Value + Regen * SwGame.DeltaTime, 0, MaxValue);
         if(BgValue > Value) BgValue -= BgUpdateSpeed * SwGame.DeltaTime;
     }
     public void Draw()
@@ -74,12 +75,12 @@ public class SwHudBar
         Seg.Draw(Offset + SegOff, new(maxLength, Seg.Size.Y));
         Cap.Draw(capPos);
     }
-    public static bool TryLoad(ErVec2 offset, string dirpath, string name, PriNode node, out SwHudBar hudBar)
+    public static bool TryLoad(out SwHudBar hudBar, ErVec2 offset, string name, PriNode node)
     {
         hudBar = default!;
         try
         {
-            hudBar = new(offset, dirpath, name, node);
+            hudBar = new(offset, name, node);
             return true;
         }
         catch(Exception e)

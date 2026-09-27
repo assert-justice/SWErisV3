@@ -3,6 +3,7 @@ using ErisMath;
 using ErisPhysics2D.Collider;
 using Prion.Node;
 using SpoonWitch.ByteStream;
+using SpoonWitch.Game.Effect;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
 using SpoonWitch.Game.Map.Collision;
@@ -13,52 +14,42 @@ public class SwSlume : SwEnemy
 {
     public ErVec2 HurtboxSize = new(20, 20);
     public double TimeoutClock;
-    private readonly SwStateMachine StateMachine;
-    public override double BaseSpeed => 100;
+    private SwStateMachine? StateMachine;
+    // public double BaseSpeed = 100;
     public double WanderSpeedMul = 0.5;
-    public override double MaxHealth => 20;
-
-    public SwSlume()
+    // public double MaxHealth = 100;
+    protected override void SetProps(PriNode props)
     {
-        string path = "game_data/entities/actors/slume/slume_anim_data.json";
-        if(!TryLoadSprites(path)) ErEngine.LogWarning("failed to load slume sprites");
+        base.SetProps(props);
+        BaseSpeed = 50;
         SwAreaComponent hurtbox = new(this, "hurtbox", 2, new(18, 18), onBodyEnter: OnEnterHurtbox);
         RegisterComponent(hurtbox);
         StateMachine = SwSlumeState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
-        Size = new(16,16);
-    }
-    public override void Ready()
-    {
-        base.Ready();
-        if(!IsPassive) StateMachine.SetState("wandering");
+        if(!IsPassive) StateMachine?.SetState("wandering");
         SwDamage damage = new([(SwDamageType.Untyped, 10)]);
         Props.TrySet("damage", damage.ToPri());
+        LoadSprites("anim_data/sprites");
     }
     protected override void Die()
     {
         base.Die();
-        StateMachine.SetState("dead");
-    }
-    public override void Read(SwByteStream byteStream)
-    {
-        base.Read(byteStream);
-        byteStream.TryReadF64(out TimeoutClock);
-    }
-    public override void Write(SwByteStream byteStream)
-    {
-        base.Write(byteStream);
-        byteStream.WriteF64(TimeoutClock);
+        StateMachine?.SetState("dead");
     }
     protected override double Damage(SwDamage damage)
     {
         double value = base.Damage(damage);
-        if(value > 0) StateMachine.SetState("knockback");
+        if(value > 0) StateMachine?.SetState("knockback");
         return value;
     }
     private void OnEnterHurtbox(SwEntity entity)
     {
         if(!Props.TryGet("damage", out PriNode damage)) return;
         entity.AddCommand(damage);
+    }
+    public override void GetMad()
+    {
+        base.GetMad();
+        StateMachine?.SetState("fleeing");
     }
 }

@@ -2,6 +2,7 @@ using Eris;
 using ErisMath;
 using Prion.Node;
 using SpoonWitch.ByteStream;
+using SpoonWitch.Data;
 using SpoonWitch.Game;
 using SpoonWitch.Utils;
 
@@ -21,7 +22,7 @@ public class SwSprite(string name)
     private readonly Dictionary<string, int> AnimationLookup = [];
     private SwAnimationState NextAnimationState;
     // These need to be serialized
-    private SwAnimationState AnimationState;
+    public SwAnimationState AnimationState;
     private int CurrentAnimIdx;
     public int PalletIdx{get; private set;}
     public double Angle = 0;
@@ -160,36 +161,41 @@ public class SwSprite(string name)
         byteStream.WriteByte((byte)Flags);
         byteStream.WriteI32(PalletIdx);
     }
-    public static bool TryFromData(out SwSprite sprite, string name, string dirpath, PriNode priNode)
+    public static bool TryFromData(out SwSprite sprite, PriNode priNode)
     {
         sprite = default!;
+        if(!priNode.TryGet("name", out string spriteName)) spriteName = "defaultSprite";
         if(!priNode.TryGet("visible", out bool visible)) visible = true;
         var offset = SwPrion.GetVec2(priNode, "offset_x", "offset_y");
         if(!priNode.TryGet("centered", out bool centered)) centered = true;
-        sprite = new(name)
+        var frameSize = SwPrion.GetVec2(priNode, "width", "height", new(64, 64));
+        sprite = new(spriteName)
         {
             Visible = visible,
             Offset = offset,
             Centered = centered,
         };
         List<SwAnimation> animations = [];
-        if(priNode.TryGet("animations", out PriDict dict))
+        if(priNode.TryGet("animations", out PriList list))
         {
-            foreach (var animName in dict.Data.Keys)
+            foreach (var item in list.Data)
             {
-                if(!SwAnimation.TryFromPri(out var animation, animName, dirpath, priNode)) ErEngine.LogWarning("bad animation '", animName, "'");
-                else animations.Add(animation); // sprite.AddAnimation(animation);
+                if(SwAnimation.TryFromData(out var animation, item, frameSize)) animations.Add(animation);
             }
         }
-        if (priNode.TryGet("ase_animations", out PriNode aseAnim))
+        if(priNode.TryGet("ase_animations", out PriDict dict))
         {
-            foreach (var item in aseAnim.Values)
+            if(!SwAseImporter.TryFromPriData(out var aseImporter, dict.Get("filepath"))) return ErEngine.LogWarning("bad ase anim data");
+            HashSet<string> blacklist = [];
+            foreach (var item in dict.Get("blacklist").Values)
             {
-                if(!SwAnimation.TryFromPriAse(ref animations, dirpath, item))
-                {
-                    ErEngine.LogWarning("failed to read ase animation for sprite ", name);
-                    continue;
-                }
+                if(!item.TryAs(out string animName)) ErEngine.LogWarning("bad anim blacklist entry");
+                blacklist.Add(animName);
+            }
+            foreach (var item in aseImporter.GetAnimationNames())
+            {
+                if(blacklist.Contains(item)) continue;
+                animations.Add(aseImporter.GetAnimation(item)!.Value);
             }
         }
         foreach (var item in animations)

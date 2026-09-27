@@ -6,7 +6,7 @@
     {
         "name": "water",
         "source": "tilesets/sea_tileset.png",
-        "is_solid": true,
+        "is_walkable": true,
         "move_speed_mul": 0,
         "animated": true,
         "fps": 4
@@ -33,12 +33,12 @@
     {
         "name": "wall",
         "source": "tilesets/wall_tileset.png",
-        "is_solid": true,
+        "is_walkable": true,
         "is_opaque": true
     },
     {
         "name": "blocker",
-        "is_solid": true,
+        "is_walkable": true,
         "is_opaque": true
     }
 ]

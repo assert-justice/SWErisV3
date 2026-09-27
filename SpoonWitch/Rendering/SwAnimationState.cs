@@ -72,12 +72,13 @@ public readonly struct SwAnimationState
         // if(isBouncing is not null) SetFlags(ref flags, AnimFlags.IsBouncing, isBouncing.Value);
         animState = new(frameIdx ?? animState.FrameIdx, frameProgress ?? animState.FrameProgress, 1/(fps ?? animState.Fps), flags);
     }
-    public static void Advance(ref SwAnimationState animState, double dt, int numFrames)
+    public static void Advance(ref SwAnimationState animState, double dt, int numFrames, bool debug = false)
     {
         if(!animState.IsPlaying) return;
         bool isPlaying = animState.IsPlaying;
         double progress = animState.FrameProgress + dt;
         int frame = animState.FrameIdx;
+        if(debug){ErEngine.Log(animState.FrameDuration);}
         while(progress > animState.FrameDuration && isPlaying)
         {
             progress -= animState.FrameDuration;

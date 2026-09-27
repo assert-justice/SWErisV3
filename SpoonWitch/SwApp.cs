@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.Reflection;
+using System.Text.Json.Nodes;
 using Eris;
 using Eris.App;
 using Eris.Renderer;
@@ -9,6 +10,7 @@ using Prion.Parser;
 using SpoonWitch.Command;
 using SpoonWitch.Data;
 using SpoonWitch.Game;
+using SpoonWitch.Game.Map.MapData;
 using SpoonWitch.UI.Node;
 
 namespace SpoonWitch;
@@ -37,6 +39,18 @@ public class SwApp : IErApp
     private readonly SwCommandHandler CommandHandler = new(CommandStore);
     public static int Main()
     {
+        // get loaders
+        // Assembly assembly = System.Reflection.AppDomain.CurrentDomain.GetAssemblies()
+        // var instances = from t in Assembly.GetExecutingAssembly().GetTypes()
+        //         where t.GetInterfaces().Contains(typeof(ISwSerialize))
+        //                  && t.GetConstructor(Type.EmptyTypes) != null
+        //         select Activator.CreateInstance(t) as ISwSerialize;
+        // foreach (var item in Assembly.GetExecutingAssembly().GetTypes())
+        // {
+        //     if(!item.GetInterfaces().Contains(typeof(ISwSerialize))) continue;
+        //     var info = item.GetMethod("TryLoad");
+        //     info.
+        // }
         SwApp app = new();
         ErEngine.Renderer.SetWindow("Spoon Witch", new(1920, 1080));
         ErEngine.Run(app);
@@ -59,8 +73,15 @@ public class SwApp : IErApp
             ErEngine.LogError("no manifest found");
             return;
         }
-        if(!TryLoadDb(Settings, "game_data/settings/example_settings.json", "game_data/settings/default_settings.json")) ErEngine.LogWarning("bad settings");
-        TryInitMenu();
+        if(!Temp()) ErEngine.LogWarning("failed to load map");
+        else ErEngine.Log("map loaded!");
+        ErEngine.Quit();
+        // TryInitMenu();
+    }
+    private static bool Temp()
+    {
+        if(!SwData.TryLoadPrion("game_data/map/demo_map3.ldtk", out var priNode)) return false;
+        return SwMapData.TryFromLdtkData(out _, [], priNode);
     }
     private bool TryInitMenu()
     {
@@ -205,15 +226,15 @@ public class SwApp : IErApp
         if(!TryLoadPrion(path, out var node)) return false;
         return db.TrySet("", node);
     }
-    public static bool TryLoadDb(PriDb db, string path, string defaultPath)
-    {
-        if(!TryLoadDb(db, defaultPath)) return false;
-        if(TryLoadPrion(path, out var node))
-        {
-            if(!db.TryMerge("", node)) return ErEngine.LogWarning("failed to merge");
-        }
-        return true;
-    }
+    // public static bool TryLoadDb(PriDb db, string path, string defaultPath)
+    // {
+    //     if(!TryLoadDb(db, defaultPath)) return false;
+    //     if(TryLoadPrion(path, out var node))
+    //     {
+    //         if(!db.TryMerge("", node)) return ErEngine.LogWarning("failed to merge");
+    //     }
+    //     return true;
+    // }
     public static bool TrySaveDb(string path, PriDb db)
     {
         return false;

@@ -20,20 +20,9 @@ public class PriDb
         }
         return p;
     }
-    public bool TryMerge(string path, PriNode node)
+    public void SetData(PriNode data)
     {
-        if(node is PriDict || node is PriList)
-        {
-            foreach (var (key,val) in node.Entries)
-            {
-                if(!TryMerge(path + '/' + key, val)) return false;
-            }
-            return true;
-        }
-        else
-        {
-            return TrySet(path, node);
-        }
+        Data = data;
     }
     public PriNode Get(string path)
     {
@@ -82,6 +71,12 @@ public class PriDb
     }
     public bool TrySet<T>(string path, T value)
     {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            if(!PriNode.TryToPrion(value, out var data)) return false;
+            Data = data;
+            return true;
+        }
         return TrySet(SplitPath(path), value);
     }
     private bool TrySet<T>(Queue<string> path, T value)

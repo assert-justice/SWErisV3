@@ -1,7 +1,6 @@
 using Eris;
 using ErisMath;
-using Prion.Node;
-using SpoonWitch.Game.Entity;
+using SpoonWitch.Data;
 using SpoonWitch.Game.Entity.Actor;
 using SpoonWitch.Game.Entity.Projectile;
 
@@ -13,7 +12,6 @@ public class SwCometShield(SwActor parent): SwSpell
     private readonly Queue<SwProjectile> RemoveQueue = [];
     public readonly SwActor Parent = parent;
     public int NumProjectiles = 4;
-    public PriNode ProjectileData = new PriDict();
     public double Radius = 32;
     public double Speed = 100;
     public override double ManaCost => 50;
@@ -23,16 +21,23 @@ public class SwCometShield(SwActor parent): SwSpell
         double angle = 0;
         for (int idx = 0; idx < NumProjectiles; idx++)
         {
-            SwProjectile projectile = new();
-            projectile.SetProps(ProjectileData.DeepCopy());
-            SwGame.Game.AddEntity(projectile);
+            var props = SwData.Prototypes.Get("projectiles/comet").DeepCopy();
+            var projectile = SwGame.Game.LoadEntity<SwProjectile>(props);
             Projectiles.Add(projectile);
-            ErVec2 offset = ErVec2.FromAngle(angle) * Radius;
-            projectile.Position = Parent.Position + offset;
-            ErVec2 velocity = ErVec2.FromAngle(angle + ErMath.HALF_PI) * Speed;
-            projectile.Velocity = velocity + Parent.Velocity;
             angle += ErMath.TAU / NumProjectiles;
+            ProjectileHelp(projectile, angle);
         }
+    }
+    private void ProjectileHelp(SwProjectile projectile)
+    {
+        ProjectileHelp(projectile, (projectile.Position - Parent.Position).GetAngle());
+    }
+    private void ProjectileHelp(SwProjectile projectile, double angle)
+    {
+        ErVec2 offset = ErVec2.FromAngle(angle) * Radius;
+        projectile.Position = Parent.Position + offset;
+        ErVec2 velocity = ErVec2.FromAngle(angle + ErMath.HALF_PI) * Speed;
+        projectile.Velocity = velocity + Parent.Velocity;
     }
     public override void End()
     {
@@ -51,18 +56,13 @@ public class SwCometShield(SwActor parent): SwSpell
         if(!IsActive) return;
         for (int idx  = 0; idx  < Projectiles.Count; idx ++)
         {
-            var item = Projectiles[idx];
-            if (item.IsFreeQueued)
+            var projectile = Projectiles[idx];
+            if (projectile.IsFreeQueued)
             {
-                RemoveQueue.Enqueue(item);
+                RemoveQueue.Enqueue(projectile);
                 continue;
             }
-            var diff = item.Position - Parent.Position;
-            var angle = diff.GetAngle();
-            ErVec2 offset = ErVec2.FromAngle(angle) * Radius;
-            item.Position = Parent.Position + offset;
-            ErVec2 velocity = ErVec2.FromAngle(angle + ErMath.HALF_PI) * Speed;
-            item.Velocity = velocity + Parent.Velocity;
+            ProjectileHelp(projectile);
         }
         while(RemoveQueue.TryDequeue(out var item)) Projectiles.Remove(item);
         if(Projectiles.Count == 0) End();

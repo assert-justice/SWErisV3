@@ -76,7 +76,7 @@ public class SwTileData
     }
     private SwTileData(string filepath, PriNode priNode, ErVec2I tileSize)
     {
-        IsSolid = priNode.TryGet("is_solid", out bool is_solid) && is_solid;
+        IsSolid = priNode.TryGet("is_walkable", out bool is_solid) && is_solid;
         IsOpaque = priNode.TryGet("is_opaque", out bool is_opaque) && is_opaque;
         CollisionMask = 0;
         if(is_solid) CollisionMask |= 1;
