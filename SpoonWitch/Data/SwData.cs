@@ -10,9 +10,9 @@ namespace SpoonWitch.Data;
 public static class SwData
 {
     // private static readonly Dictionary<float,ErFont> FontLookup = [];
-    private static readonly Dictionary<string, Func<PriNode,object?>> Loaders = [];
+    // private static readonly Dictionary<string, Func<PriNode,object?>> Loaders = [];
     public static string FontPath{get; set;} = "game_data/fonts/PixAntiqua.ttf";
-    public const string GAME_DATA_PATH = "game_data";
+    // public const string GAME_DATA_PATH = "game_data";
     public static readonly string ManifestPath = "game_data/manifest.json";
     public static readonly PriDb Settings = new();
     public static readonly PriDb SaveData = new();
@@ -32,6 +32,7 @@ public static class SwData
         Converters = new()
         {
             {".json", json},
+            {".ldtk", json},
         };
     }
     public static bool TryInit()
@@ -87,6 +88,7 @@ public static class SwData
         if(!ErTexture.TryFromPath(filepath, out texture)) return ErEngine.LogWarning("failed to load texture at path ", filepath);
         return true;
     }
+    // public static bool TryLoadFont()
     private static bool TryLoadAndExpand(out PriNode data, string filepath)
     {
         data = PriNull.Null;

@@ -8,7 +8,7 @@ namespace SpoonWitch.Game.Map.MapData;
 public class SwMapData
 {
     public string Iid{get; init;} = string.Empty;
-    public SwTileData2[] TileData{get; init;} = [];
+    public SwTileData[] TileData{get; init;} = [];
     public ErVec2I TileSize{get; private set;}
     public ErVec2I SectorSizeTiles{get; private set;}
     public ErVec2I SectorSizePx{get; private set;}
@@ -35,7 +35,7 @@ public class SwMapData
         }
         return true;
     }
-    public static bool TryFromLdtkData(out SwMapData mapData, SwTileData2[] tileData, PriNode data)
+    public static bool TryFromLdtkData(out SwMapData mapData, SwTileData[] tileData, PriNode data)
     {
         mapData = default!;
         if(!data.TryGet("iid", out string id)) return ErEngine.LogWarning("map missing id");

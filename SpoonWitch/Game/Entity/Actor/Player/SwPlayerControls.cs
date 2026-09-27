@@ -45,8 +45,7 @@ public class SwPlayerControls: SwComponent
     public ErInputDevice Device = ErInputDevice.All();
     public SwPlayerControls(SwPlayer parent): base(parent, "controls")
     {
-        if(!SwData.Manifest.TryGet("settings/default_input_settings/default_input_settings.json", out PriDict node))
-        // if(!SwData.TryLoadPrion("game_data/settings/default_input_settings.json", out var node))
+        if(!SwData.Manifest.TryGet("settings/default_input_settings", out PriDict node))
         {
             ErEngine.LogWarning("no input bindings");
             return;
@@ -76,10 +75,10 @@ public class SwPlayerControls: SwComponent
         }
         bool isGamepad = ErEngine.Input.LastEventDevice == ErInput.ErisInputDeviceKind.Gamepad;
         IsCharging = Charge.Pressed;
-        if(!SwApp.Settings.TryGet("gamepad/auto_charge", out bool auto_charge)) auto_charge = true;
-        if(!SwApp.Settings.TryGet("kbm/kb_aiming", out bool kb_aiming)) kb_aiming = true;
-        if(!SwApp.Settings.TryGet("gamepad/reticle_always_visible", out bool reticle_always_visible_gp)) reticle_always_visible_gp = false;
-        if(!SwApp.Settings.TryGet("kbm/reticle_always_visible", out bool reticle_always_visible_kb)) reticle_always_visible_kb = true;
+        if(!SwData.Settings.TryGet("gamepad/auto_charge", out bool auto_charge)) auto_charge = true;
+        if(!SwData.Settings.TryGet("kbm/kb_aiming", out bool kb_aiming)) kb_aiming = true;
+        if(!SwData.Settings.TryGet("gamepad/reticle_always_visible", out bool reticle_always_visible_gp)) reticle_always_visible_gp = false;
+        if(!SwData.Settings.TryGet("kbm/reticle_always_visible", out bool reticle_always_visible_kb)) reticle_always_visible_kb = true;
         if (isGamepad)
         {
             if (Aim.IsNonzero())

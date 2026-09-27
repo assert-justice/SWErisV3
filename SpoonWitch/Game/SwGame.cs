@@ -30,7 +30,7 @@ public class SwGame
         ErEngine.Renderer.PushViewport(CurrentCamera?.Position ?? ErVec2.Zero, RenderTextures[RenderLayerIdx]);
     }
     private readonly SwCamera[] Cameras;
-    private SwCamera? CurrentCamera;
+    public SwCamera? CurrentCamera{get; private set;}
     public void AddFocusPoint(ErVec2 point)
     {
         foreach (var camera in Cameras)
@@ -70,6 +70,10 @@ public class SwGame
     public void Update()
     {
         // Clear cameras' points of interest
+        foreach (var camera in Cameras)
+        {
+            camera.ClearFocusPoints();
+        }
         // Update entities
         // Update map
         // Update hud

@@ -49,8 +49,7 @@ public class SwText: SwUiNode
         {
             if(_Font is null)
             {
-                // SwData.try
-                // if(!SwApp.TryGetFont(_FontSize, out _Font)) ErEngine.LogWarning("failed to get font");
+                if(!ErFont.TryLoad(SwData.FontPath, _FontSize, out _Font)) ErEngine.LogWarning("failed to get font");
             }
             return _Font;
         }

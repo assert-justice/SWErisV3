@@ -12,6 +12,10 @@
         "default_settings": "settings/default_settings.json",
         "default_input_settings": "settings/default_input_settings.json"
     },
+    "map":{
+        "tile_data":"map/tile_data.json",
+        "map_data": "map/demo_map3.ldtk"
+    },
     "menu_config": "menus/menus.json",
     "pallets": "pallets.png"
 }

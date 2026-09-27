@@ -27,9 +27,9 @@ public class SwApp : IErApp
     private static int NextId;
     private ErTexture RenderTexture = null!;
     public static readonly SwCommandStore CommandStore = new();
-    public static readonly PriDb Settings = new();
-    public static readonly PriDb SaveData = new();
-    public static readonly PriDb Manifest = new();
+    // public static readonly PriDb Settings = new();
+    // public static readonly PriDb SaveData = new();
+    // public static readonly PriDb Manifest = new();
     // private ErAudioSource Source = null!;
     // public static double GameSpeed => IsPaused ? GameSpeedMul : 0;
     // public static double GameSpeedMul => 1;
@@ -56,40 +56,50 @@ public class SwApp : IErApp
             ErEngine.LogError("game initialization failed");
             return;
         }
-        // if(!TryLoadDb(Manifest, $"{GAME_DATA_PATH}/manifest.json"))
-        // {
-        //     ErEngine.LogError("no manifest found");
-        //     return;
-        // }
         // if(!Temp()) ErEngine.LogWarning("failed to load map");
         // else ErEngine.Log("map loaded!");
-        ErEngine.Quit();
-        // TryInitMenu();
+        // ErEngine.Quit();
+        TryInitMenu();
     }
-    // private static bool Temp()
-    // {
-    //     if(!SwData.TryLoadPrion("game_data/map/demo_map3.ldtk", out var priNode)) return false;
-    //     return SwMapData.TryFromLdtkData(out _, [], priNode);
-    // }
     private bool TryInitMenu()
     {
         // SwData.TryLoadPrion()
         // if(!TryLoadPrion("game_data/menus/menus.json", out var node)) return false;
-        // if(!SwUiNode.TryFromPrion(node, out SwMenuHolder menuHolder)) return false;
-        // MenuHolder = menuHolder;
+        if(!SwUiNode.TryFromPrion(SwData.Manifest.Get("menu_config"), out SwMenuHolder menuHolder)) return false;
+        MenuHolder = menuHolder;
         return true;
     }
     private void Launch()
     {
         UnPause();
         Game?.Cleanup();
-        if(Game is not null)
+        if(!TryLoadMap(out var mapData))
         {
-            // cleanup game
+            ErEngine.Quit();
+            return;
         }
+        Game = new(mapData, 1);
+        // SwMapData.TryFromLdtkData()
+        // if(Game is not null)
+        // {
+        //     // cleanup game
+        // }
         // Game = new();
         // Game.TryLoadMap("game_data/map/demo_map3.ldtk");
         // Game.Launch();
+    }
+    private static bool TryLoadMap(out SwMapData mapData)
+    {
+        mapData = default!;
+        if(!SwData.Manifest.TryGet("map/tile_data", out PriList tileDataPri)) return ErEngine.LogWarning("failed to load tile data");
+        SwTileData[] tileData = new SwTileData[tileDataPri.Count];
+        for (int idx = 0; idx < tileData.Length; idx++)
+        {
+            //
+            if(!SwTileData.TryFromData(out var tileDataEntry, tileDataPri.Data[idx])) return ErEngine.LogWarning("bad tile data entry");
+            tileData[idx] = tileDataEntry;
+        }
+        return SwMapData.TryFromLdtkData(out mapData, tileData, SwData.Manifest.Get("map/map_data"));
     }
     private void Pause()
     {

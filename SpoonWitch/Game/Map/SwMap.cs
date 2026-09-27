@@ -13,7 +13,7 @@ public class SwMap
     // private readonly ErPhysicsWorld2D PhysicsWorld;
     private readonly SwGame Game;
     private readonly SwMapData MapData;
-    public SwTileData2[] TileData => MapData.TileData;
+    public MapData.SwTileData[] TileData => MapData.TileData;
     public ErVec2I TileSize => MapData.TileSize;
     public SwMap(SwGame game, SwMapData mapData)
     {

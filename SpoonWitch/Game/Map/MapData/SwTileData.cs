@@ -2,7 +2,7 @@ using Prion.Node;
 
 namespace SpoonWitch.Game.Map.MapData;
 
-public readonly struct SwTileData2
+public readonly struct SwTileData
 {
     private enum TileFlags: uint
     {
@@ -18,7 +18,7 @@ public readonly struct SwTileData2
     public bool IsAnimated{get; init;}
     public double Fps{get; init;}
     public PriDict Props{get; init;}
-    public static bool TryFromData(out SwTileData2 tileData, PriNode data)
+    public static bool TryFromData(out SwTileData tileData, PriNode data)
     {
         if(!data.TryGet("collision_mask", out uint collision_mask)) collision_mask = 0;
         if(data.TryGet("is_walkable", out bool b))
