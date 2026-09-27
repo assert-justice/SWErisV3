@@ -5,32 +5,64 @@ namespace ErisPhysics2D;
 
 internal class ErWorldCell
 {
-    public int[] TileIds;
+    public uint[] TileMasks;
     private readonly ErPhysicsWorld2D World;
     public readonly Dictionary<int,ErColliderArea> Areas = [];
     public readonly Dictionary<int,ErColliderBody> Bodies = [];
     public readonly ErVec2I CoordCells;
-    public readonly ErVec2I CoordTiles;
+    public readonly ErRect2I RectTiles;
     public ErWorldCell(ErVec2I coordCells, ErPhysicsWorld2D world)
     {
         CoordCells = coordCells;
         World = world;
-        CoordTiles = CoordCells * World.CellSizeTiles;
-        TileIds = new int[World.CellSizeTiles.GetArea()];
-        Array.Fill(TileIds, World.DefaultTileIdx);
+        RectTiles = new(CoordCells * World.CellSizeTiles, World.CellSizeTiles);
+        TileMasks = new uint[World.CellSizeTiles.GetArea()];
+        Array.Fill(TileMasks, uint.MaxValue);
     }
     private int GetIdx(ErVec2I tileCoord)
     {
+        tileCoord -= RectTiles.Position;
         return tileCoord.Y * World.CellSizeTiles.X + tileCoord.X;
     }
-    public int GetTileId(ErVec2I tileCoord)
+    public uint GetTileMask(ErVec2I tileCoord)
     {
-        tileCoord -= CoordTiles;
-        return TileIds[GetIdx(tileCoord)];
+        // Todo: add check here?
+        return TileMasks[GetIdx(tileCoord)];
     }
-    public void SetTileId(ErVec2I tileCoord, int tileId)
+    public void SetTileMask(ErVec2I tileCoord, uint tileMask)
     {
-        tileCoord -= CoordTiles;
-        TileIds[GetIdx(tileCoord)] = tileId;
+        TileMasks[GetIdx(tileCoord)] = tileMask;
     }
 }
+
+// internal class ErWorldCell
+// {
+//     public int[] TileIds;
+//     private readonly ErPhysicsWorld2D World;
+//     public readonly Dictionary<int,ErColliderArea> Areas = [];
+//     public readonly Dictionary<int,ErColliderBody> Bodies = [];
+//     public readonly ErVec2I CoordCells;
+//     public readonly ErVec2I CoordTiles;
+//     public ErWorldCell(ErVec2I coordCells, ErPhysicsWorld2D world)
+//     {
+//         CoordCells = coordCells;
+//         World = world;
+//         CoordTiles = CoordCells * World.CellSizeTiles;
+//         TileIds = new int[World.CellSizeTiles.GetArea()];
+//         Array.Fill(TileIds, World.DefaultTileIdx);
+//     }
+//     private int GetIdx(ErVec2I tileCoord)
+//     {
+//         return tileCoord.Y * World.CellSizeTiles.X + tileCoord.X;
+//     }
+//     public int GetTileId(ErVec2I tileCoord)
+//     {
+//         tileCoord -= CoordTiles;
+//         return TileIds[GetIdx(tileCoord)];
+//     }
+//     public void SetTileId(ErVec2I tileCoord, int tileId)
+//     {
+//         tileCoord -= CoordTiles;
+//         TileIds[GetIdx(tileCoord)] = tileId;
+//     }
+// }
