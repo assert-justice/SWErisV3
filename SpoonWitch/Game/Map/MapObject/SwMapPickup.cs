@@ -20,6 +20,6 @@ public class SwMapPickup : SwMapObject
         if(pickup_type == "none") return;
         props.Merge(SwData.Prototypes.Get($"pickups/{pickup_type}"));
         // ErEngine.Log(GetProps());
-        SwGame.Game.LoadEntity<SwPickup>(props);
+        // SwGame.Game.LoadEntity<SwPickup>(props);
     }
 }

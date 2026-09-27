@@ -2,6 +2,7 @@ using Eris;
 using Eris.Renderer;
 using ErisMath;
 using Prion.Node;
+using SpoonWitch.Data;
 
 namespace SpoonWitch.UI.Node;
 
@@ -48,7 +49,8 @@ public class SwText: SwUiNode
         {
             if(_Font is null)
             {
-                if(!SwApp.TryGetFont(_FontSize, out _Font)) ErEngine.LogWarning("failed to get font");
+                // SwData.try
+                // if(!SwApp.TryGetFont(_FontSize, out _Font)) ErEngine.LogWarning("failed to get font");
             }
             return _Font;
         }

@@ -12,22 +12,16 @@ public abstract class SwEntity
 {
     private readonly Dictionary<(Type,string), SwComponent> ComponentLookup = [];
     private IEnumerable<SwComponent> Components => ComponentLookup.Values;
+    public SwGame Game{get; private set;} = null!;
     public PriDb Props{get; private set;} = new(new PriDict());
     public virtual int RenderLayer => 1;
     public int Id{get; private set;}
     public ErVec2 Position;
     public bool Visible = true;
     public bool IsFreeQueued{get; private set;}
-    protected virtual int NumClocks => 0;
-    protected readonly double[] Clocks;
     private readonly Queue<PriNode> CommandQueue = [];
     private readonly Dictionary<string,Action<PriNode>> Handlers = [];
     private readonly Dictionary<string,Action<PriNode>> GlobalHandlers = [];
-    public SwEntity()
-    {
-        Clocks = new double[NumClocks];
-        Array.Fill(Clocks, 0);
-    }
     protected void AddHandler(string verb, Action<PriNode> action)
     {
         if(!Handlers.TryAdd(verb, action)) ErEngine.LogWarning("tried to add duplicate handler: ", verb);
@@ -45,7 +39,7 @@ public abstract class SwEntity
         if(!ComponentLookup.TryAdd((component.GetType(), component.Name), component)) ErEngine.LogError("Failed to register component of name '", component.Name, "' and type '", component.GetType(), "'.");
         return component;
     }
-    protected virtual void SetProps(PriNode props)
+    public virtual void SetProps(PriNode props)
     {
         Props = new(props);
         Position = SwPrion.GetVec2(Props.Data);
@@ -83,27 +77,39 @@ public abstract class SwEntity
             }
         }
     }
-    public virtual void Update()
+    public void GameUpdate(double dt)
     {
-        HandleCommands();
+        Update(dt);
         foreach (var comp in Components)
         {
-            comp.Update();
+            comp.Update(dt);
+        }
+        UpdateLate(dt);
+    }
+    public virtual void Update(double dt)
+    {
+        HandleCommands();
+    }
+    public virtual void UpdateLate(double dt)
+    {
+        foreach (var comp in Components)
+        {
+            comp.Update(dt);
         }
     }
-    public void Draw(SwEntity nextState)
+    public void GameDraw()
     {
         if(!Visible) return;
-        SwGame.RenderLayer = RenderLayer;
-        DrawImpl(nextState);
+        Game.SetRenderLayer(RenderLayer);
+        Draw();
         foreach (var item in Components)
         {
-            item.Draw(item);
+            item.Draw();
         }
-        DrawImplLate(nextState);
+        DrawLate();
     }
-    protected virtual void DrawImpl(SwEntity nextState){}
-    protected virtual void DrawImplLate(SwEntity nextState){}
+    protected virtual void Draw(){}
+    protected virtual void DrawLate(){}
     public bool TryGetComponent<T>(string name, out T component) where T: SwComponent
     {
         component = null!;
@@ -116,7 +122,6 @@ public abstract class SwEntity
     {
         if(TryGetComponent(name, out T component)) return component;
         ErEngine.LogWarning("entity does not have a valid '", name, "' component");
-        // ErEngine.LogWarning()
         foreach (var item in ComponentLookup.Values)
         {
             ErEngine.Log(item.Name);
@@ -139,10 +144,13 @@ public abstract class SwEntity
             item.Cleanup();
         }
     }
-    public static T GameLoad<T>(PriNode props) where T: SwEntity, new()
+    public static T GameLoad<T>(SwGame game, PriNode props) where T: SwEntity, new()
     {
-        T ent = new();
-        if(props.TryGet("id", out int id)) ent.Id = id;
+        T ent = new()
+        {
+            Game = game
+        };
+        if (props.TryGet("id", out int id)) ent.Id = id;
         else ent.Id = SwApp.GetNextId();
         ent.SetProps(props);
         ent.Init();

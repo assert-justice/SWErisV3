@@ -23,10 +23,10 @@ public class SwHudSprite
         if(!SwPrion.TryGetVec2(out ErVec2 size, node, "width", "height")) size = tex.Size;
         Frames = [..SwFrame.GetAllFrames(new(tex), size)];
     }
-    public void Update()
+    public void Update(double dt)
     {
         if(!FrameQueue.TryPeek(out var result)) return;
-        if(Clock < result.Item1) Clock += SwGame.DeltaTime;
+        if(Clock < result.Item1) Clock += dt;
         else
         {
             Clock = 0;

@@ -10,7 +10,7 @@ public class SwAspect: SwEnemy
     {
         AddGlobalHandler("boss_wake", Wake);
     }
-    protected override void SetProps(PriNode props)
+    public override void SetProps(PriNode props)
     {
         base.SetProps(props);
         LoadSprites("anim_data/sprites");
@@ -19,9 +19,9 @@ public class SwAspect: SwEnemy
     {
         base.Ready();
     }
-    public override void Update()
+    public override void Update(double dt)
     {
-        base.Update();
+        base.Update(dt);
     }
     private void Wake(PriNode command)
     {

@@ -61,9 +61,9 @@ public class SwHudBar
         SegOff = new(segment_x, segment_y);
         if(!common.Get("segment_length_offset").TryAs(out SegLen)) SegLen = 0;
     }
-    public void Update()
+    public void Update(double dt)
     {
-        if(BgValue > Value) BgValue -= BgUpdateSpeed * SwGame.DeltaTime;
+        if(BgValue > Value) BgValue -= BgUpdateSpeed * dt;
     }
     public void Draw()
     {

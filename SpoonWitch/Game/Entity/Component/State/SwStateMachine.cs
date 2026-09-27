@@ -3,16 +3,18 @@ using SpoonWitch.ByteStream;
 
 namespace SpoonWitch.Game.Entity.Component.State;
 
-public class SwStateMachine: SwComponent
+public class SwStateMachine<T>: SwComponent where T: SwEntity
 {
-    private readonly SwState[] States;
+    private readonly SwState<T>[] States;
     private readonly Dictionary<string, int> StateLookup = [];
     private int CurrentStateIdx = 0;
     private string NextState = string.Empty;
     private bool FirstUpdate = true;
-    public SwState CurrentState{get => States[CurrentStateIdx];}
-    public SwStateMachine(SwEntity parent, string name, IEnumerable<SwState> states): base(parent, name)
+    public SwState<T> CurrentState{get => States[CurrentStateIdx];}
+    public T Entity;
+    public SwStateMachine(T parent, string name, IEnumerable<SwState<T>> states): base(parent, name)
     {
+        Entity = parent;
         States = [..states];
         if(States.Length == 0) throw new Exception("passed empty array of states");
         NextState = States[0].Name;
@@ -32,11 +34,6 @@ public class SwStateMachine: SwComponent
     }
     public void SetState(string state)
     {
-        // if (!string.IsNullOrEmpty(NextState))
-        // {
-        //     ErEngine.LogWarning("attempted to set state '", state, "' while state '", NextState, "' was already queued.");
-        //     return;
-        // }
         if(state == CurrentState.Name) return;
         if(!StateLookup.ContainsKey(state))
         {
@@ -45,8 +42,9 @@ public class SwStateMachine: SwComponent
         }
         NextState = state;
     }
-    public override void Update()
+    public override void Update(double dt)
     {
+        base.Update(dt);
         if (!string.IsNullOrEmpty(NextState))
         {
             if (FirstUpdate)
@@ -59,28 +57,11 @@ public class SwStateMachine: SwComponent
             CurrentState.BeginState(lastState);
             NextState = string.Empty;
         }
-        CurrentState.Update();
+        CurrentState.Update(dt);
     }
-    public override void Draw(SwComponent nextState)
+    public override void Draw()
     {
-        base.Draw(nextState);
-        if(nextState is not SwStateMachine machine) ErEngine.LogError("type mismatch, expected state machine, found'", nextState.GetType(), "'.");
-        else CurrentState.Draw(machine.CurrentState);
-    }
-    public override void Read(SwByteStream byteStream)
-    {
-        base.Read(byteStream);
-        foreach (var item in States)
-        {
-            item.Read(byteStream);
-        }
-    }
-    public override void Write(SwByteStream byteStream)
-    {
-        base.Write(byteStream);
-        foreach (var item in States)
-        {
-            item.Write(byteStream);
-        }
+        base.Draw();
+        CurrentState.Draw();
     }
 }

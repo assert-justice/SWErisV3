@@ -1,6 +1,7 @@
 using Eris;
 using ErisMath;
 using Prion.Node;
+using SpoonWitch.Data;
 
 namespace SpoonWitch.Game.Map.MapObject;
 
@@ -72,7 +73,7 @@ public abstract class SwMapObject
                 if(!value.TryAs(out string src)) throw new("property overrides field must be a string");
                 if (fieldName.EndsWith("_json"))
                 {
-                    if(!SwApp.TryParseJsonToPrion(src, out value)) return ErEngine.LogWarning("failed to parse json field '", fieldName, "'");
+                    if(!SwData.TryParseJsonToPrion(src, out value)) return ErEngine.LogWarning("failed to parse json field '", fieldName, "'");
                 }
             }
             fields.Add(fieldName, value);

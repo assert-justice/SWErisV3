@@ -39,6 +39,7 @@ public static class SwData
         if(!TryLoadAndExpand(out var data, ManifestPath)) return ErEngine.LogError("unable to load manifest");
         Manifest.SetData(data);
         Prototypes.SetData(data.Get("prototypes"));
+
         if(!ErTexture.TryGetPaletteHandles(out var palletHandles, "game_data/palettes.png")) return ErEngine.LogError("unable to load palettes");
         foreach (var item in palletHandles)
         {
@@ -64,7 +65,7 @@ public static class SwData
         if(!ErTexture.TryFromPath(filepath, palletHandle, out texture)) return ErEngine.LogError("failed to get palleted texture at filepath ", filepath);
         return true;
     }
-    public static bool TryLoadPrion(string filepath, out PriNode priNode)
+    private static bool TryLoadPrion(string filepath, out PriNode priNode)
     {
         priNode = PriNull.Null;
         try
@@ -86,7 +87,7 @@ public static class SwData
         if(!ErTexture.TryFromPath(filepath, out texture)) return ErEngine.LogWarning("failed to load texture at path ", filepath);
         return true;
     }
-    public static bool TryLoadAndExpand(out PriNode data, string filepath)
+    private static bool TryLoadAndExpand(out PriNode data, string filepath)
     {
         data = PriNull.Null;
         string dp = Path.GetDirectoryName(filepath)!;

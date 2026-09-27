@@ -33,24 +33,24 @@ public class SwHud
         if(!SwHudSlots.TryLoad(out AmmoSlots, offset, node.Get("ammo"))) throw new("no ammo");
         if(!SwHudSlots.TryLoad(out RootSlots, offset, node.Get("roots"))) throw new("no roots");
     }
-    public void Update()
+    public void Update(double dt)
     {
         if(Player is null) return;
         HealthBar.MaxValue = Player.MaxHealth;
         HealthBar.Value = Player.Health;
-        HealthBar.Update();
+        HealthBar.Update(dt);
         StaminaBar.MaxValue = Player.MaxStamina;
         StaminaBar.Value = Player.Stamina;
-        StaminaBar.Update();
+        StaminaBar.Update(dt);
         ManaBar.MaxValue = Player.MaxMana;
         ManaBar.Value = Player.Mana;
-        ManaBar.Update();
+        ManaBar.Update(dt);
         RootSlots.MaxValue = Player.MaxRoots;
         RootSlots.Value = Player.Roots;
-        RootSlots.Update();
+        RootSlots.Update(dt);
         AmmoSlots.MaxValue = Player.MaxAmmo;
         AmmoSlots.Value = Player.Ammo;
-        AmmoSlots.Update();
+        AmmoSlots.Update(dt);
     }
     public void Draw()
     {

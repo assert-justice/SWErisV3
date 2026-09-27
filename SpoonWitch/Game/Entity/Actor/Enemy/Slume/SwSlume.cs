@@ -14,11 +14,11 @@ public class SwSlume : SwEnemy
 {
     public ErVec2 HurtboxSize = new(20, 20);
     public double TimeoutClock;
-    private SwStateMachine? StateMachine;
+    private SwStateMachine<SwSlume>? StateMachine;
     // public double BaseSpeed = 100;
     public double WanderSpeedMul = 0.5;
     // public double MaxHealth = 100;
-    protected override void SetProps(PriNode props)
+    public override void SetProps(PriNode props)
     {
         base.SetProps(props);
         BaseSpeed = 50;

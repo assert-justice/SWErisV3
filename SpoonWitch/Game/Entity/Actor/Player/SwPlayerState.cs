@@ -10,7 +10,7 @@ using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Entity.Actor.Player;
 
-public abstract class SwPlayerState : SwEntState<SwPlayer>
+public abstract class SwPlayerState : SwState<SwPlayer>
 {
     private SwSprite BodySprite = null!;
     private SwSprite HatSprite = null!;
@@ -78,6 +78,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
         "charge_2",
         "charge_3",
     ];
+    public SwPlayerState(){}
     private bool CanDodge()
     {
         if(Entity.DodgeCooldownClock > 0) return false;
@@ -132,23 +133,23 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
     //     base.BeginState(lastState);
     //     ErEngine.Log(Name);
     // }
-    public override void Update()
+    public override void Update(double dt)
     {
-        base.Update();
+        base.Update(dt);
         ReticleSprite.Visible = Controls.ReticleVisible;
         ReticleSprite.Offset = Controls.ReticlePosition;
         if(Entity.Stamina < Entity.MaxStamina)
         {
-            if(Entity.StaminaRegenClock > 0) Entity.StaminaRegenClock -= SwGame.DeltaTime * StaminaRegenClockMul;
+            if(Entity.StaminaRegenClock > 0) Entity.StaminaRegenClock -= dt * StaminaRegenClockMul;
             else
             {
-                Entity.Stamina += Entity.StaminaRegen * SwGame.DeltaTime;
+                Entity.Stamina += Entity.StaminaRegen * dt;
                 if(Entity.Stamina > Entity.MaxStamina) Entity.Stamina = Entity.MaxStamina;
             }
         }
         if(Entity.Mana < Entity.MaxMana)
         {
-            Entity.Mana += Entity.ManaRegen * SwGame.DeltaTime * ManaRegenMul;
+            Entity.Mana += Entity.ManaRegen * dt * ManaRegenMul;
             if(Entity.Mana > Entity.MaxMana) Entity.Mana = Entity.MaxMana;
         }
     }
@@ -161,119 +162,120 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             PlayBodyAnim("die");
             Entity.Velocity = ErVec2.Zero;
         }
-        public override void Update()
+        public override void Update(double dt)
         {
-            base.Update();
+            base.Update(dt);
             if(BodySprite.IsPlaying) return;
+            // Todo: drive this elsewhere
             if(BodySprite.CurrentAnimation.Name == "die") PlayBodyAnim("continue");
-            else if(SwGame.Map.InSameRoom(Entity.Position, SwGame.ActiveCheckpoint.RectPx.Center)) StateMachine.SetState("respawn");
+            // else if(Entity.Game.Map.InSameRoom(Entity.Position, SwGame.ActiveCheckpoint.RectPx.Center)) StateMachine.SetState("respawn");
             else StateMachine.SetState("respawn_fade_out");
         }
     }
-    public class RespawnFadeOut: SwPlayerState
-    {
-        public override string Name => "respawn_fade_out";
-        public override void BeginState(string lastState)
-        {
-            base.BeginState(lastState);
-            PlayBodyAnim("fly");
-            SwGame.Game.FadeOut();
-        }
-        public override void Update()
-        {
-            base.Update();
-            bool isVisible = SwGame.Camera.IsPointVisible(Entity.Position);
-            if (isVisible)
-            {
-                Entity.MoveToward(SwGame.ActiveCheckpoint.RectPx.Center, Entity.BaseSpeed);
-            }
-            else Entity.Velocity = ErVec2.Zero;
-            if(SwGame.Game.FadeState == 1 && !isVisible) StateMachine.SetState("respawn_fade_in");
-        }
-    }
-    public class RespawnQuick: SwPlayerState
-    {
-        public override string Name => "quick_spawn";
-        public override void BeginState(string lastState)
-        {
-            base.BeginState(lastState);
-            SwGame.SetCameraTarget(SwGame.ActiveCheckpoint.RectPx.Center, true);
-            Entity.Position = SwGame.ActiveCheckpoint.RectPx.Center;
-        }
-        public override void Update()
-        {
-            base.Update();
-            Entity.IsAlive = true;
-            StateMachine.SetState("default");
-        }
-    }
-    public class RespawnFadeIn: SwPlayerState
-    {
-        public override string Name => "respawn_fade_in";
-        public override void BeginState(string lastState)
-        {
-            base.BeginState(lastState);
-            PlayBodyAnim("fly");
-            SwGame.Game.FadeIn();
-            SwGame.SetCameraTarget(SwGame.ActiveCheckpoint.RectPx.Center, true);
-            ErVec2 diff = Entity.Position - SwGame.ActiveCheckpoint.RectPx.Center;
-            double distance = diff.GetLength();
-            if(500 < distance) distance = 500;
-            ErVec2 offset = diff.Normalized() * distance;
-            ErVec2 pos = SwGame.ActiveCheckpoint.RectPx.Center + offset;
-            Entity.Position = pos;
-        }
-        public override void Update()
-        {
-            base.Update();
-            if(BodySprite.CurrentAnimation.Name == "respawn")
-            {
-                if (!BodySprite.IsPlaying)
-                {
-                    StateMachine.SetState("default");
-                    Entity.IsAlive = true;
-                }
-                return;
-            }
-            double distance = Entity.MoveToward(SwGame.ActiveCheckpoint.RectPx.Center, Entity.BaseSpeed);
-            if(distance == 0)
-            {
-                PlayBodyAnim("respawn");
-            }
-        }
-    }
-    public class Respawn: SwPlayerState
-    {
-        public override string Name => "respawn";
-        public override void BeginState(string lastState)
-        {
-            base.BeginState(lastState);
-            PlayBodyAnim("fly");
-        }
-        public override void Update()
-        {
-            base.Update();
-            if(BodySprite.CurrentAnimation.Name == "respawn")
-            {
-                if(!BodySprite.IsPlaying) StateMachine.SetState("default");
-                Entity.IsAlive = true;
-                return;
-            }
-            ErVec2 diff = SwGame.ActiveCheckpoint.RectPx.Center - Entity.Position;
-            double speed = Entity.BaseSpeed * SwGame.DeltaTime;
-            double lenSq = diff.GetLengthSquared();
-            if(lenSq < speed * speed)
-            {
-                Entity.Velocity = ErVec2.Zero;
-                PlayBodyAnim("respawn");
-            }
-            else
-            {
-                ErVec2 dir = (SwGame.ActiveCheckpoint.RectPx.Center - Entity.Position).Normalized();
-                Entity.Velocity = dir * Entity.BaseSpeed;
-            }
-        }
-    }
+    // public class RespawnFadeOut: SwPlayerState
+    // {
+    //     public override string Name => "respawn_fade_out";
+    //     public override void BeginState(string lastState)
+    //     {
+    //         base.BeginState(lastState);
+    //         PlayBodyAnim("fly");
+    //         SwGame.Game.FadeOut();
+    //     }
+    //     public override void Update()
+    //     {
+    //         base.Update();
+    //         bool isVisible = SwGame.Camera.IsPointVisible(Entity.Position);
+    //         if (isVisible)
+    //         {
+    //             Entity.MoveToward(SwGame.ActiveCheckpoint.RectPx.Center, Entity.BaseSpeed);
+    //         }
+    //         else Entity.Velocity = ErVec2.Zero;
+    //         if(SwGame.Game.FadeState == 1 && !isVisible) StateMachine.SetState("respawn_fade_in");
+    //     }
+    // }
+    // public class RespawnQuick: SwPlayerState
+    // {
+    //     public override string Name => "quick_spawn";
+    //     public override void BeginState(string lastState)
+    //     {
+    //         base.BeginState(lastState);
+    //         SwGame.SetCameraTarget(SwGame.ActiveCheckpoint.RectPx.Center, true);
+    //         Entity.Position = SwGame.ActiveCheckpoint.RectPx.Center;
+    //     }
+    //     public override void Update()
+    //     {
+    //         base.Update();
+    //         Entity.IsAlive = true;
+    //         StateMachine.SetState("default");
+    //     }
+    // }
+    // public class RespawnFadeIn: SwPlayerState
+    // {
+    //     public override string Name => "respawn_fade_in";
+    //     public override void BeginState(string lastState)
+    //     {
+    //         base.BeginState(lastState);
+    //         PlayBodyAnim("fly");
+    //         SwGame.Game.FadeIn();
+    //         SwGame.SetCameraTarget(SwGame.ActiveCheckpoint.RectPx.Center, true);
+    //         ErVec2 diff = Entity.Position - SwGame.ActiveCheckpoint.RectPx.Center;
+    //         double distance = diff.GetLength();
+    //         if(500 < distance) distance = 500;
+    //         ErVec2 offset = diff.Normalized() * distance;
+    //         ErVec2 pos = SwGame.ActiveCheckpoint.RectPx.Center + offset;
+    //         Entity.Position = pos;
+    //     }
+    //     public override void Update()
+    //     {
+    //         base.Update();
+    //         if(BodySprite.CurrentAnimation.Name == "respawn")
+    //         {
+    //             if (!BodySprite.IsPlaying)
+    //             {
+    //                 StateMachine.SetState("default");
+    //                 Entity.IsAlive = true;
+    //             }
+    //             return;
+    //         }
+    //         double distance = Entity.MoveToward(SwGame.ActiveCheckpoint.RectPx.Center, Entity.BaseSpeed);
+    //         if(distance == 0)
+    //         {
+    //             PlayBodyAnim("respawn");
+    //         }
+    //     }
+    // }
+    // public class Respawn: SwPlayerState
+    // {
+    //     public override string Name => "respawn";
+    //     public override void BeginState(string lastState)
+    //     {
+    //         base.BeginState(lastState);
+    //         PlayBodyAnim("fly");
+    //     }
+    //     public override void Update()
+    //     {
+    //         base.Update();
+    //         if(BodySprite.CurrentAnimation.Name == "respawn")
+    //         {
+    //             if(!BodySprite.IsPlaying) StateMachine.SetState("default");
+    //             Entity.IsAlive = true;
+    //             return;
+    //         }
+    //         ErVec2 diff = SwGame.ActiveCheckpoint.RectPx.Center - Entity.Position;
+    //         double speed = Entity.BaseSpeed * SwGame.DeltaTime;
+    //         double lenSq = diff.GetLengthSquared();
+    //         if(lenSq < speed * speed)
+    //         {
+    //             Entity.Velocity = ErVec2.Zero;
+    //             PlayBodyAnim("respawn");
+    //         }
+    //         else
+    //         {
+    //             ErVec2 dir = (SwGame.ActiveCheckpoint.RectPx.Center - Entity.Position).Normalized();
+    //             Entity.Velocity = dir * Entity.BaseSpeed;
+    //         }
+    //     }
+    // }
     public class Default: SwPlayerState
     {
         public override string Name => "default";
@@ -283,9 +285,9 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             BodySprite.SetPallet(Entity.PlayerIdx);
             HatSprite.SetPallet(Entity.PlayerIdx);
         }
-        public override void Update()
+        public override void Update(double dt)
         {
-            base.Update();
+            base.Update(dt);
             int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
             SetBodyHandedAnim(animIdx, 2, Controls.LastFacingIdx);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed;
@@ -299,8 +301,8 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             }
             else if(Entity.CurrentSpell is not null && Entity.CurrentSpell.IsActive && Controls.CastJustPressed){}
             else if(ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.T)) StateMachine.SetState("dancing");
-            if(Entity.DodgeCooldownClock > 0) Entity.DodgeCooldownClock -= SwGame.DeltaTime;
-            if(Entity.SpoonCooldownClock > 0) Entity.SpoonCooldownClock -= SwGame.DeltaTime;
+            if(Entity.DodgeCooldownClock > 0) Entity.DodgeCooldownClock -= dt;
+            if(Entity.SpoonCooldownClock > 0) Entity.SpoonCooldownClock -= dt;
         }
     }
     public class Attack: SwPlayerState
@@ -321,9 +323,9 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             if(Entity.Stamina < 0) Entity.StaminaRegenClock += Entity.StaminaRegenDelayPenalty;
             SpoonSprite.HFlip = !SpoonSprite.HFlip;
         }
-        public override void Update()
+        public override void Update(double dt)
         {
-            base.Update();
+            base.Update(dt);
             if(!SpoonSprite.IsPlaying) StateMachine.SetState("default");
             SpoonHurtbox.Enabled = SpoonSprite.FrameIdx == 0;
         }
@@ -352,11 +354,11 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             ReticleSprite.Play(ReticleAnims[0]);
             Entity.SlingChargeClock = 0;
         }
-        public override void Update()
+        public override void Update(double dt)
         {
-            base.Update();
+            base.Update(dt);
             int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
-            
+
             SetBodyHandedAnim(animIdx, 1, Controls.LastFacingIdx);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.SlowedSpeedMul;
             if (!Controls.IsCharging)
@@ -368,7 +370,7 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
                 return;
             }
             int lastThresh = ErMath.FloorToInt(Entity.SlingChargeClock * 3 / Entity.SlingChargeTime);
-            Entity.SlingChargeClock += SwGame.DeltaTime;
+            Entity.SlingChargeClock += dt;
             int nextThresh = ErMath.FloorToInt(Entity.SlingChargeClock * 3 / Entity.SlingChargeTime);
             if(lastThresh == nextThresh) return;
             int frame = ReticleSprite.FrameIdx;
@@ -403,11 +405,11 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             SwPrion.TrySetVec2(props, "velocity", Controls.Aim * Entity.SlingBulletSpeed);
             SwPrion.TrySetVec2(props, Entity.Position);
             props.TrySet("damage", sling.Get("sling_damage"));
-            SwGame.Game.LoadEntity<SwProjectile>(props);
+            Entity.Game.AddEntity<SwProjectile>(props);
         }
-        public override void Update()
+        public override void Update(double dt)
         {
-            base.Update();
+            base.Update(dt);
             int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
             SetBodyHandedAnim(animIdx, 1, Controls.LastFacingIdx);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.SlowedSpeedMul;
@@ -453,11 +455,11 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             Entity.StaminaRegenClock = Entity.StaminaRegenDelay;
             if(Entity.Stamina < 0) Entity.StaminaRegenClock += Entity.StaminaRegenDelayPenalty;
         }
-        public override void Update()
+        public override void Update(double dt)
         {
-            base.Update();
+            base.Update(dt);
             double elapsed = Entity.DodgeCooldownClock;
-            Entity.DodgeCooldownClock += SwGame.DeltaTime;
+            Entity.DodgeCooldownClock += dt;
             if(!BodySprite.IsPlaying) StateMachine.SetState("default");
             // Note: edge detection. fires when the clock is now past invuln delay
             else if(Entity.DodgeCooldownClock >= Entity.DodgeInvulnDelay && elapsed < Entity.DodgeInvulnDelay) Entity.InvulnClock = Entity.DodgeInvulnDuration;
@@ -477,9 +479,9 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             PlayBodyAnim("item_found");
             Entity.Velocity = ErVec2.Zero;
         }
-        public override void Update()
+        public override void Update(double dt)
         {
-            base.Update();
+            base.Update(dt);
             if(Controls.DodgeJustPressed) StateMachine.SetState("default");
         }
         public override void EndState(string nextState)
@@ -497,19 +499,19 @@ public abstract class SwPlayerState : SwEntState<SwPlayer>
             PlayBodyAnim("dance");
             Entity.Velocity = ErVec2.Zero;
         }
-        public override void Update()
+        public override void Update(double dt)
         {
-            base.Update();
+            base.Update(dt);
             if(Controls.DodgeJustPressed) StateMachine.SetState("default");
         }
     }
-    public static SwStateMachine GetStateMachine(SwPlayer parent, string name)
+    public static SwStateMachine<SwPlayer> GetStateMachine(SwPlayer parent, string name)
     {
         return new(parent, name, [
-            new RespawnQuick(),
-            new RespawnFadeIn(),
-            new RespawnFadeOut(),
-            new Respawn(),
+            // new RespawnQuick(),
+            // new RespawnFadeIn(),
+            // new RespawnFadeOut(),
+            // new Respawn(),
             new Default(),
             new Attack(),
             new Charging(),

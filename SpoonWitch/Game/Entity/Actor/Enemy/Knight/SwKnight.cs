@@ -8,10 +8,10 @@ namespace SpoonWitch.Game.Entity.Actor.Enemy.Knight;
 
 public class SwKnight : SwEnemy
 {
-    private SwStateMachine? StateMachine;
+    private SwStateMachine<SwKnight>? StateMachine;
     public double WanderSpeedMul = 0.5;
     public double TimeoutClock;
-    protected override void SetProps(PriNode props)
+    public override void SetProps(PriNode props)
     {
         base.SetProps(props);
         BaseSpeed = 100;

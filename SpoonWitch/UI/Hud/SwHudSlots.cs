@@ -27,14 +27,14 @@ public class SwHudSlots
         }
     }
     public int MaxValue;
-    public void Update()
+    public void Update(double dt)
     {
         if(FrameIdx == TargetFrameIdx) return;
         // calculate what frame we're on
         if(FrameIdx > TargetFrameIdx) FrameIdx = TargetFrameIdx;
         else
         {
-            FrameProgress += SwGame.DeltaTime;
+            FrameProgress += dt;
             while(FrameIdx < TargetFrameIdx && FrameProgress > FrameDuration)
             {
                 FrameProgress -= FrameDuration;

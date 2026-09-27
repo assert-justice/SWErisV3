@@ -32,13 +32,17 @@ public abstract class SwActor: SwEntity
     public ErVec2 Velocity;
     public ErVec2 Size = new (32, 32);
     public virtual uint Mask => 0;
-    private readonly SwColliderBody Body;
+    private SwColliderBody Body = null!;
     public SwActor()
     {
         AddHandler("damage", DamageHandler);
-        Body = new();
     }
-    protected override void SetProps(PriNode props)
+    public override void Init()
+    {
+        base.Init();
+        Body = new(SwApp.GetNextId(), Id);
+    }
+    public override void SetProps(PriNode props)
     {
         base.SetProps(props);
         if(SwPrion.TryGetVec2(out var size, Props.Get("size"))) Size = size;
@@ -48,31 +52,30 @@ public abstract class SwActor: SwEntity
         base.Ready();
         Health = MaxHealth;
         _IsAlive = true;
-        Body.ParentId = Id;
     }
-    private void HandleFlicker()
+    private void HandleFlicker(double dt)
     {
         if(FlickerClock <= 0) return;
-        FlickerClock -= SwGame.DeltaTime;
+        FlickerClock -= dt;
         if(FlickerClock <= 0)
         {
             Visible = true;
             return;
         }
-        FlickerCycle -= SwGame.DeltaTime;
+        FlickerCycle -= dt;
         if(FlickerCycle <= 0) FlickerCycle = FlickerLen;
         Visible = FlickerCycle > FlickerLen * 0.5;
     }
-    public override void Update()
+    public override void Update(double dt)
     {
-        base.Update();
-        if(InvulnClock > 0)InvulnClock -= SwGame.DeltaTime;
-        if(KnockbackClock > 0)KnockbackClock -= SwGame.DeltaTime;
-        HandleFlicker();
+        base.Update(dt);
+        if(InvulnClock > 0)InvulnClock -= dt;
+        if(KnockbackClock > 0)KnockbackClock -= dt;
+        HandleFlicker(dt);
         Body.Mask = Mask;
         Body.Rect = ErRect2.Centered(Position, Size);
         Body.Velocity = Velocity;
-        SwGame.Map.PhysicsWorld.MoveAndSlide(SwGame.DeltaTime, Id, Body);
+        Game.PhysicsWorld.MoveAndSlide(dt, Body);
         Position = Body.Rect.Center;
         Velocity = Body.Velocity;
     }
@@ -125,14 +128,15 @@ public abstract class SwActor: SwEntity
     {
         var diff = point - Position;
         var distance = diff.GetLength();
-        double spd = speed * SwGame.DeltaTime;
-        if(distance < spd)
-        {
-            Position = point;
-            distance = 0;
-            Velocity = ErVec2.Zero;
-        }
-        else Velocity = diff.Normalized() * speed;
+        Velocity = diff.Normalized() * speed;
+        // double spd = speed * SwGame.DeltaTime;
+        // if(distance < spd)
+        // {
+        //     Position = point;
+        //     distance = 0;
+        //     Velocity = ErVec2.Zero;
+        // }
+        // else Velocity = diff.Normalized() * speed;
         return distance;
     }
 }

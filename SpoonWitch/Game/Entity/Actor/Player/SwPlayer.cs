@@ -77,7 +77,7 @@ public class SwPlayer: SwActor
         set => Inventory.SetCount("roots", Ammo, value);
     }
     public SwSpell? CurrentSpell;
-    public SwStateMachine? StateMachine{get; private set;}
+    public SwStateMachine<SwPlayer>? StateMachine{get; private set;}
     public ErTexture? PickupTexture;
     private bool GotMad = false;
     public SwPlayer()
@@ -90,7 +90,7 @@ public class SwPlayer: SwActor
         if(!Props.TryGet("spoon/spoon_damage", out PriNode spoonDamage)) return;
         entity.AddCommand(spoonDamage);
     }
-    protected override void SetProps(PriNode props)
+    public override void SetProps(PriNode props)
     {
         base.SetProps(props);
         // Set Properties
@@ -151,24 +151,24 @@ public class SwPlayer: SwActor
         base.Ready();
         IsAlive = false;
     }
-    public override void Update()
+    public override void Update(double dt)
     {
-        base.Update();
-        SwGame.SetPlayerPos(Position);
+        base.Update(dt);
+        // SwGame.SetPlayerPos(Position);
         Props.TrySet("spoon_damage/source_pos_x", Position.X);
         Props.TrySet("spoon_damage/source_pos_y", Position.Y);
         CurrentSpell?.Update();
         if(IsAlive && ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Semicolon)) TestDamage(1000);
-        if(IsAlive) SwGame.SetCameraTarget(Position);
+        if(IsAlive) Game.AddFocusPoint(Position);
         if(!GotMad && ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.M))
         {
             SwApp.CommandStore.AddCommandVerb("get_mad");
             GotMad = true;
         }
     }
-    protected override void DrawImpl(SwEntity nextState)
+    protected override void Draw()
     {
-        base.DrawImpl(nextState);
+        base.Draw();
         if(PickupTexture is not null)
         {
             var rect = ErRect2.Centered(Position + ErVec2.Up * 24, PickupTexture.Size);
@@ -197,7 +197,7 @@ public class SwPlayer: SwActor
     private void EntOfferItem(PriNode command)
     {
         if(!command.TryGet("ent_id", out int id)) return;
-        if(!SwGame.Game.EntityLookup.TryGet<SwEntity>(id.ToString(), out var entity)) return;
+        if(!Game.EntityLookup.TryGet<SwEntity>(id.ToString(), out var entity)) return;
         if(!command.TryGet("count", out int count)) return;
         if(!command.TryGet("pickup_type", out string pickup_type)) return;
         if(!Inventory.TryAdd(pickup_type, count, out int rem)) return;

@@ -36,6 +36,7 @@ public static class ErEngine
     public static double FrameTimeRemaining{get; private set;}
     public static double LastFrameTime{get; private set;}
     public static double CurrentTime{get; private set;}
+    public static double TimeStarted{get; private set;}
     private static bool Init(IErApp app)
     {
         List<Action> initList = [
@@ -70,7 +71,8 @@ public static class ErEngine
     {
         IsRunning = true;
         if(!Init(app)) return;
-        LastFrameTime = GetCurrentTime();
+        TimeStarted = GetCurrentTime();
+        LastFrameTime = TimeStarted;
         DeltaTime = 1 / (double)Tickrate;
         while (IsRunning)
         {

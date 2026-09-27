@@ -1,7 +1,9 @@
 using Eris;
 using Eris.Input;
 using ErisMath;
+using Prion.Node;
 using SpoonWitch.ByteStream;
+using SpoonWitch.Data;
 using SpoonWitch.Game.Entity.Component;
 
 namespace SpoonWitch.Game.Entity.Actor.Player;
@@ -43,7 +45,8 @@ public class SwPlayerControls: SwComponent
     public ErInputDevice Device = ErInputDevice.All();
     public SwPlayerControls(SwPlayer parent): base(parent, "controls")
     {
-        if(!SwApp.TryLoadPrion("game_data/settings/default_input_settings.json", out var node))
+        if(!SwData.Manifest.TryGet("settings/default_input_settings/default_input_settings.json", out PriDict node))
+        // if(!SwData.TryLoadPrion("game_data/settings/default_input_settings.json", out var node))
         {
             ErEngine.LogWarning("no input bindings");
             return;
@@ -60,9 +63,9 @@ public class SwPlayerControls: SwComponent
     {
         base.Write(byteStream);
     }
-    public override void Update()
+    public override void Update(double dt)
     {
-        base.Update();
+        base.Update(dt);
         foreach (var item in Axis2s)
         {
             item.Poll(Device);
@@ -90,18 +93,18 @@ public class SwPlayerControls: SwComponent
             ReticlePosition = Aim * GAMEPAD_CURSOR_DISTANCE;
             ReticleVisible = IsCharging || (Aim.IsNonzero() && reticle_always_visible_gp);
         }
-        else
-        {
-            // Note: this is where we figure out where the mouse is relative to the player.
-            var playerScreenPos = SwGame.PlayerPos - SwGame.Camera.Position;
-            // Todo: make this less horrible
-            ReticlePosition = ErEngine.Input.GetMousePosition() / (ErVec2)ErEngine.Renderer.WindowSize * SwApp.ScreenSize - SwApp.ScreenSize * 0.5 - playerScreenPos + new ErVec2(0, -SwApp.HUD_HEIGHT * 0.5);
-            Aim = ReticlePosition.Normalized();
-            // Note: If we're not charging and we're using keyboard aiming we aim in the last direction we moved as the aim vector.
-            if(IsCharging || !kb_aiming) LastFacing = Aim;
-            else if(Move.IsNonzero()) LastFacing = Move.Normalized();
-            ReticleVisible = IsCharging || (Aim.IsNonzero() && reticle_always_visible_kb);
-        }
-        ReticleVisible = IsCharging || (Aim.IsNonzero() && reticle_always_visible_kb);
+        // else
+        // {
+        //     // Note: this is where we figure out where the mouse is relative to the player.
+        //     var playerScreenPos = SwGame.PlayerPos - SwGame.Camera.Position;
+        //     // Todo: make this less horrible
+        //     ReticlePosition = ErEngine.Input.GetMousePosition() / (ErVec2)ErEngine.Renderer.WindowSize * SwApp.ScreenSize - SwApp.ScreenSize * 0.5 - playerScreenPos + new ErVec2(0, -SwApp.HUD_HEIGHT * 0.5);
+        //     Aim = ReticlePosition.Normalized();
+        //     // Note: If we're not charging and we're using keyboard aiming we aim in the last direction we moved as the aim vector.
+        //     if(IsCharging || !kb_aiming) LastFacing = Aim;
+        //     else if(Move.IsNonzero()) LastFacing = Move.Normalized();
+        //     ReticleVisible = IsCharging || (Aim.IsNonzero() && reticle_always_visible_kb);
+        // }
+        // ReticleVisible = IsCharging || (Aim.IsNonzero() && reticle_always_visible_kb);
     }
 }

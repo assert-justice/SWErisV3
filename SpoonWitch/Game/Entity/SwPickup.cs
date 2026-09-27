@@ -19,7 +19,7 @@ public class SwPickup : SwEntity
     {
         AddHandler("pickup_set_rem", SetRem);
     }
-    protected override void SetProps(PriNode props)
+    public override void SetProps(PriNode props)
     {
         base.SetProps(props);
         if(Props.TryGet("count", out int i)) Count = i;
@@ -33,9 +33,9 @@ public class SwPickup : SwEntity
         Area = new(this, "area", mask, SwPrion.GetVec2(Props.Data, "width_px", "height_px", new ErVec2(32,32)), enabled: true, onBodyEnter: OnEnter);
         RegisterComponent(Area);
     }
-    protected override void DrawImpl(SwEntity nextState)
+    protected override void Draw()
     {
-        base.DrawImpl(nextState);
+        base.Draw();
         if(Texture is null) return;
         var center = Texture.Size * 0.5;
         for (int idx = 0; idx < Count; idx++)

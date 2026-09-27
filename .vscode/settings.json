@@ -12,6 +12,8 @@
         "Respawn",
         "Scancode",
         "slume",
+        "Tilemap",
+        "Tilemask",
         "Trunc"
     ]
 }

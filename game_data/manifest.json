@@ -8,7 +8,10 @@
         "hud_config": "hud/hud_config.json"
     },
     "prototypes": "prototypes.json",
-    "default_settings": "settings/default_settings.json",
+    "settings":{
+        "default_settings": "settings/default_settings.json",
+        "default_input_settings": "settings/default_input_settings.json"
+    },
     "menu_config": "menus/menus.json",
     "pallets": "pallets.png"
 }
