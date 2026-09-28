@@ -18,7 +18,30 @@ public class SwGame
 {
     // Tilemap stuff
     public readonly SwMap Map;
-
+    private SwRoomData? CurrentRoom;
+    private void HandleRooms()
+    {
+        var cameraTarget = (ErVec2I)CameraTarget;
+        if(CurrentRoom is not null && CurrentRoom.RectPx.Contains(cameraTarget)) return; // No work to do
+        if(!Map.TryLoadRoom(out var roomData, CameraTarget))
+        {
+            if(CurrentRoom is not null) ErEngine.LogWarning("camera target out of bounds");
+            foreach (var camera in Cameras)
+            {
+                camera.UseBounds = false;
+            }
+            CurrentRoom = null;
+            return;
+        }
+        ErEngine.Log("loaded room ", roomData.Iid);
+        foreach (var camera in Cameras)
+        {
+            camera.UseBounds = true;
+            camera.SetBounds((ErRect2)roomData.RectPx);
+            if(CurrentRoom is null) camera.SnapToPosition(CameraTarget);
+        }
+        CurrentRoom = roomData;
+    }
     // Rendering stuff
     private readonly ErTexture[] RenderTextures;
     private int RenderLayerIdx;
@@ -27,17 +50,20 @@ public class SwGame
         if(renderLayerIdx == RenderLayerIdx) return;
         ErEngine.Renderer.PopViewport();
         RenderLayerIdx = renderLayerIdx;
-        ErEngine.Renderer.PushViewport(CurrentCamera?.Position ?? ErVec2.Zero, RenderTextures[RenderLayerIdx]);
+        ErEngine.Renderer.PushViewport(CurrentCamera?.Rect.Position ?? ErVec2.Zero, RenderTextures[RenderLayerIdx]);
     }
     private readonly SwCamera[] Cameras;
-    public SwCamera? CurrentCamera{get; private set;}
+    private SwCamera? CurrentCamera{get; set;}
+        private readonly List<ErVec2> FocusPoints = [];
+    public void ClearFocusPoints()
+    {
+        FocusPoints.Clear();
+    }
     public void AddFocusPoint(ErVec2 point)
     {
-        foreach (var camera in Cameras)
-        {
-            camera.AddFocusPoint(point);
-        }
+        FocusPoints.Add(point);
     }
+    public ErVec2 CameraTarget{get; set;}
     // Physics stuff
     public readonly ErPhysicsWorld2D PhysicsWorld;
     // Entity stuff
@@ -66,30 +92,72 @@ public class SwGame
             int hudX = SwApp.INTERNAL_WIDTH / 2 * idx;
             if(!SwHud.TryLoad(new(hudX, 0), out var hud)) Huds[idx] = hud; 
         }
+        Map.DebugLoadAllRooms();
+        CameraTarget = ((ErRect2)Map.CurrentCheckpoint.RectPx).Center;
     }
-    public void Update()
+    public void Update(double dt)
     {
-        // Clear cameras' points of interest
-        foreach (var camera in Cameras)
-        {
-            camera.ClearFocusPoints();
-        }
+        // Clear points of interest
+        FocusPoints.Clear();
         // Update entities
         // Update map
         // Update hud
+        // Get focus point
+        // target pos = average of focus points
+        if(FocusPoints.Count > 0)
+        {
+            ErVec2 pos = default;
+            foreach (var item in FocusPoints)
+            {
+                pos += item;
+            }
+            CameraTarget = pos / FocusPoints.Count;
+        }
+        // Handle room stuff
+        HandleRooms();
         // Update cameras
+        foreach (var camera in Cameras)
+        {
+            camera.SetTargetPosition(CameraTarget);
+            camera.Update(dt);
+        }
+        // Room 
         // Handle commands
     }
     public void Draw()
     {
         foreach (var camera in Cameras)
         {
+            CurrentCamera = camera;
             // init camera draw
+            camera.BeginDraw();
+            // push first render layer
+            RenderLayerIdx = 0;
+            ErEngine.Renderer.PushViewport(CurrentCamera?.Position ?? ErVec2.Zero, RenderTextures[RenderLayerIdx]);
+            // clear render textures
+            for (int idx = 0; idx < RenderTextures.Length; idx++)
+            {
+                SetRenderLayer(idx);
+                ErEngine.Renderer.Clear();
+            }
+            SetRenderLayer(0);
+            // texture.Draw(ErVec2.Zero);
             // draw map
+            Map.Draw();
+            PhysicsWorld.DebugDraw();
             // draw entities
             // draw fade
+            // pop render layer
+            ErEngine.Renderer.PopViewport();
+            // draw render layers
+            for (int idx = 0; idx < RenderTextures.Length; idx++)
+            {
+                RenderTextures[RenderTextures.Length - idx - 1].Draw(ErVec2.Zero);
+            }
             // end camera draw
+            camera.EndDraw();
         }
+        CurrentCamera = null;
     }
     public void Cleanup(){}
     public T AddEntity<T>(PriNode props) where T: SwEntity, new()

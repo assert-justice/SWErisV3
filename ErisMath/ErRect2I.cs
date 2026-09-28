@@ -8,6 +8,7 @@ public readonly struct ErRect2I
     public int Right{get => Size.X < 0 ? Position.X : Position.X + Size.X;}
     public int Top{get => Size.Y < 0 ? Position.Y - Size.Y : Position.Y;}
     public int Bottom{get => Size.Y < 0 ? Position.Y : Position.Y + Size.Y;}
+    public ErVec2I Center{get => Position + Size / 2;}
     public ErRect2I(int x, int y, int w, int h)
     {
         Position = new(x,y);

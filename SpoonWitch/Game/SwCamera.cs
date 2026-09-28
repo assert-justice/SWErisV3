@@ -8,15 +8,6 @@ public class SwCamera
 {
     private static readonly ErVec2 Offset = new(0,SwApp.HUD_HEIGHT);
     private readonly ErTexture Texture = ErTexture.GetRenderTexture(SwApp.INTERNAL_WIDTH,SwApp.INTERNAL_HEIGHT-SwApp.HUD_HEIGHT);
-    private readonly List<ErVec2> FocusPoints = [];
-    public void ClearFocusPoints()
-    {
-        FocusPoints.Clear();
-    }
-    public void AddFocusPoint(ErVec2 point)
-    {
-        FocusPoints.Add(point);
-    }
     private ErRect2 Bounds;
     private ErVec2 TargetPos;
     private ErVec2 CurrentPos;
@@ -25,7 +16,7 @@ public class SwCamera
     public bool UseBounds = false;
     public ErVec2 Position => CurrentPos;
     public ErVec2 Size => Texture.Size;
-    public ErRect2 Rect => new(Position, Size);
+    public ErRect2 Rect => ErRect2.Centered(Position, Size);
     public bool IsInBounds()
     {
         if(!UseBounds) return true;
@@ -38,10 +29,15 @@ public class SwCamera
         var size = bounds.Size - Size;
         Bounds = new(pos,size);
     }
+    public void SetTargetPosition(ErVec2 targetPosition)
+    {
+        if(!UseBounds) TargetPos = targetPosition;
+        else TargetPos = Bounds.Clamp(targetPosition);
+    }
     public void SnapToPosition(ErVec2 position)
     {
-        TargetPos = position;
-        CurrentPos = NextPos;
+        SetTargetPosition(position);
+        CurrentPos = TargetPos;
         NextPos = TargetPos;
     }
     public bool IsPointVisible(ErVec2 point)
@@ -50,16 +46,6 @@ public class SwCamera
     }
     public void Update(double dt)
     {
-        // target pos = average of focus points
-        if(FocusPoints.Count > 0)
-        {
-            ErVec2 pos = default;
-            foreach (var item in FocusPoints)
-            {
-                pos += item;
-            }
-            TargetPos = pos / FocusPoints.Count;
-        }
         CurrentPos = NextPos;
         if (IsInBounds())
         {
@@ -77,9 +63,9 @@ public class SwCamera
         //
         ErEngine.Renderer.PushViewport(ErVec2.Zero, Texture);
         // Todo: take out these calls to set clear color
-        ErEngine.Renderer.SetClearColor(default);
+        // ErEngine.Renderer.SetClearColor(default);
         ErEngine.Renderer.Clear();
-        ErEngine.Renderer.SetClearColor(default);
+        // ErEngine.Renderer.SetClearColor(default);
     }
     public void EndDraw()
     {

@@ -74,4 +74,11 @@ public class ErSpatialGrid2D<T>
         LastCellCoord = cellCoord;
         return cell;
     }
+    public IEnumerable<T> GetAllCells()
+    {
+        foreach (var item in Cells.Values)
+        {
+            yield return item;
+        }
+    }
 }

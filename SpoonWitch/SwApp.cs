@@ -79,27 +79,13 @@ public class SwApp : IErApp
             return;
         }
         Game = new(mapData, 1);
-        // SwMapData.TryFromLdtkData()
-        // if(Game is not null)
-        // {
-        //     // cleanup game
-        // }
-        // Game = new();
-        // Game.TryLoadMap("game_data/map/demo_map3.ldtk");
-        // Game.Launch();
     }
     private static bool TryLoadMap(out SwMapData mapData)
     {
         mapData = default!;
-        if(!SwData.Manifest.TryGet("map/tile_data", out PriList tileDataPri)) return ErEngine.LogWarning("failed to load tile data");
-        SwTileData[] tileData = new SwTileData[tileDataPri.Count];
-        for (int idx = 0; idx < tileData.Length; idx++)
-        {
-            //
-            if(!SwTileData.TryFromData(out var tileDataEntry, tileDataPri.Data[idx])) return ErEngine.LogWarning("bad tile data entry");
-            tileData[idx] = tileDataEntry;
-        }
-        return SwMapData.TryFromLdtkData(out mapData, tileData, SwData.Manifest.Get("map/map_data"));
+        if(!SwTileData.TryFromData(out var tileData, SwData.Manifest.Get("map/tile_data"))) return ErEngine.LogWarning("failed to load tile data");
+        if(!SwMapData.TryFromLdtkData(out mapData, tileData, SwData.Manifest.Get("map/map_data"))) return ErEngine.LogWarning("failed to load map data");
+        return true;
     }
     private void Pause()
     {
@@ -116,7 +102,7 @@ public class SwApp : IErApp
     {
         CommandStore.Flush();
         CommandHandler.Dispatch();
-        Game?.Update();
+        Game?.Update(IsPaused ? 0 : ErEngine.DeltaTime);
         MenuInput();
         MenuHolder.Update();
     }

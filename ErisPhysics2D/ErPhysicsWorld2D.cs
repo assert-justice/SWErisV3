@@ -1,4 +1,6 @@
-﻿using Eris.Utils;
+﻿using Eris;
+using Eris.Renderer;
+using Eris.Utils;
 using ErisMath;
 using ErisPhysics2D.Collider;
 
@@ -24,6 +26,11 @@ public class ErPhysicsWorld2D
     private ErWorldCell NewCell(ErVec2I cellCoord)
     {
         return new(cellCoord, this);
+    }
+    public void SetTileMask(ErVec2I tileCoord, uint mask)
+    {
+        var cellCoord = tileCoord / CellSizeTiles;
+        Grid.GetCellInit(cellCoord).SetTileMask(tileCoord, mask);
     }
     public void AddArea(ErColliderArea area)
     {
@@ -247,6 +254,18 @@ public class ErPhysicsWorld2D
             if((mask & cell.GetTileMask(tileCoord)) != 0) return true;
         }
         return false;
+    }
+    public void DebugDraw()
+    {
+        foreach (var cell in Grid.GetAllCells())
+        {
+            foreach (var tileCoord in cell.RectTiles.GetInnerCoords())
+            {
+                var mask = cell.GetTileMask(tileCoord);
+                if(mask == 0) continue;
+                ErEngine.Renderer.DrawRect(new(tileCoord.X * TileSize.X, tileCoord.Y * TileSize.Y, TileSize.X, TileSize.Y), ErColor.Blue, filled: false);
+            }
+        }
     }
 }
 

@@ -1,4 +1,5 @@
 using Eris;
+using Eris.Utils;
 using ErisMath;
 using Prion.Node;
 using SpoonWitch.Utils;
@@ -13,10 +14,25 @@ public class SwMapData
     public ErVec2I SectorSizeTiles{get; private set;}
     public ErVec2I SectorSizePx{get; private set;}
     public int NumTileLayers{get; private set;}
-    public readonly Dictionary<ErVec2I, SwSectorData> Sectors = [];
+    public SwMapObjectData DefaultCheckpoint{get; private set;} = null!;
+    public ErSpatialGrid2D<SwSectorData> Sectors{get; private set;} = null!;
+    // public readonly Dictionary<ErVec2I, SwSectorData> Sectors = [];
     public readonly Dictionary<string, SwRoomData> Rooms = [];
+    public readonly Dictionary<ErVec2I, SwRoomData> RoomLookup = [];
     public readonly Dictionary<string, SwMapObjectData> Objects = [];
-    private SwMapData(){}
+    private SwMapData(string iid, SwTileData[] tileData, ErVec2I tileSize, ErVec2I sectorSizePx)
+    {
+        Iid = iid;
+        TileData = tileData;
+        TileSize = tileSize;
+        SectorSizePx = sectorSizePx;
+        SectorSizeTiles = SectorSizePx / tileSize;
+        Sectors = new(SectorSizeTiles, NewSector);
+    }
+    private SwSectorData NewSector(ErVec2I sectorCoord)
+    {
+        return new(sectorCoord, SectorSizeTiles, NumTileLayers);
+    }
     private bool TryAddTileLayerLdtk(int layerIdx, SwRoomData roomData, PriNode layerData)
     {
         if(!layerData.TryGet("gridTiles", out PriList tiles)) return false;
@@ -30,8 +46,7 @@ public class SwMapData
             ErVec2I posPx = new ErVec2I(x,y) + roomData.RectPx.Position;
             var tileCoord = posPx / TileSize;
             var sectorCoord = posPx / SectorSizePx;
-            if(!Sectors.TryGetValue(sectorCoord, out var sectorData)) return ErEngine.LogWarning("bad sector coord: ", sectorCoord);
-            sectorData.SetTile(layerIdx, tileCoord, tileIdx);
+            Sectors.GetCellInit(sectorCoord).SetTile(layerIdx, tileCoord, tileIdx);
         }
         return true;
     }
@@ -39,14 +54,9 @@ public class SwMapData
     {
         mapData = default!;
         if(!data.TryGet("iid", out string id)) return ErEngine.LogWarning("map missing id");
-        mapData = new()
-        {
-            Iid = id,
-            TileData = tileData,
-            TileSize = data.TryGet("defaultGridSize", out int tileWidth) ? new(tileWidth, tileWidth) : new(32,32),
-            SectorSizePx = SwPrion.GetVec2I(data, "worldGridWidth", "worldGridHeight", new(640, 320)),
-        };
-        mapData.SectorSizeTiles = mapData.SectorSizePx / mapData.TileSize;
+        ErVec2I tileSize = data.TryGet("defaultGridSize", out int tileWidth) ? new(tileWidth, tileWidth) : new(32,32);
+        ErVec2I sectorSizePx = SwPrion.GetVec2I(data, "worldGridWidth", "worldGridHeight", new(640, 320));
+        mapData = new(id, tileData, tileSize, sectorSizePx);
         if(!data.TryGet("defs", out PriDict defs)) return ErEngine.LogWarning("map missing defs");
         if(!defs.TryGet("layers", out PriList layers)) return ErEngine.LogWarning("map missing layers");
         int numTileLayers = 0;
@@ -72,8 +82,7 @@ public class SwMapData
             if(!mapData.Rooms.TryAdd(roomData.Iid, roomData)) return ErEngine.LogWarning("duplicate room id: ", roomData.Iid);
             foreach (var sectorCoord in roomData.RectSectors.GetInnerCoords())
             {
-                SwSectorData sectorData = new(sectorCoord, mapData.SectorSizeTiles, mapData.NumTileLayers);
-                if(!mapData.Sectors.TryAdd(sectorCoord, sectorData)) return ErEngine.LogWarning("duplicate sector coord : ", sectorCoord);
+                mapData.RoomLookup[sectorCoord] = roomData;
             }
             int tileLayerIdx = 0;
             foreach (var layer in roomDataLdtk.Get("layerInstances").Values)
@@ -87,6 +96,10 @@ public class SwMapData
                             if(!SwMapObjectData.TryFromLdtkData(out var mapObjectData, mapData.TileSize, item)) {ErEngine.LogWarning("failed to parse map object"); continue;}
                             if(!mapData.Objects.TryAdd(mapObjectData.Iid, mapObjectData)){ErEngine.LogWarning("duplicate map object ids"); continue;}
                             roomData.ObjectIds.Add(mapObjectData.Iid);
+                            if(mapObjectData.Type == "checkpoint")
+                            {
+                                if(mapObjectData.Fields.TryGet("default", out bool b) && b) mapData.DefaultCheckpoint = mapObjectData;
+                            }
                         }
                         break;
                     case "Tiles":
@@ -99,6 +112,7 @@ public class SwMapData
                 };
             }
         }
+        if(mapData.DefaultCheckpoint is null) return ErEngine.LogWarning("no default checkpoint set");
         return mapData is not null;
     }
 }

@@ -10,23 +10,74 @@ public class SwMap
 {
     private readonly SwMapDisplay MapDisplay;
     private readonly SwFoliage2 Foliage;
-    // private readonly ErPhysicsWorld2D PhysicsWorld;
     private readonly SwGame Game;
     private readonly SwMapData MapData;
-    public MapData.SwTileData[] TileData => MapData.TileData;
+    public SwTileData[] TileData => MapData.TileData;
     public ErVec2I TileSize => MapData.TileSize;
+    public SwMapObjectData CurrentCheckpoint{get; private set;}
     public SwMap(SwGame game, SwMapData mapData)
     {
         Game = game;
         MapData = mapData;
-        MapDisplay = new(this);
+        MapDisplay = new(this, mapData.NumTileLayers);
         Foliage = new(this);
-        // PhysicsWorld = new(new(8,8), mapData.TileSize);
+        CurrentCheckpoint = mapData.DefaultCheckpoint;
+    }
+    // public void Update(double dt){}
+    public void Draw()
+    {
+        MapDisplay.Draw();
+    }
+    public int GetTileId(int layerIdx, ErVec2I tileCoord)
+    {
+        var sectorCoord = tileCoord / MapData.SectorSizeTiles;
+        if(!MapData.Sectors.TryGetCell(sectorCoord, out var sectorData)) return -2;
+        return sectorData.GetTile(layerIdx, tileCoord);
+    }
+    public int GetTopTileId(ErVec2I tileCoord)
+    {
+        var sectorCoord = tileCoord / MapData.SectorSizeTiles;
+        if(!MapData.Sectors.TryGetCell(sectorCoord, out var sectorData)) return -2;
+        return sectorData.GetTopTile(tileCoord);
     }
     public bool InSameRoom(ErVec2 posA, ErVec2 posB)
     {
         // Todo: you know, implement this
         return false;
+    }
+    public void DebugLoadAllRooms()
+    {
+        foreach (var item in MapData.Rooms.Values)
+        {
+            LoadRoom(item);
+        }
+    }
+    public bool TryLoadRoom(out SwRoomData roomData, ErVec2 point)
+    {
+        roomData = default!;
+        ErVec2I sectorCoord = (ErVec2I)point / MapData.SectorSizePx;
+        if(!MapData.RoomLookup.TryGetValue(sectorCoord, out roomData!)) return false;
+        return roomData is not null;
+    }
+    private void LoadRoom(SwRoomData roomData)
+    {
+        foreach (var item in roomData.RectSectors.GetInnerCoords())
+        {
+            if(MapData.Sectors.TryGetCell(item, out var sectorData)) LoadSector(sectorData);
+        }
+    }
+    private void LoadSector(SwSectorData sectorData)
+    {
+        foreach (var tileCoord in sectorData.RectTiles.GetInnerCoords())
+        {
+            // update map display
+            MapDisplay.QueueTileUpdate(tileCoord);
+            int tileId = sectorData.GetTopTile(tileCoord);
+            // update foliage
+            if(tileId < 0) continue;
+            // update physics world
+            // Game.PhysicsWorld.SetTileMask(tileCoord, MapData.TileData[tileId].CollisionMask);
+        }
     }
 }
 

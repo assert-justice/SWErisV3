@@ -116,7 +116,6 @@
                 {
                     "type": "button",
                     "text": "Main Menu",
-                    "visible": false,
                     "font_size": 16,
                     "font_color": "#ffffff",
                     "font_color_focus": "#ff0000",
@@ -127,7 +126,6 @@
                 {
                     "type": "button",
                     "text": "Restart",
-                    "visible": false,
                     "font_size": 16,
                     "font_color": "#ffffff",
                     "font_color_focus": "#ff0000",

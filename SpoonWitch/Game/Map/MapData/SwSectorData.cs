@@ -6,12 +6,12 @@ namespace SpoonWitch.Game.Map.MapData;
 public class SwSectorData
 {
     public readonly ErRect2I RectTiles;
-    public readonly ErVec2I PositionSectors;
+    public readonly ErVec2I SectorCoord;
     public readonly int[][] Layers;
-    public SwSectorData(ErVec2I positionSec, ErVec2I sectorSizeTiles, int numTileLayers)
+    public SwSectorData(ErVec2I sectorCoord, ErVec2I sectorSizeTiles, int numTileLayers)
     {
-        PositionSectors = positionSec;
-        RectTiles = new(PositionSectors * sectorSizeTiles, sectorSizeTiles);
+        SectorCoord = sectorCoord;
+        RectTiles = new(SectorCoord * sectorSizeTiles, sectorSizeTiles);
         Layers = new int[numTileLayers][];
     }
     private int GetTileIdx(ErVec2I tileCoord)
@@ -23,7 +23,7 @@ public class SwSectorData
     {
         if (!RectTiles.Contains(tileCoord))
         {
-            ErEngine.LogWarning("attempted to set tile ", tileCoord, " of sector ", PositionSectors, ". coord out of bounds");
+            ErEngine.LogWarning("attempted to set tile ", tileCoord, " of sector ", SectorCoord, ". coord out of bounds");
             return;
         }
         if(Layers[layerIdx] is null)
@@ -37,7 +37,7 @@ public class SwSectorData
     {
         if (!RectTiles.Contains(tileCoord))
         {
-            ErEngine.LogWarning("attempted to get tile ", tileCoord, " of sector ", PositionSectors, ". coord out of bounds");
+            ErEngine.LogWarning("attempted to get tile ", tileCoord, " of sector ", SectorCoord, ". coord out of bounds");
             return - 1;
         }
         if(Layers[layerIdx] is null) return -1;
@@ -47,7 +47,7 @@ public class SwSectorData
     {
         if (!RectTiles.Contains(tileCoord))
         {
-            ErEngine.LogWarning("attempted to get top tile ", tileCoord, " of sector ", PositionSectors, ". coord out of bounds");
+            ErEngine.LogWarning("attempted to get top tile ", tileCoord, " of sector ", SectorCoord, ". coord out of bounds");
             return - 1;
         }
         int tileIdx = GetTileIdx(tileCoord);
@@ -58,4 +58,20 @@ public class SwSectorData
         }
         return -1;
     }
+    // public IEnumerable<(int layerIdx, ErVec2I tileCoord)> GetNonDefaultTiles()
+    // {
+    //     for (int layerIdx = 0; layerIdx < Layers.Length; layerIdx++)
+    //     {
+    //         if(Layers[layerIdx] is null) continue;
+    //         int width = RectTiles.Size.X;
+    //         for (int tileIdx = 0; tileIdx < Layers[layerIdx].Length; tileIdx++)
+    //         {
+    //             int tileId = Layers[layerIdx][tileIdx];
+    //             if(tileId < 0) continue;
+    //             int xi = tileIdx % width;
+    //             int yi = tileIdx / width;
+    //             yield return (tileId, new(xi,yi));
+    //         }
+    //     }
+    // }
 }
