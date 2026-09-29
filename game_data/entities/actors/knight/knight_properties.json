@@ -1,3 +1,24 @@
 {
-    "anim_data": "knight_anim_data.json"
+    "anim_data": "knight_anim_data.json",
+    "health":{
+        "health": 300,
+        "max_health": 300
+    },
+    "speed":{
+        "base_speed": 150,
+        "wander_speed_mul": 0.5
+    },
+    "hurtbox": {
+        "size": {"x": 32, "y": 32},
+        "mask": 2
+    },
+    "damage":{
+        "verb": "damage",
+        "entries":[
+            {
+                "type": "Slashing",
+                "value": 30
+            }
+        ]
+    }
 }

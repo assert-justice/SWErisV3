@@ -49,6 +49,7 @@ public abstract class SwActor: SwEntity
         if(SwPrion.TryGetVec2(out var size, Props.Get("size"))) Size = size;
         if(props.TryGet("health/max_health", out double d)) MaxHealth = d; 
         if(props.TryGet("health/health", out d)) Health = d; 
+        if(props.TryGet("speed/base_speed", out d)) BaseSpeed = d;
     }
     public override void Ready()
     {

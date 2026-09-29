@@ -1,4 +1,25 @@
 {
     "anim_data": "slume_anim_data.json",
-    "size":{"x": 16, "y": 16}
+    "size":{"x": 16, "y": 16},
+    "health":{
+        "health": 300,
+        "max_health": 300
+    },
+    "speed":{
+        "base_speed": 50,
+        "wander_speed_mul": 0.5
+    },
+    "hurtbox": {
+        "size": {"x": 18, "y": 18},
+        "mask": 2
+    },
+    "damage":{
+        "verb": "damage",
+        "entries":[
+            {
+                "type": "Acid",
+                "value": 10
+            }
+        ]
+    }
 }

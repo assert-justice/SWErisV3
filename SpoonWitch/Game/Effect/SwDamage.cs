@@ -8,6 +8,13 @@ public enum SwDamageType: byte
 {
     Untyped,
     Bludgeoning,
+    Slashing,
+    Piercing,
+    Acid,
+    Fire,
+    Cold,
+    Electricity,
+    Sonic,
     Space,
 }
 public readonly struct SwDamage
