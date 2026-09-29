@@ -2,6 +2,7 @@ using Eris;
 using Eris.Utils;
 using ErisMath;
 using Prion.Node;
+using SpoonWitch.Game.Map.Foliage;
 using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Map.MapData;
@@ -10,6 +11,7 @@ public class SwMapData
 {
     public string Iid{get; init;} = string.Empty;
     public SwTileData[] TileData{get; init;} = [];
+    public SwFoliageData FoliageData{get; init;}
     public ErVec2I TileSize{get; private set;}
     public ErVec2I SectorSizeTiles{get; private set;}
     public ErVec2I SectorSizePx{get; private set;}
@@ -20,11 +22,12 @@ public class SwMapData
     public readonly Dictionary<string, SwRoomData> Rooms = [];
     public readonly Dictionary<ErVec2I, SwRoomData> RoomLookup = [];
     public readonly Dictionary<string, SwMapObjectData> Objects = [];
-    private SwMapData(string iid, SwTileData[] tileData, ErVec2I tileSize, ErVec2I sectorSizePx)
+    private SwMapData(string iid, SwTileData[] tileData, ErVec2I tileSize, ErVec2I sectorSizePx, SwFoliageData foliageData)
     {
         Iid = iid;
         TileData = tileData;
         TileSize = tileSize;
+        FoliageData = foliageData;
         SectorSizePx = sectorSizePx;
         SectorSizeTiles = SectorSizePx / tileSize;
         Sectors = new(SectorSizeTiles, NewSector);
@@ -50,13 +53,13 @@ public class SwMapData
         }
         return true;
     }
-    public static bool TryFromLdtkData(out SwMapData mapData, SwTileData[] tileData, PriNode data)
+    public static bool TryFromLdtkData(out SwMapData mapData, SwTileData[] tileData, SwFoliageData foliageData, PriNode data)
     {
         mapData = default!;
         if(!data.TryGet("iid", out string id)) return ErEngine.LogWarning("map missing id");
         ErVec2I tileSize = data.TryGet("defaultGridSize", out int tileWidth) ? new(tileWidth, tileWidth) : new(32,32);
         ErVec2I sectorSizePx = SwPrion.GetVec2I(data, "worldGridWidth", "worldGridHeight", new(640, 320));
-        mapData = new(id, tileData, tileSize, sectorSizePx);
+        mapData = new(id, tileData, tileSize, sectorSizePx, foliageData);
         if(!data.TryGet("defs", out PriDict defs)) return ErEngine.LogWarning("map missing defs");
         if(!defs.TryGet("layers", out PriList layers)) return ErEngine.LogWarning("map missing layers");
         int numTileLayers = 0;

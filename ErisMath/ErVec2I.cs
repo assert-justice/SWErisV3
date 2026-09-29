@@ -16,6 +16,25 @@ public readonly struct ErVec2I: IEquatable<ErVec2I>
     {
         return Math.Abs(X) + Math.Abs(Y);
     }
+    public IEnumerable<ErVec2I> GetAdj()
+    {
+        for (int xi = -1; xi < 2; xi++)
+        {
+            for (int yi = -1; yi < 2; yi++)
+            {
+                if(xi == 0 && yi == 0) continue;
+                yield return new ErVec2I(xi,yi) + this;
+            }
+        }
+    }
+    private static readonly ErVec2I[] Directions = [ErVec2I.Right, ErVec2I.Up, ErVec2I.Left, ErVec2I.Down];
+    public IEnumerable<ErVec2I> GetOrthogonal()
+    {
+        foreach (var d in Directions)
+        {
+            yield return this + d;
+        }
+    }
     public static readonly ErVec2I Zero = new(0, 0);
     public static readonly ErVec2I One = new(1, 1);
     public static readonly ErVec2I Neg = new(-1, -1);

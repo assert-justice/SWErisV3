@@ -4,11 +4,12 @@ public readonly struct ErRect2I
 {
     public ErVec2I Position{get; init;}
     public ErVec2I Size{get; init;}
-    public int Left{get => Size.X < 0 ? Position.X + Size.X : Position.X;}
-    public int Right{get => Size.X < 0 ? Position.X : Position.X + Size.X;}
-    public int Top{get => Size.Y < 0 ? Position.Y - Size.Y : Position.Y;}
-    public int Bottom{get => Size.Y < 0 ? Position.Y : Position.Y + Size.Y;}
-    public ErVec2I Center{get => Position + Size / 2;}
+    public int Left => Size.X < 0 ? Position.X + Size.X : Position.X;
+    public int Right => Size.X < 0 ? Position.X : Position.X + Size.X;
+    public int Top => Size.Y < 0 ? Position.Y - Size.Y : Position.Y;
+    public int Bottom => Size.Y < 0 ? Position.Y : Position.Y + Size.Y;
+    public ErVec2I Center => Position + Size / 2;
+    public int Area => Size.X * Size.Y;
     public ErRect2I(int x, int y, int w, int h)
     {
         Position = new(x,y);
@@ -79,6 +80,44 @@ public readonly struct ErRect2I
             {
                 yield return new ErVec2I(xi, yi);
             }
+        }
+    }
+    public IEnumerable<ErVec2I> GetEdges()
+    {
+        if(Size.X < 2 || Size.Y < 2) yield break;
+        ErVec2I nextPos;
+        var pos = Position;
+        var dir = ErVec2I.Right;
+        while (true)
+        {
+            yield return pos;
+            nextPos = pos + dir;
+            if(Contains(nextPos)) pos = nextPos;
+            else break;
+        }
+        dir = ErVec2I.Down;
+        while (true)
+        {
+            yield return pos;
+            nextPos = pos + dir;
+            if(Contains(nextPos)) pos = nextPos;
+            else break;
+        }
+        dir = ErVec2I.Left;
+        while (true)
+        {
+            yield return pos;
+            nextPos = pos + dir;
+            if(Contains(nextPos)) pos = nextPos;
+            else break;
+        }
+        dir = ErVec2I.Up;
+        while (true)
+        {
+            yield return pos;
+            nextPos = pos + dir;
+            if(nextPos != Position) pos = nextPos;
+            else break;
         }
     }
     public static ErRect2I FromEdges(int left, int right, int top, int bottom)

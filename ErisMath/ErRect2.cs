@@ -6,11 +6,12 @@ public readonly struct ErRect2
 {
     public ErVec2 Position{get; init;}
     public ErVec2 Size{get; init;}
-    public double Left{get => Size.X < 0 ? Position.X + Size.X : Position.X;}
-    public double Right{get => Size.X < 0 ? Position.X : Position.X + Size.X;}
-    public double Top{get => Size.Y < 0 ? Position.Y - Size.Y : Position.Y;}
-    public double Bottom{get => Size.Y < 0 ? Position.Y : Position.Y + Size.Y;}
-    public ErVec2 Center{get => Position + Size * 0.5;}
+    public double Left => Size.X < 0 ? Position.X + Size.X : Position.X;
+    public double Right => Size.X < 0 ? Position.X : Position.X + Size.X;
+    public double Top => Size.Y < 0 ? Position.Y - Size.Y : Position.Y;
+    public double Bottom => Size.Y < 0 ? Position.Y : Position.Y + Size.Y;
+    public ErVec2 Center => Position + Size * 0.5;
+    public double Area => Size.X * Size.Y;
     public ErRect2(double x, double y, double w, double h)
     {
         Position = new(x,y);

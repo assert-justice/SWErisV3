@@ -14,6 +14,7 @@
     },
     "map":{
         "tile_data":"map/tile_data.json",
+        "foliage_data":"map/foliage_data.json",
         "map_data": "map/demo_map3.ldtk"
     },
     "menu_config": "menus/menus.json",

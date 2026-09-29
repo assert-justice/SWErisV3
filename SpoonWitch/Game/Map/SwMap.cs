@@ -9,10 +9,11 @@ namespace SpoonWitch.Game.Map;
 public class SwMap
 {
     private readonly SwMapDisplay MapDisplay;
-    private readonly SwFoliage2 Foliage;
+    private readonly SwFoliage Foliage;
     private readonly SwGame Game;
     private readonly SwMapData MapData;
     public SwTileData[] TileData => MapData.TileData;
+    public SwFoliageData FoliageData => MapData.FoliageData;
     public ErVec2I TileSize => MapData.TileSize;
     public SwMapObjectData CurrentCheckpoint{get; private set;}
     public SwMap(SwGame game, SwMapData mapData)
@@ -27,6 +28,7 @@ public class SwMap
     public void Draw()
     {
         MapDisplay.Draw();
+        Foliage.Draw();
     }
     public int GetTileId(int layerIdx, ErVec2I tileCoord)
     {
@@ -65,6 +67,9 @@ public class SwMap
         {
             if(MapData.Sectors.TryGetCell(item, out var sectorData)) LoadSector(sectorData);
         }
+        Foliage.SeedArea(roomData.RectTiles);
+        Foliage.LifeSimArea(roomData.RectTiles, 1);
+        Foliage.TrimArea(roomData.RectTiles);
     }
     private void LoadSector(SwSectorData sectorData)
     {
@@ -72,8 +77,9 @@ public class SwMap
         {
             // update map display
             MapDisplay.QueueTileUpdate(tileCoord);
-            int tileId = sectorData.GetTopTile(tileCoord);
             // update foliage
+            // Foliage.QueueTileUpdate(tileCoord);
+            int tileId = sectorData.GetTopTile(tileCoord);
             if(tileId < 0) continue;
             // update physics world
             // Game.PhysicsWorld.SetTileMask(tileCoord, MapData.TileData[tileId].CollisionMask);

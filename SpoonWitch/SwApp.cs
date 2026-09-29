@@ -10,6 +10,7 @@ using Prion.Parser;
 using SpoonWitch.Command;
 using SpoonWitch.Data;
 using SpoonWitch.Game;
+using SpoonWitch.Game.Map.Foliage;
 using SpoonWitch.Game.Map.MapData;
 using SpoonWitch.UI.Node;
 
@@ -84,7 +85,8 @@ public class SwApp : IErApp
     {
         mapData = default!;
         if(!SwTileData.TryFromData(out var tileData, SwData.Manifest.Get("map/tile_data"))) return ErEngine.LogWarning("failed to load tile data");
-        if(!SwMapData.TryFromLdtkData(out mapData, tileData, SwData.Manifest.Get("map/map_data"))) return ErEngine.LogWarning("failed to load map data");
+        if(!SwFoliageData.TryFromData(out var foliageData, SwData.Manifest.Get("map/foliage_data"))) return ErEngine.LogWarning("failed to load foliage data");
+        if(!SwMapData.TryFromLdtkData(out mapData, tileData, foliageData, SwData.Manifest.Get("map/map_data"))) return ErEngine.LogWarning("failed to load map data");
         return true;
     }
     private void Pause()

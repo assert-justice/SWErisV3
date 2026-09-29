@@ -17,7 +17,8 @@ public readonly struct SwTileData
     public bool IsOpaque => (CollisionMask & (uint)TileFlags.IsOpaque) != 0;
     public double MoveSpeedMul{get; init;}
     public uint CollisionMask{get; init;}
-    public bool IsArable{get; init;}
+    // public bool IsArable{get; init;}
+    public double Arable{get; init;}
     public bool IsAnimated{get; init;}
     public double Fps{get; init;}
     public PriDict Props{get; init;}
@@ -41,11 +42,14 @@ public readonly struct SwTileData
                 else collision_mask &= (uint)~TileFlags.IsOpaque;
             }
             double move_speed_mul = 1;
+            double d;
             if((collision_mask & (uint)TileFlags.IsWalkable) != 0) move_speed_mul = 0;
-            else if(data.TryGet("move_speed_mul", out double d)) move_speed_mul = d;
+            else if(data.TryGet("move_speed_mul", out d)) move_speed_mul = d;
+
             if(!data.TryGet("is_animated", out bool is_animated)) is_animated = false;
             if(!data.TryGet("fps", out double fps)) fps = 4;
             string? textureFilepath = null;
+            double arable = data.TryGet("arable", out d) ? d : 0;
             if(data.TryGet("source", out string s)) textureFilepath = s;
             tileData[idx] = new()
             {
@@ -53,7 +57,7 @@ public readonly struct SwTileData
                 TextureFilepath = textureFilepath,
                 CollisionMask = collision_mask,
                 MoveSpeedMul = move_speed_mul,
-                IsArable = data.TryGet("is_arable", out b) && b,
+                Arable = arable,
                 IsAnimated = is_animated,
                 Fps = fps,
             };
