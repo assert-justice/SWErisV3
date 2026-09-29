@@ -82,7 +82,7 @@ public class SwMap
             int tileId = sectorData.GetTopTile(tileCoord);
             if(tileId < 0) continue;
             // update physics world
-            // Game.PhysicsWorld.SetTileMask(tileCoord, MapData.TileData[tileId].CollisionMask);
+            Game.PhysicsWorld.SetTileMask(tileCoord, MapData.TileData[tileId].CollisionMask);
         }
     }
 }
