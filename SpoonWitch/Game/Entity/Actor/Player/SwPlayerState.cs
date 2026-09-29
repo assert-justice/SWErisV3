@@ -279,12 +279,13 @@ public abstract class SwPlayerState : SwState<SwPlayer>
     public class Default: SwPlayerState
     {
         public override string Name => "default";
-        public override void BeginState(string lastState)
-        {
-            base.BeginState(lastState);
-            BodySprite.SetPallet(Entity.PlayerIdx);
-            HatSprite.SetPallet(Entity.PlayerIdx);
-        }
+        // public override void BeginState(string lastState)
+        // {
+        //     ErEngine.Log(BodySprite.AnimationState.Fps);
+        //     // base.BeginState(lastState);
+        //     // BodySprite.SetPallet(Entity.PlayerIdx);
+        //     // HatSprite.SetPallet(Entity.PlayerIdx);
+        // }
         public override void Update(double dt)
         {
             base.Update(dt);
@@ -437,8 +438,6 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             base.BeginState(lastState);
             BodySprite.Stop();
             SetBodyDodgeAnim(Controls.LastFacingIdx);
-            SwAnimationState.Set(ref BodySprite.AnimationState, fps: 12);
-            SwAnimationState.Set(ref HatSprite.AnimationState, fps: 12);
             Entity.DodgeCooldownClock = 0;
             // set and lock in velocity
             Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.DodgeSpeedMul;

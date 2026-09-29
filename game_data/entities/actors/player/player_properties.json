@@ -72,10 +72,10 @@
         }
     ],
     "dust_particles":{
+        "offset": {"x": 0, "y": 9},
         "ase_data":{
             "name": "dust_1",
-            "filepath": "../../../particles/particles.json",
-            "offset": {"x": 0, "y": 9}
+            "filepath": "../../../particles/particles.json"
         }
     }
 }

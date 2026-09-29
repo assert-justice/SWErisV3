@@ -92,18 +92,18 @@ public class SwPlayerControls: SwComponent
             ReticlePosition = Aim * GAMEPAD_CURSOR_DISTANCE;
             ReticleVisible = IsCharging || (Aim.IsNonzero() && reticle_always_visible_gp);
         }
-        // else
-        // {
+        else
+        {
         //     // Note: this is where we figure out where the mouse is relative to the player.
         //     var playerScreenPos = SwGame.PlayerPos - SwGame.Camera.Position;
         //     // Todo: make this less horrible
         //     ReticlePosition = ErEngine.Input.GetMousePosition() / (ErVec2)ErEngine.Renderer.WindowSize * SwApp.ScreenSize - SwApp.ScreenSize * 0.5 - playerScreenPos + new ErVec2(0, -SwApp.HUD_HEIGHT * 0.5);
         //     Aim = ReticlePosition.Normalized();
         //     // Note: If we're not charging and we're using keyboard aiming we aim in the last direction we moved as the aim vector.
-        //     if(IsCharging || !kb_aiming) LastFacing = Aim;
-        //     else if(Move.IsNonzero()) LastFacing = Move.Normalized();
+            if(IsCharging || !kb_aiming) LastFacing = Aim;
+            else if(Move.IsNonzero()) LastFacing = Move.Normalized();
         //     ReticleVisible = IsCharging || (Aim.IsNonzero() && reticle_always_visible_kb);
-        // }
+        }
         // ReticleVisible = IsCharging || (Aim.IsNonzero() && reticle_always_visible_kb);
     }
 }

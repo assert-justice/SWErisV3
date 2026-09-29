@@ -176,6 +176,10 @@ public class SwPlayer: SwActor
             GotMad = true;
         }
     }
+    protected override void UpdateLate(double dt)
+    {
+        base.UpdateLate(dt);
+    }
     protected override void Draw()
     {
         base.Draw();

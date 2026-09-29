@@ -192,10 +192,11 @@ public class SwSprite(string name)
                 if(!item.TryAs(out string animName)) ErEngine.LogWarning("bad anim blacklist entry");
                 blacklist.Add(animName);
             }
-            foreach (var item in aseImporter.GetAnimationNames())
+            foreach (var animName in aseImporter.GetAnimationNames())
             {
-                if(blacklist.Contains(item)) continue;
-                animations.Add(aseImporter.GetAnimation(item)!.Value);
+                if(blacklist.Contains(animName)) continue;
+                var anim = aseImporter.GetAnimation(animName)!.Value;
+                animations.Add(anim);
             }
         }
         foreach (var item in animations)

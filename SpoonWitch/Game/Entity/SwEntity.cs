@@ -91,13 +91,7 @@ public abstract class SwEntity
     {
         HandleCommands();
     }
-    protected virtual void UpdateLate(double dt)
-    {
-        foreach (var comp in Components)
-        {
-            comp.Update(dt);
-        }
-    }
+    protected virtual void UpdateLate(double dt){}
     public void GameDraw()
     {
         if(!Visible) return;
