@@ -28,7 +28,7 @@ public class SwLookup
     {
         foreach (var item in Lookup.Values)
         {
-            if(item is not T val) throw new("should be unreachable");
+            if(item is not T val) continue;
             yield return val;
         }
     }

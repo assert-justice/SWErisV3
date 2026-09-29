@@ -112,8 +112,7 @@ public class ErRenderer
     }
     public void Clear()
     {
-        SDL.SetRenderDrawColor(Handle, 0, 0, 0, 255);
-        // SDL.SetRenderDrawColor(Handle, ClearColor.R, ClearColor.G, ClearColor.B, ClearColor.A);
+        SDL.SetRenderDrawColor(Handle, ClearColor.R, ClearColor.G, ClearColor.B, ClearColor.A);
         SDL.RenderClear(Handle);
     }
     // public void FlushDebug()
@@ -123,10 +122,10 @@ public class ErRenderer
     //         fn();
     //     }
     // }
-    // public void SetClearColor(ErColor color)
-    // {
-    //     ClearColor = color;
-    // }
+    public void SetClearColor(ErColor color)
+    {
+        ClearColor = color;
+    }
     // public void DebugDrawRect(ErColor color, ErRect2 rect, bool filled)
     // {
     //     void fn()

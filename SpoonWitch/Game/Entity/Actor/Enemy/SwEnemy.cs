@@ -41,7 +41,7 @@ public abstract class SwEnemy: SwActor
     {
         return (TargetPosition - Position).GetLength();
     }
-    public override void Update(double dt)
+    protected override void Update(double dt)
     {
         base.Update(dt);
         if(Velocity.IsNonzero()) FacingIdx = (byte)ErMath.RoundAngleToInt(Velocity.GetAngle(), 4);

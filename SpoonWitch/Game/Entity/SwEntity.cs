@@ -22,6 +22,7 @@ public abstract class SwEntity
     private readonly Queue<PriNode> CommandQueue = [];
     private readonly Dictionary<string,Action<PriNode>> Handlers = [];
     private readonly Dictionary<string,Action<PriNode>> GlobalHandlers = [];
+    protected readonly SwClockGroup Clocks = new();
     protected void AddHandler(string verb, Action<PriNode> action)
     {
         if(!Handlers.TryAdd(verb, action)) ErEngine.LogWarning("tried to add duplicate handler: ", verb);
@@ -86,11 +87,11 @@ public abstract class SwEntity
         }
         UpdateLate(dt);
     }
-    public virtual void Update(double dt)
+    protected virtual void Update(double dt)
     {
         HandleCommands();
     }
-    public virtual void UpdateLate(double dt)
+    protected virtual void UpdateLate(double dt)
     {
         foreach (var comp in Components)
         {

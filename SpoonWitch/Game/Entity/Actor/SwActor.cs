@@ -41,17 +41,18 @@ public abstract class SwActor: SwEntity
     {
         base.Init();
         Body = new(SwApp.GetNextId(), Id);
+        _IsAlive = true;
     }
     public override void SetProps(PriNode props)
     {
         base.SetProps(props);
         if(SwPrion.TryGetVec2(out var size, Props.Get("size"))) Size = size;
+        if(props.TryGet("health/max_health", out double d)) MaxHealth = d; 
+        if(props.TryGet("health/health", out d)) Health = d; 
     }
     public override void Ready()
     {
         base.Ready();
-        Health = MaxHealth;
-        _IsAlive = true;
     }
     private void HandleFlicker(double dt)
     {
@@ -66,7 +67,7 @@ public abstract class SwActor: SwEntity
         if(FlickerCycle <= 0) FlickerCycle = FlickerLen;
         Visible = FlickerCycle > FlickerLen * 0.5;
     }
-    public override void Update(double dt)
+    protected override void Update(double dt)
     {
         base.Update(dt);
         if(InvulnClock > 0)InvulnClock -= dt;

@@ -25,7 +25,11 @@ public class SwPlayer: SwActor
     public double StaminaRegen = 30;
     public double StaminaRegenDelay = 0.1;
     public double StaminaRegenDelayPenalty = 0.3;
-    public double StaminaRegenClock = 0;
+    public double StaminaRegenClock
+    {
+        get => Clocks[0];
+        set => Clocks[0] = value;
+    }
     // Mana
     public double Mana = 100;
     public double MaxMana = 100;
@@ -40,7 +44,11 @@ public class SwPlayer: SwActor
     public double DodgeInvulnDuration = 4.0 / 8;
     public double DodgeCooldown = 0.15;
     public double DodgeStaminaCost = 20;
-    public double DodgeCooldownClock = 0;
+    public double DodgeCooldownClock
+    {
+        get => Clocks[1];
+        set => Clocks[1] = value;
+    }
     // Spoon
     // Note: SpoonDamage stays in props
     public double SpoonSwingDuration = 0.625;
@@ -48,12 +56,20 @@ public class SwPlayer: SwActor
     public double SpoonHurtDuration = 0.125;
     public double SpoonRecoveryTime = 0.125;
     public double SpoonStaminaCost = 30;
-    public double SpoonCooldownClock = 0;
+    public double SpoonCooldownClock
+    {
+        get => Clocks[2];
+        set => Clocks[2] = value;
+    }
     // Sling
     // Note: Likewise, SlingDamage stays in props
     public double SlingBulletSpeed = 600;
     public double SlingChargeTime = 0.75;
-    public double SlingChargeClock = 0;
+    public double SlingChargeClock
+    {
+        get => Clocks[3];
+        set => Clocks[3] = value;
+    }
     // Inventory
     public readonly SwInventory Inventory = new();
     public int Ammo
@@ -93,44 +109,44 @@ public class SwPlayer: SwActor
     public override void SetProps(PriNode props)
     {
         base.SetProps(props);
-        // Set Properties
         // Health
         // Note: Health and MaxHealth are handled in SwActor
         // Stamina
-        Stamina = Props.TryGet("stamina/stamina", out double d) ? d : 100;
-        MaxStamina = Props.TryGet("stamina/max_stamina", out d) ? d : 100;
-        StaminaRegen = Props.TryGet("stamina/stamina_regen", out d) ? d : 30;
-        StaminaRegenDelay = Props.TryGet("stamina/stamina_regen_delay", out d) ? d : 0.1;
-        StaminaRegenDelayPenalty = Props.TryGet("stamina/stamina_regen_delay_penalty", out d) ? d : 0.3;
+        if(Props.TryGet("stamina/max_stamina", out double d)) MaxStamina = d;
+        if(Props.TryGet("stamina/stamina", out d)) Stamina = d;
+        if(Props.TryGet("stamina/stamina_regen", out d)) StaminaRegen = d;
+        if(Props.TryGet("stamina/stamina_regen_delay", out d)) StaminaRegenDelay = d;
+        if(Props.TryGet("stamina/stamina_regen_delay_penalty", out d)) StaminaRegenDelayPenalty = d;
         // Mana
-        Mana = Props.TryGet("mana/mana", out d) ? d : 100;
-        MaxMana = Props.TryGet("mana/max_mana", out d) ? d : 100;
-        ManaRegen = Props.TryGet("mana/mana_regen", out d) ? d : 10;
+        if(Props.TryGet("mana/max_mana", out d)) MaxMana = d;
+        if(Props.TryGet("mana/mana", out d)) Mana = d;
+        if(Props.TryGet("mana/mana_regen", out d)) ManaRegen = d;
         // Speed
-        BaseSpeed = Props.TryGet("speed/base_speed", out d) ? d : 100;
-        SlowedSpeedMul = Props.TryGet("speed/slowed_speed_mul", out d) ? d : 0.5;
+        if(Props.TryGet("speed/base_speed", out d)) BaseSpeed = d;
+        if(Props.TryGet("speed/slowed_speed_mul", out d)) SlowedSpeedMul = d;
         // Dodge
-        DodgeSpeedMul = Props.TryGet("dodge/dodge_speed_mul", out d) ? d : 1.5;
-        DodgeDuration = Props.TryGet("dodge/dodge_duration", out d) ? d : 9.0 / 8;
-        DodgeInvulnDelay = Props.TryGet("dodge/dodge_invuln_delay", out d) ? d : 3.0 / 8;
-        DodgeInvulnDuration = Props.TryGet("dodge/dodge_invuln_duration", out d) ? d : 4.0 / 8;
-        DodgeCooldown = Props.TryGet("dodge/dodge_cooldown", out d) ? d : 0.15;
-        DodgeStaminaCost = Props.TryGet("dodge/dodge_stamina_cost", out d) ? d : 20;
+        if(Props.TryGet("dodge/dodge_speed_mul", out d)) DodgeSpeedMul = d;
+        if(Props.TryGet("dodge/dodge_duration", out d)) DodgeDuration = d;
+        if(Props.TryGet("dodge/dodge_invuln_delay", out d)) DodgeInvulnDelay = d;
+        if(Props.TryGet("dodge/dodge_invuln_duration", out d)) DodgeInvulnDuration = d;
+        if(Props.TryGet("dodge/dodge_cooldown", out d)) DodgeCooldown = d;
+        if(Props.TryGet("dodge/dodge_stamina_cost", out d)) DodgeStaminaCost = d;
         // Spoon
         // Note: SpoonDamage stays in props
-        SpoonSwingDuration = Props.TryGet("spoon/spoon_swing_duration", out d) ? d : 0.625;
-        SpoonHurtDelay = Props.TryGet("spoon/spoon_hurt_delay", out d) ? d : 0.125;
-        SpoonHurtDuration = Props.TryGet("spoon/spoon_hurt_duration", out d) ? d : 0.125;
-        SpoonRecoveryTime = Props.TryGet("spoon/spoon_recovery_time", out d) ? d : 0.125;
-        SpoonStaminaCost = Props.TryGet("spoon/spoon_stamina_cost", out d) ? d : 30;
+        if(Props.TryGet("spoon/spoon_swing_duration", out d)) SpoonSwingDuration = d;
+        if(Props.TryGet("spoon/spoon_hurt_delay", out d)) SpoonHurtDelay = d;
+        if(Props.TryGet("spoon/hurt_duration", out d)) SpoonHurtDuration = d;
+        if(Props.TryGet("spoon/spoon_recovery_time", out d)) SpoonRecoveryTime = d;
+        if(Props.TryGet("spoon/spoon_stamina_cost", out d)) SpoonStaminaCost = d;
         // Sling
         // Note: Likewise, SlingDamage stays in props
-        SlingBulletSpeed = Props.TryGet("sling/sling_bullet_speed", out d) ? d : 600;
-        SlingChargeTime = Props.TryGet("sling/sling_charge_time", out d) ? d : 0.75;
+        if(Props.TryGet("sling/sling_bullet_speed", out d)) SlingBulletSpeed = d;
+        if(Props.TryGet("sling/sling_charge_time", out d)) SlingChargeTime = d;
         // Inventory
         Inventory.SetData(Props.Get("inventory"));
-        var spell = new SwCometShield(this);
-        CurrentSpell = spell;
+        // var spell = new SwCometShield(this);
+        // CurrentSpell = spell;
+        Clocks.Reset();
     }
     public override void Init()
     {
@@ -146,15 +162,9 @@ public class SwPlayer: SwActor
         StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
     }
-    public override void Ready()
-    {
-        base.Ready();
-        IsAlive = false;
-    }
-    public override void Update(double dt)
+    protected override void Update(double dt)
     {
         base.Update(dt);
-        // SwGame.SetPlayerPos(Position);
         Props.TrySet("spoon_damage/source_pos_x", Position.X);
         Props.TrySet("spoon_damage/source_pos_y", Position.Y);
         CurrentSpell?.Update();
@@ -210,7 +220,6 @@ public class SwPlayer: SwActor
     {
         StateMachine?.SetState("item_get");
         if(!command.TryGet("pickup_type", out string pickup_type)) return;
-        // if(!command.TryGet("text", out string text)) text = string.Empty;
         if(SwData.Prototypes.TryGet($"pickups/{pickup_type}/texture_filepath", out string texture_filepath))
         {
             if(!ErTexture.TryFromPath(texture_filepath, out PickupTexture)) ErEngine.Log("bad pickup texture path");

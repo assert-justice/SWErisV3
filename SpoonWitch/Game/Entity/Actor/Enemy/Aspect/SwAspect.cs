@@ -15,14 +15,6 @@ public class SwAspect: SwEnemy
         base.SetProps(props);
         LoadSprites("anim_data/sprites");
     }
-    public override void Ready()
-    {
-        base.Ready();
-    }
-    public override void Update(double dt)
-    {
-        base.Update(dt);
-    }
     private void Wake(PriNode command)
     {
         GetComponent<SwSpriteComponent>("body")?.Sprite.Play();

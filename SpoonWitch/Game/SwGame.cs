@@ -7,7 +7,6 @@ using SpoonWitch.Data;
 using SpoonWitch.Game.Entity;
 using SpoonWitch.Game.Entity.Actor.Player;
 using SpoonWitch.Game.Map;
-using SpoonWitch.Game.Map.Collision;
 using SpoonWitch.Game.Map.MapData;
 using SpoonWitch.UI.Hud;
 using SpoonWitch.Utils;
@@ -33,7 +32,6 @@ public class SwGame
             CurrentRoom = null;
             return;
         }
-        ErEngine.Log("loaded room ", roomData.Iid);
         foreach (var camera in Cameras)
         {
             camera.UseBounds = true;
@@ -67,7 +65,7 @@ public class SwGame
     // Physics stuff
     public readonly ErPhysicsWorld2D PhysicsWorld;
     // Entity stuff
-    private SwHud[] Huds;
+    private readonly SwHud[] Huds;
     public readonly SwLookup EntityLookup = new();
     private readonly Queue<SwEntity> NewEntities = [];
     private readonly Queue<SwEntity> FreedEntities = [];
@@ -82,6 +80,8 @@ public class SwGame
         {
             RenderTextures[idx] = ErTexture.GetRenderTexture((int)SwApp.CameraSize.X, (int)SwApp.CameraSize.Y);
         }
+        Map.DebugLoadAllRooms();
+        CameraTarget = ((ErRect2)Map.CurrentCheckpoint.RectPx).Center;
         // add players
         Huds = new SwHud[numPlayers];
         var playerProps = SwData.Prototypes.Get("entities/player");
@@ -89,18 +89,25 @@ public class SwGame
         {
             var player = AddEntity<SwPlayer>(playerProps);
             player.PlayerIdx = idx;
+            player.Position = CameraTarget;
             int hudX = SwApp.INTERNAL_WIDTH / 2 * idx;
             if(!SwHud.TryLoad(new(hudX, 0), out var hud)) Huds[idx] = hud; 
         }
-        Map.DebugLoadAllRooms();
-        CameraTarget = ((ErRect2)Map.CurrentCheckpoint.RectPx).Center;
     }
     public void Update(double dt)
     {
         // Clear points of interest
         FocusPoints.Clear();
         // Update entities
-        // Update map
+        while(NewEntities.TryDequeue(out var newEntity))
+        {
+            if(EntityLookup.TryAdd(newEntity.Id.ToString(), newEntity)) newEntity.Ready();
+            else ErEngine.LogWarning("bad id for entity, id: ", newEntity.Id, " type: ", newEntity.GetType());
+        }
+        foreach (var entity in EntityLookup.GetAllValues<SwEntity>())
+        {
+            entity.GameUpdate(dt);
+        }
         // Update hud
         // Get focus point
         // target pos = average of focus points
@@ -130,6 +137,7 @@ public class SwGame
         {
             CurrentCamera = camera;
             // init camera draw
+            ErEngine.Renderer.SetClearColor(default);
             camera.BeginDraw();
             // push first render layer
             RenderLayerIdx = 0;
@@ -141,18 +149,20 @@ public class SwGame
                 ErEngine.Renderer.Clear();
             }
             SetRenderLayer(0);
-            // texture.Draw(ErVec2.Zero);
             // draw map
             Map.Draw();
-            PhysicsWorld.DebugDraw();
             // draw entities
+            foreach (var entity in EntityLookup.GetAllValues<SwEntity>())
+            {
+                entity.GameDraw();
+            }
             // draw fade
             // pop render layer
             ErEngine.Renderer.PopViewport();
             // draw render layers
             for (int idx = 0; idx < RenderTextures.Length; idx++)
             {
-                RenderTextures[RenderTextures.Length - idx - 1].Draw(ErVec2.Zero);
+                RenderTextures[idx].Draw(ErVec2.Zero);
             }
             // end camera draw
             camera.EndDraw();

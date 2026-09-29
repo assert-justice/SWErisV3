@@ -70,7 +70,7 @@ public class SwProjectile : SwEntity
         Hurtbox.Enabled = false;
         ImpactParticles?.Particles.Emitting = true;
     }
-    public override void Update(double dt)
+    protected override void Update(double dt)
     {
         base.Update(dt);
         if (!IsAlive)

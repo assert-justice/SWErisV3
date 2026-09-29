@@ -104,13 +104,15 @@ public class SwApp : IErApp
     {
         CommandStore.Flush();
         CommandHandler.Dispatch();
-        Game?.Update(IsPaused ? 0 : ErEngine.DeltaTime);
+        if(!IsPaused) Game?.Update(ErEngine.DeltaTime);
+        // Game?.Update(IsPaused ? 0 : ErEngine.DeltaTime);
         MenuInput();
         MenuHolder.Update();
     }
     public void Draw()
     {
         ErEngine.Renderer.PushViewport(ErVec2.Zero, RenderTexture);
+        ErEngine.Renderer.SetClearColor(ErColor.Black);
         ErEngine.Renderer.Clear();
         if(!IsPaused) Game?.Draw();
         if(MenuHolder is not null && MenuHolder.Visible) MenuHolder.Draw();
