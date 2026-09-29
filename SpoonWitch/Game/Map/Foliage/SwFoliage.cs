@@ -17,13 +17,11 @@ public class SwFoliage
         public bool IsAlive{get; init;}
     }
     private readonly SwMap Map;
-    // private readonly Dictionary<ErVec2I, FoliageTile> FoliageGrid = [];
     private readonly ErHashGrid2D<FoliageTile> FoliageGrid = new();
     private readonly FoliageTile?[][] FoliageTiles;
     private readonly List<SwFrame> Frames = [];
     private readonly HashSet<ErVec2I> QueuedTileCoords = [];
     private readonly ErVec2I TileSizeFTiles;
-    // private readonly ErRandom Random = new();
     public SwFoliage(SwMap map)
     {
         Map = map;
@@ -101,6 +99,7 @@ public class SwFoliage
     public void LifeSimArea(ErRect2I tileRect, int steps)
     {
         var fRect = tileRect * TileSizeFTiles;
+        Queue<(int fId, ErVec2I fCoord)> deltas = [];
         for (int stepIdx = 0; stepIdx < steps; stepIdx++)
         {
             foreach (var fCoord in fRect.GetInnerCoords())
@@ -116,14 +115,18 @@ public class SwFoliage
                 }
                 if(fId < 0 && adjLiving == 3) nextId = 0;
                 else if(fId >= 0 && (adjLiving < 3 || adjLiving > 3)) nextId = -1;
-                if(fId != nextId) SetFoliageTile(fId, fCoord);
+                if(fId != nextId) deltas.Enqueue((nextId, fCoord));
+            }
+            while(deltas.TryDequeue(out var delta))
+            {
+                SetFoliageTile(delta.fId, delta.fCoord);
             }
         }
     }
     public void TrimArea(ErRect2I tileRect)
     {
         var fRect = tileRect * TileSizeFTiles;
-        foreach (var fCoord in fRect.GetEdges())
+        foreach (var fCoord in fRect.GetInnerCoords())
         {
             if(!FoliageGrid.ContainsCoord(fCoord)) continue;
             var neighbors = fCoord.GetAdj();
