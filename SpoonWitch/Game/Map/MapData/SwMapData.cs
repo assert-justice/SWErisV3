@@ -133,7 +133,12 @@ public readonly struct SwMapData
             roomData.Add("object_ids", roomObjectIds);
             PriList roomTileSpans = [];
             roomData.Add("tile_spans", roomTileSpans);
-            PriList entities = [];
+            PriList neighbors = [];
+            roomData.Add("adj_room_ids", neighbors);
+            foreach (var item in levelData.Get("__neighbours").Values)
+            {
+                neighbors.Add(item.Get("levelIid"));
+            }
             int tileLayerIdx = 0;
             SwMapTileSpan.Builder builder = new();
             foreach (var layer in levelData.Get("layerInstances").Values)

@@ -11,6 +11,7 @@ public readonly struct SwRoomData
     public ErRect2I RectSectors{get; init;}
     public string[] ObjectIds{get; init;}
     public SwMapTileSpan[] TileSpans{get; init;}
+    public string[] AdjRoomIds{get; init;}
     public PriNode ToPri()
     {
         PriDict res = [];
@@ -28,6 +29,12 @@ public readonly struct SwRoomData
         {
             spans.Add(span.ToPri());
         }
+        PriList adjRooms = [];
+        res.Add("adj_room_ids", adjRooms);
+        foreach (var item in AdjRoomIds)
+        {
+            adjRooms.Add(new PriString(item));
+        }
         return res;
     }
     public static bool TryFromData(out SwRoomData roomData, PriNode data)
@@ -37,6 +44,7 @@ public readonly struct SwRoomData
         if(!SwPrion.TryGetRect2I(out var rectSectors, data.Get("rect_sectors"))) return false;
         if(!data.TryGet("object_ids", out PriList objectIds)) return false;
         if(!data.TryGet("tile_spans", out PriList tileSpans)) return false;
+        if(!data.TryGet("adj_room_ids", out PriList adjRooms)) return false;
         string[] ids = new string[objectIds.Count];
         for (int idx = 0; idx < ids.Length; idx++)
         {
@@ -48,6 +56,12 @@ public readonly struct SwRoomData
         {
             if(!SwMapTileSpan.TryFromData(out var span, tileSpans.Data[idx])) return false;
             spans[idx] = span;
+        }
+        string[] adjRoomIds = new string[adjRooms.Count];
+        for (int idx = 0; idx < adjRoomIds.Length; idx++)
+        {
+            if(!adjRooms.Data[idx].TryAs(out string s)) return false;
+            adjRoomIds[idx] = s;
         }
         roomData = new()
         {

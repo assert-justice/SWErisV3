@@ -51,10 +51,10 @@ public class SwMap
     }
     public void DebugLoadAllRooms()
     {
-        // foreach (var item in MapData.Rooms.Values)
-        // {
-        //     LoadRoom(item);
-        // }
+        foreach (var item in MapData.Rooms)
+        {
+            LoadRoomData(item);
+        }
     }
     public bool TryLoadRoom(out SwRoomData roomData, ErVec2 point)
     {
@@ -63,8 +63,8 @@ public class SwMap
         // if(!MapData.RoomLookup.TryGetValue(sectorCoord, out roomData!)) return false;
         return true;
     }
-    // private void LoadRoom(SwRoomData roomData)
-    // {
+    private void LoadRoomData(SwRoomData roomData)
+    {
     //     foreach (var item in roomData.RectSectors.GetInnerCoords())
     //     {
     //         if(MapData.Sectors.TryGetCell(item, out var sectorData)) LoadSector(sectorData);
@@ -72,7 +72,7 @@ public class SwMap
     //     Foliage.SeedArea(roomData.RectTiles);
     //     Foliage.LifeSimArea(roomData.RectTiles, 1);
     //     Foliage.TrimArea(roomData.RectTiles);
-    // }
+    }
     // private void LoadSector(SwSectorData sectorData)
     // {
     //     foreach (var tileCoord in sectorData.RectTiles.GetInnerCoords())
