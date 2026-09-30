@@ -127,6 +127,13 @@ public readonly struct SwMapData
             rooms.Add(roomData);
             if(!levelData.TryGet("iid", out string levelId)) return ErEngine.LogWarning("map level missing id");
             roomData.TrySet("iid", levelId);
+            PriDict fields = [];
+            foreach (var item in levelData.Get("fieldInstances").Values)
+            {
+                if(!item.TryGet("__identifier", out string key)) continue;
+                if(key == "display_name") roomData.Add("name", item.Get("__value"));
+                else fields.Add(key, item.Get("__value"));
+            }
             var levelRectPx = SwPrion.GetRect2I(levelData, "worldX", "worldY", "pxWid", "pxHei");
             var levelRectSectors = levelRectPx / sectorSizePx;
             SwPrion.TrySetRect2I(roomData, "rect_sectors", levelRectSectors);
@@ -136,6 +143,7 @@ public readonly struct SwMapData
             roomData.Add("tile_spans", roomTileSpans);
             PriList neighbors = [];
             roomData.Add("adj_room_ids", neighbors);
+            if(fields.Count > 0) roomData.Add("fields", fields);
             foreach (var item in levelData.Get("__neighbours").Values)
             {
                 neighbors.Add(item.Get("levelIid"));

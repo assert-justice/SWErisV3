@@ -107,11 +107,6 @@ public class SwMap
         // handle postprocessing
         while(PostprocessQueue.TryDequeue(out var action)) action();
     }
-    // private SwRoom? LoadRoomData(ErVec2I sectorCoord)
-    // {
-    //     if(!RoomSectorLookup.TryGetValue(sectorCoord, out int roomIdx)) return null;
-    //     return LoadRoomData(roomIdx);
-    // }
     private SwRoom? LoadRoomData(string roomId)
     {
         if(LoadedRooms.TryGetValue(roomId, out var room)) return room;
@@ -139,9 +134,9 @@ public class SwMap
             Game.PhysicsWorld.SetTileMask(tileCoord, mask);
         }
         // load map objects
-        // handle postprocessing
+        // enqueue postprocessing
         PostprocessQueue.Enqueue(()=>HandleFoliage(room.RectTiles));
-        ErEngine.Log("loaded room: ", room.Data.Iid);
+        ErEngine.Log("loaded room: ", room.Data.Name);
         return room;
     }
     private void HandleFoliage(ErRect2I tileRect)
@@ -157,7 +152,7 @@ public class SwMap
             ErEngine.LogWarning("failed to unload room, bad id: ", roomId);
             return;
         }
-        ErEngine.Log("unloaded room ", roomId);
+        ErEngine.Log("unloaded room ", room.Data.Name);
         // remove sectors
         foreach (var sectorCoord in room.RectSectors.GetInnerCoords())
         {

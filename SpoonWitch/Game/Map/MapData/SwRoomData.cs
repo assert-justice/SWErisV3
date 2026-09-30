@@ -8,14 +8,17 @@ namespace SpoonWitch.Game.Map.MapData;
 public readonly struct SwRoomData
 {
     public string Iid{get; init;}
+    public string Name{get; init;}
     public ErRect2I RectSectors{get; init;}
     public string[] ObjectIds{get; init;}
     public SwMapTileSpan[] TileSpans{get; init;}
     public string[] AdjRoomIds{get; init;}
+    public PriDict Fields{get; init;}
     public PriNode ToPri()
     {
         PriDict res = [];
         res.TrySet("iid", Iid);
+        if(Name != Iid) res.TrySet("name", Name);
         SwPrion.TrySetRect2I(res, "rect_sectors", RectSectors);
         PriList objIds = [];
         res.Add("object_ids", objIds);
@@ -35,12 +38,14 @@ public readonly struct SwRoomData
         {
             adjRooms.Add(new PriString(item));
         }
+        res.Add("fields", Fields);
         return res;
     }
     public static bool TryFromData(out SwRoomData roomData, PriNode data)
     {
         roomData = default;
         if(!data.TryGet("iid", out string iid)) return ErEngine.LogWarning("room data missing id");
+        if(!data.TryGet("name", out string name)) name = iid;
         if(!SwPrion.TryGetRect2I(out var rectSectors, data.Get("rect_sectors"))) return false;
         if(!data.TryGet("object_ids", out PriList objectIds)) return false;
         if(!data.TryGet("tile_spans", out PriList tileSpans)) return false;
@@ -63,13 +68,16 @@ public readonly struct SwRoomData
             if(!adjRooms.Data[idx].TryAs(out string s)) return false;
             adjRoomIds[idx] = s;
         }
+        if(!data.TryGet("fields", out PriDict fields)) fields = [];
         roomData = new()
         {
             Iid = iid,
+            Name = name,
             RectSectors = rectSectors,
             ObjectIds = ids,
             TileSpans = spans,
             AdjRoomIds = adjRoomIds,
+            Fields = fields,
         };
         return true;
     }
