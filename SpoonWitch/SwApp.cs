@@ -84,9 +84,11 @@ public class SwApp : IErApp
     private static bool TryLoadMap(out SwMapData mapData)
     {
         mapData = default!;
-        if(!SwTileData.TryFromData(out var tileData, SwData.Manifest.Get("map/tile_data"))) return ErEngine.LogWarning("failed to load tile data");
-        if(!SwFoliageData.TryFromData(out var foliageData, SwData.Manifest.Get("map/foliage_data"))) return ErEngine.LogWarning("failed to load foliage data");
-        if(!SwMapData.TryFromLdtkData(out mapData, tileData, foliageData, SwData.Manifest.Get("map/map_data"))) return ErEngine.LogWarning("failed to load map data");
+        if(!SwMapData.TryConvertLdtkData(out var mapDataPri, SwData.Manifest.Get("map"))) return ErEngine.LogWarning("failed to convert map data");
+        if(!SwMapData.TryFromData(out mapData, mapDataPri)) return ErEngine.LogWarning("failed to load map data");
+        // if(!SwTileData.TryFromData(out var tileData, SwData.Manifest.Get("map/tile_data"))) return ErEngine.LogWarning("failed to load tile data");
+        // if(!SwFoliageData.TryFromData(out var foliageData, SwData.Manifest.Get("map/foliage_data"))) return ErEngine.LogWarning("failed to load foliage data");
+        // if(!SwMapData.TryFromLdtkData(out mapData, tileData, foliageData, SwData.Manifest.Get("map/map_data"))) return ErEngine.LogWarning("failed to load map data");
         return true;
     }
     private void Pause()

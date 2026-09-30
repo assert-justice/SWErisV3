@@ -6,24 +6,62 @@ using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Map.MapData;
 
-public class SwMapObjectData
+public readonly struct SwMapObjectData
 {
-    public string Iid{get; init;} = string.Empty;
-    public string Type{get; init;} = string.Empty;
-    public ErRect2I RectPx{get; init;}
+    public string Iid{get; init;}
+    public string Name{get; init;}
+    public string LayerName{get; init;}
+    public string Class{get; init;}
     public ErRect2I RectTiles{get; init;}
-    public PriDict Fields{get; init;} = [];
-    public static bool TryFromLdtkData(out SwMapObjectData mapObjectData, ErVec2I tileSize, PriNode data)
+    public PriDict Fields{get; init;}
+    public PriNode ToPri()
     {
-        mapObjectData = default!;
-        if(!data.TryGet("iid", out string id)) return ErEngine.LogWarning("map object data missing id");
-        var rectPx = SwPrion.GetRect2I(data, "__worldX", "__worldY", "width", "height");
+        PriDict res = [];
+        res.TrySet("iid", Iid);
+        res.TrySet("name", Name);
+        res.TrySet("layer_name", LayerName);
+        res.TrySet("class", Class);
+        SwPrion.TrySetRect2I(res, "rect_tiles", RectTiles);
+        if(Fields.Count > 0) res.Add("fields", Fields);
+        return res;
+    }
+    public static bool TryFromData(out SwMapObjectData mapObjectData, PriNode data)
+    {
+        mapObjectData = default;
+        if(!data.TryGet("iid", out string iid)) return false;
+        if(!data.TryGet("name", out string name)) return false;
+        if(!data.TryGet("layer_name", out string layer_name)) return false;
+        if(!data.TryGet("class", out string class_name)) return false;
+        if(!SwPrion.TryGetRect2I(out var rect_tiles, data.Get("rect_tiles"))) return false;
+        if(!data.TryGet("fields", out PriDict fields)) fields = [];
+        mapObjectData = new()
+        {
+            Iid = iid,
+            Name = name,
+            LayerName = layer_name,
+            Class = class_name,
+            RectTiles = rect_tiles,
+            Fields = fields,
+        };
+        return true;
+    }
+    public static bool TryConvertLdtkData(out PriNode mapObjectDataPri, PriNode ldtkData, ErVec2I tileSize, string layerName)
+    {
+        mapObjectDataPri = PriNull.Null;
+        if(!ldtkData.TryGet("iid", out string iid)) return ErEngine.LogWarning("map object data missing id");
+        PriDict res = [];
+        res.TrySet("iid", iid);
+        if(!ldtkData.TryGet("__identifier", out string name)) return false;
+        res.TrySet("name", name);
+        string className = name;
+        res.TrySet("layer_name", layerName);
+        var rectPx = SwPrion.GetRect2I(ldtkData, "__worldX", "__worldY", "width", "height");
         var rectTiles = rectPx / tileSize;
+        SwPrion.TrySetRect2I(res, "rect_tiles", rectTiles);
         PriDict fields = [];
-        fields.Add("type", data.Get("__identifier"));
-        SwPrion.TrySetRect2I(fields, "rect_px", rectPx);
-        SwPrion.TrySetRect2I(fields, "rect_tiles", rectTiles);
-        if(data.TryGet("fieldInstances", out PriList fieldEntries))
+        res.Add("fields", fields);
+        PriNode propertyOverrides = PriNull.Null;
+        if(ldtkData.TryGet("fieldInstances", out PriList fieldEntries))
         {
             foreach (var item in fieldEntries.Values)
             {
@@ -32,19 +70,17 @@ public class SwMapObjectData
                 {
                     case "property_overrides_json":
                         if(!item.TryGet("__value", out string s)) continue;
-                        if(!SwData.TryParseJsonToPrion(s, out var priNode)){ErEngine.LogWarning("failed to parse property overrides json"); continue;}
-                        fields.Merge(priNode);
+                        if(!SwData.TryParseJsonToPrion(s, out propertyOverrides)){ErEngine.LogWarning("failed to parse property overrides json"); continue;}
+                        break;
+                    case "class":
+                        if(!item.TryGet("__value", out s)) continue;
+                        className = s;
                     break;
-                    // Note: this should be handled in the map object spawning code
-                    // case "class":
-                    //     if(!item.TryGet("__value", out s)) continue;
-                    //     fields.TrySet("type", s);
-                    // break;
                     default:
                         if (key.EndsWith("json"))
                         {
                             if(!item.TryGet("__value", out s)) continue;
-                            if(!SwData.TryParseJsonToPrion(s, out priNode)){ErEngine.LogWarning("failed to parse property overrides json"); continue;}
+                            if(!SwData.TryParseJsonToPrion(s, out var priNode)){ErEngine.LogWarning("failed to parse property overrides json"); continue;}
                             fields.TrySet(s, priNode);
                         }
                         else fields.Data[key] = item.Get("__value");
@@ -52,15 +88,9 @@ public class SwMapObjectData
                 }
             }
         }
-        if(!fields.TryGet("type", out string objType)) throw new("should be unreachable");
-        mapObjectData = new()
-        {
-            Iid = id,
-            Type = objType,
-            RectPx = rectPx,
-            RectTiles = rectTiles,
-            Fields = fields,
-        };
-        return mapObjectData is not null;
+        res.TrySet("class", className);
+        if(propertyOverrides.TryAs(out PriDict overrides)) fields.Merge(overrides);
+        mapObjectDataPri = res;
+        return true;
     }
 }

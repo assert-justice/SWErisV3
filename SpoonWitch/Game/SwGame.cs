@@ -21,7 +21,7 @@ public class SwGame
     private void HandleRooms()
     {
         var cameraTarget = (ErVec2I)CameraTarget;
-        if(CurrentRoom is not null && CurrentRoom.RectPx.Contains(cameraTarget)) return; // No work to do
+        // if(CurrentRoom is not null && CurrentRoom.RectPx.Contains(cameraTarget)) return; // No work to do
         if(!Map.TryLoadRoom(out var roomData, CameraTarget))
         {
             if(CurrentRoom is not null) ErEngine.LogWarning("camera target out of bounds");
@@ -35,7 +35,7 @@ public class SwGame
         foreach (var camera in Cameras)
         {
             camera.UseBounds = true;
-            camera.SetBounds((ErRect2)roomData.RectPx);
+            // camera.SetBounds((ErRect2)roomData.RectPx);
             if(CurrentRoom is null) camera.SnapToPosition(CameraTarget);
         }
         CurrentRoom = roomData;
@@ -71,7 +71,7 @@ public class SwGame
     private readonly Queue<SwEntity> FreedEntities = [];
     public SwGame(SwMapData mapData, int numPlayers)
     {
-        PhysicsWorld = new(new(8,8), mapData.TileSize);
+        PhysicsWorld = new(new(8,8), mapData.TileData.TileSize);
         Map = new(this, mapData);
         // Todo: support more cameras
         Cameras = [new()];
@@ -81,7 +81,7 @@ public class SwGame
             RenderTextures[idx] = ErTexture.GetRenderTexture((int)SwApp.CameraSize.X, (int)SwApp.CameraSize.Y);
         }
         Map.DebugLoadAllRooms();
-        CameraTarget = ((ErRect2)Map.CurrentCheckpoint.RectPx).Center;
+        CameraTarget = ErVec2.Zero;// ((ErRect2)Map.CurrentCheckpoint.RectPx).Center;
         // add players
         Huds = new SwHud[numPlayers];
         var playerProps = SwData.Prototypes.Get("entities/player");

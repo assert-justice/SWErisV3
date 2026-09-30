@@ -12,9 +12,9 @@ public class SwMap
     private readonly SwFoliage Foliage;
     private readonly SwGame Game;
     private readonly SwMapData MapData;
-    public SwTileData[] TileData => MapData.TileData;
+    public SwTileData.Entry[] TileData => MapData.TileData.Entries;
     public SwFoliageData FoliageData => MapData.FoliageData;
-    public ErVec2I TileSize => MapData.TileSize;
+    public ErVec2I TileSize => MapData.TileData.TileSize;
     public SwMapObjectData CurrentCheckpoint{get; private set;}
     public SwMap(SwGame game, SwMapData mapData)
     {
@@ -32,15 +32,17 @@ public class SwMap
     }
     public int GetTileId(int layerIdx, ErVec2I tileCoord)
     {
-        var sectorCoord = tileCoord / MapData.SectorSizeTiles;
-        if(!MapData.Sectors.TryGetCell(sectorCoord, out var sectorData)) return -2;
-        return sectorData.GetTile(layerIdx, tileCoord);
+        // var sectorCoord = tileCoord / MapData.SectorSizeTiles;
+        // if(!MapData.Sectors.TryGetCell(sectorCoord, out var sectorData)) return -2;
+        // return sectorData.GetTile(layerIdx, tileCoord);
+        return -1;
     }
     public int GetTopTileId(ErVec2I tileCoord)
     {
-        var sectorCoord = tileCoord / MapData.SectorSizeTiles;
-        if(!MapData.Sectors.TryGetCell(sectorCoord, out var sectorData)) return -2;
-        return sectorData.GetTopTile(tileCoord);
+        // var sectorCoord = tileCoord / MapData.SectorSizeTiles;
+        // if(!MapData.Sectors.TryGetCell(sectorCoord, out var sectorData)) return -2;
+        // return sectorData.GetTopTile(tileCoord);
+        return -1;
     }
     public bool InSameRoom(ErVec2 posA, ErVec2 posB)
     {
@@ -49,42 +51,42 @@ public class SwMap
     }
     public void DebugLoadAllRooms()
     {
-        foreach (var item in MapData.Rooms.Values)
-        {
-            LoadRoom(item);
-        }
+        // foreach (var item in MapData.Rooms.Values)
+        // {
+        //     LoadRoom(item);
+        // }
     }
     public bool TryLoadRoom(out SwRoomData roomData, ErVec2 point)
     {
         roomData = default!;
-        ErVec2I sectorCoord = (ErVec2I)point / MapData.SectorSizePx;
-        if(!MapData.RoomLookup.TryGetValue(sectorCoord, out roomData!)) return false;
-        return roomData is not null;
+        // ErVec2I sectorCoord = (ErVec2I)point / MapData.SectorSizePx;
+        // if(!MapData.RoomLookup.TryGetValue(sectorCoord, out roomData!)) return false;
+        return true;
     }
-    private void LoadRoom(SwRoomData roomData)
-    {
-        foreach (var item in roomData.RectSectors.GetInnerCoords())
-        {
-            if(MapData.Sectors.TryGetCell(item, out var sectorData)) LoadSector(sectorData);
-        }
-        Foliage.SeedArea(roomData.RectTiles);
-        Foliage.LifeSimArea(roomData.RectTiles, 1);
-        Foliage.TrimArea(roomData.RectTiles);
-    }
-    private void LoadSector(SwSectorData sectorData)
-    {
-        foreach (var tileCoord in sectorData.RectTiles.GetInnerCoords())
-        {
-            // update map display
-            MapDisplay.QueueTileUpdate(tileCoord);
-            // update foliage
-            // Foliage.QueueTileUpdate(tileCoord);
-            int tileId = sectorData.GetTopTile(tileCoord);
-            if(tileId < 0) continue;
-            // update physics world
-            Game.PhysicsWorld.SetTileMask(tileCoord, MapData.TileData[tileId].CollisionMask);
-        }
-    }
+    // private void LoadRoom(SwRoomData roomData)
+    // {
+    //     foreach (var item in roomData.RectSectors.GetInnerCoords())
+    //     {
+    //         if(MapData.Sectors.TryGetCell(item, out var sectorData)) LoadSector(sectorData);
+    //     }
+    //     Foliage.SeedArea(roomData.RectTiles);
+    //     Foliage.LifeSimArea(roomData.RectTiles, 1);
+    //     Foliage.TrimArea(roomData.RectTiles);
+    // }
+    // private void LoadSector(SwSectorData sectorData)
+    // {
+    //     foreach (var tileCoord in sectorData.RectTiles.GetInnerCoords())
+    //     {
+    //         // update map display
+    //         MapDisplay.QueueTileUpdate(tileCoord);
+    //         // update foliage
+    //         // Foliage.QueueTileUpdate(tileCoord);
+    //         int tileId = sectorData.GetTopTile(tileCoord);
+    //         if(tileId < 0) continue;
+    //         // update physics world
+    //         Game.PhysicsWorld.SetTileMask(tileCoord, MapData.TileData[tileId].CollisionMask);
+    //     }
+    // }
 }
 
 // using Eris;

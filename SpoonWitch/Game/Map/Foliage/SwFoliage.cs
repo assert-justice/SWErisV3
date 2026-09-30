@@ -138,36 +138,6 @@ public class SwFoliage
             }
         }
     }
-    // public void LifeSimTrim(ErRect2I tileRect)
-    // {
-    //     var fRect = tileRect * TileSizeFTiles;
-    //     foreach (var fCoord in fRect.GetInnerCoords())
-    //     {
-    //         int fId = -1;
-    //         if(FoliageGrid.TryGet(fCoord, out var fTile)) fId = fTile.FoliageId;
-    //         int nextId = fId;
-    //         int adjLiving = 0;
-    //         var neighbors = fCoord.GetAdj();
-    //         foreach (var n in neighbors)
-    //         {
-    //             var tileCoord = n / TileSizeFTiles;
-    //             if(!topTiles.TryGet(tileCoord, out int tileId))
-    //             {
-    //                 tileId = Map.GetTopTileId(tileCoord);
-    //                 topTiles.Set(tileCoord, tileId);
-    //             }
-    //             if(tileId < 0 || Map.TileData[tileId].Arable <= 0)
-    //             {
-    //                 adjLiving = 0;
-    //                 break;
-    //             }
-    //             if(FoliageGrid.TryGet(fCoord, out var val) && val.IsAlive) adjLiving++;
-    //         }
-    //         if(fId < 0 && adjLiving == 3) nextId = 0;
-    //         else if(fId >= 0 && (adjLiving < 3 || adjLiving > 3)) nextId = -1;
-    //         if(fId != nextId) SetFoliageTile(fId, fCoord);
-    //     }
-    // }
     private void SetFoliageTile(int fId, ErVec2I fCoord)
     {
         if(fId < 0)
