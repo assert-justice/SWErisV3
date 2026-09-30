@@ -4,9 +4,25 @@
 // using Prion.Node;
 // using SpoonWitch.Game.Map.MapObject;
 
-// namespace SpoonWitch.Game.Map;
+using ErisMath;
+using SpoonWitch.Game.Map.MapData;
 
-// public class SwRoom
+namespace SpoonWitch.Game.Map;
+
+public class SwRoom
+{
+    private readonly SwMap Map;
+    public readonly SwRoomData Data;
+    public ErRect2I RectSectors => Data.RectSectors;
+    public ErRect2I RectTiles => RectSectors * Map.SectorSizeTiles;
+    public ErRect2I RectPx => RectSectors * Map.SectorSizePx;
+    public string[] AdjRoomIds => Data.AdjRoomIds;
+    public SwRoom(SwMap map, SwRoomData data)
+    {
+        Map = map;
+        Data = data;
+    }
+}
 // {
 //     public readonly HashSet<ErVec2I> SectorCoords = [];
 //     private readonly SwMapObjectLookup MapObjects = new();

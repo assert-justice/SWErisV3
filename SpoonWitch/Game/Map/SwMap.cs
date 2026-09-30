@@ -1,3 +1,4 @@
+using Eris;
 using ErisMath;
 using ErisPhysics2D;
 using SpoonWitch.Game.Map.Foliage;
@@ -12,10 +13,17 @@ public class SwMap
     private readonly SwFoliage Foliage;
     private readonly SwGame Game;
     private readonly SwMapData MapData;
+    private readonly Dictionary<string, int> RoomIdLookup = [];
+    private readonly Dictionary<ErVec2I, int> RoomSectorLookup = [];
+    private readonly Dictionary<string, SwRoom> LoadedRooms = [];
+    private readonly Dictionary<string, int> MapObjectIdLookup = [];
+    private readonly Dictionary<string, int> LoadedMapObjects = [];
     public SwTileData.Entry[] TileData => MapData.TileData.Entries;
     public SwFoliageData FoliageData => MapData.FoliageData;
     public ErVec2I TileSize => MapData.TileData.TileSize;
     public SwMapObjectData CurrentCheckpoint{get; private set;}
+    public ErVec2I SectorSizeTiles => MapData.SectorSizeTiles;
+    public ErVec2I SectorSizePx => MapData.SectorSizeTiles * TileSize;
     public SwMap(SwGame game, SwMapData mapData)
     {
         Game = game;
@@ -23,6 +31,14 @@ public class SwMap
         MapDisplay = new(this, mapData.NumTileLayers);
         Foliage = new(this);
         CurrentCheckpoint = mapData.DefaultCheckpoint;
+        for (int idx = 0; idx < mapData.Rooms.Length; idx++)
+        {
+            RoomIdLookup[mapData.Rooms[idx].Iid] = idx;
+            foreach (var sectorCoord in mapData.Rooms[idx].RectSectors.GetInnerCoords())
+            {
+                RoomSectorLookup[sectorCoord] = idx;
+            }
+        }
     }
     // public void Update(double dt){}
     public void Draw()
@@ -59,12 +75,26 @@ public class SwMap
     public bool TryLoadRoom(out SwRoomData roomData, ErVec2 point)
     {
         roomData = default!;
-        // ErVec2I sectorCoord = (ErVec2I)point / MapData.SectorSizePx;
-        // if(!MapData.RoomLookup.TryGetValue(sectorCoord, out roomData!)) return false;
+        ErVec2I sectorCoord = (ErVec2I)point / SectorSizePx;
+        if(!RoomSectorLookup.TryGetValue(sectorCoord, out int roomIdx)) return false;
+        // get a hash set of the currently loaded room ids
+        // for the room and all of its neighbors
+        // if they are present in the hash set, that means they are loaded. remove them
+        // otherwise load that room
+        // what remains in the hash set are the rooms that need to be freed. free them
         return true;
     }
     private void LoadRoomData(SwRoomData roomData)
     {
+        if (LoadedRooms.ContainsKey(roomData.Iid))
+        {
+            ErEngine.LogWarning("room already loaded: ", roomData.Iid);
+            return;
+        }
+        SwRoom room = new(this, roomData);
+        LoadedRooms[roomData.Iid] = room;
+        // set tiles
+        // load map objects
     //     foreach (var item in roomData.RectSectors.GetInnerCoords())
     //     {
     //         if(MapData.Sectors.TryGetCell(item, out var sectorData)) LoadSector(sectorData);
@@ -73,6 +103,9 @@ public class SwMap
     //     Foliage.LifeSimArea(roomData.RectTiles, 1);
     //     Foliage.TrimArea(roomData.RectTiles);
     }
+    private void UnloadRoom(SwRoom room){}
+    private void LoadMapObject(SwMapObjectData mapObjectData){}
+    private void UnloadMapObject(SwMapObjectData mapObjectData){}
     // private void LoadSector(SwSectorData sectorData)
     // {
     //     foreach (var tileCoord in sectorData.RectTiles.GetInnerCoords())
