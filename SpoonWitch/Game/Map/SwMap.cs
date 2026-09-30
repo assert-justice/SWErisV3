@@ -116,6 +116,11 @@ public class SwMap
         }
         room = new(this, MapData.Rooms[roomIdx]);
         LoadedRooms[room.Data.Iid] = room;
+        // create the sectors
+        foreach (var sectorCoord in room.RectSectors.GetInnerCoords())
+        {
+            SetTile(0, sectorCoord * SectorSizeTiles, -1);
+        }
         // set tiles
         foreach (var span in room.Data.TileSpans)
         {
@@ -152,6 +157,7 @@ public class SwMap
             ErEngine.LogWarning("failed to unload room, bad id: ", roomId);
             return;
         }
+        LoadedRooms.Remove(roomId);
         ErEngine.Log("unloaded room ", room.Data.Name);
         // remove sectors
         foreach (var sectorCoord in room.RectSectors.GetInnerCoords())
