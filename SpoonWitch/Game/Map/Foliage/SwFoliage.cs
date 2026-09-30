@@ -82,6 +82,7 @@ public class SwFoliage
     }
     public void SeedTile(ErVec2I tileCoord)
     {
+        UpdateQueuedTiles();
         int tileId = Map.GetTopTileId(tileCoord);
         int fId = -1;
         double arable = 0;
@@ -98,6 +99,7 @@ public class SwFoliage
     }
     public void LifeSimArea(ErRect2I tileRect, int steps)
     {
+        UpdateQueuedTiles();
         var fRect = tileRect * TileSizeFTiles;
         Queue<(int fId, ErVec2I fCoord)> deltas = [];
         for (int stepIdx = 0; stepIdx < steps; stepIdx++)
@@ -125,6 +127,7 @@ public class SwFoliage
     }
     public void TrimArea(ErRect2I tileRect)
     {
+        UpdateQueuedTiles();
         var fRect = tileRect * TileSizeFTiles;
         foreach (var fCoord in fRect.GetInnerCoords())
         {

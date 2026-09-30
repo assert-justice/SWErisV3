@@ -56,7 +56,11 @@ public class SwApp : IErApp
     private void Launch()
     {
         UnPause();
-        Game?.Cleanup();
+        if(Game is not null)
+        {
+            Game.Cleanup();
+            CommandQueue.Clear();
+        }
         if(!TryLoadMap(out var mapData))
         {
             ErEngine.Quit();

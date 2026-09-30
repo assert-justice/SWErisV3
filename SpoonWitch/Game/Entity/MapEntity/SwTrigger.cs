@@ -40,7 +40,7 @@ public class SwTrigger : SwMapEntity
         }
         var command = Props.Get("fields/on_enter_json");
         if(command is PriNull) return;
-        if(Props.TryGet("is_command_global", out bool b) && b) SwApp.CommandQueue.AddCommand(command);
+        if(Props.TryGet("fields/is_command_global", out bool b) && b) SwApp.CommandQueue.AddCommand(command);
         else entity.AddCommand(command);
         Activations++;
         if(!IsEnabled()) Area.Enabled = false;

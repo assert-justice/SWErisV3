@@ -3,6 +3,7 @@ using Eris;
 using Eris.Utils.Grid2D;
 using ErisMath;
 using ErisPhysics2D;
+using Prion.Node;
 using SpoonWitch.Game.Entity.MapEntity;
 using SpoonWitch.Game.Map.Foliage;
 using SpoonWitch.Game.Map.MapData;
@@ -22,8 +23,10 @@ public class SwMap
     private readonly Dictionary<string, SwRoom> LoadedRooms = [];
     private readonly Dictionary<string, int> MapObjectIdLookup = [];
     private readonly Dictionary<string, (int mapObjectIdx, int entityId)> LoadedMapObjects = [];
+    private readonly HashSet<ErVec2I> TileUpdateQueue = [];
     private readonly ErHashGrid2D<SwSector> SectorGrid;
     private readonly Queue<Action> PostprocessQueue = [];
+    private readonly List<(string verb, Action<PriNode> handler)> GlobalHandlers = [];
     public Action<SwRoom?,bool> OnNewCurrentRoom{get; set;}
     public SwTileData.Entry[] TileData => MapData.TileData.Entries;
     public SwFoliageData FoliageData => MapData.FoliageData;
@@ -55,6 +58,60 @@ public class SwMap
         {
             MapObjectIdLookup[mapData.Objects[idx].Iid] = idx;
         }
+        AddGlobalHandler("map_set_tiles_rect", HandleSetTilesRect);
+    }
+    private void AddGlobalHandler(string verb, Action<PriNode> handler)
+    {
+        SwApp.CommandQueue.AddHandler(verb, handler);
+        GlobalHandlers.Add((verb, handler));
+    }
+    private void HandleSetTilesRect(PriNode command)
+    {
+        if(!command.TryGet("layer_idx", out int layerIdx)) {ErEngine.LogWarning("set tiles command missing layer_idx"); return;}
+        if(!SwPrion.TryGetRect2I(out var tileRect, command.Get("rect_tiles"))) {ErEngine.LogWarning("set tiles command missing rect_tiles"); return;}
+        if(!command.TryGet("tile_id", out int tileId)) {ErEngine.LogWarning("set tiles command missing tile_id"); return;}
+        SetTilesRect(layerIdx, tileRect, tileId);
+    }
+    private void SetTilesRect(int layerIdx, ErRect2I tileRect, int tileId)
+    {
+        foreach (var tileCoord in tileRect.GetInnerCoords())
+        {
+            SetTile(layerIdx, tileCoord, tileId);
+        }
+        UpdateTiles();
+    }
+    private void SetTilesSpans(IEnumerable<SwMapTileSpan> spans)
+    {
+        foreach (var span in spans)
+        {
+            for (int idx = 0; idx < span.Length; idx++)
+            {
+                ErVec2I offset = new(idx, 0);
+                var tileCoord = span.TileCoord + offset;
+                SetTile(span.LayerIdx, tileCoord, span.TileId);
+            }
+        }
+        UpdateTiles();
+    }
+    private void SetTile(int layerIdx, ErVec2I tileCoord, int tileId)
+    {
+        var sectorCoord = tileCoord / SectorSizeTiles;
+        SectorGrid.Get(sectorCoord, NewSector).SetTile(layerIdx, tileCoord, tileId);
+        TileUpdateQueue.Add(tileCoord);
+    }
+    private void UpdateTiles()
+    {
+        foreach (var tileCoord in TileUpdateQueue)
+        {
+            int topTileId = GetTopTileId(tileCoord);
+            uint mask = uint.MaxValue;
+            if(topTileId == -1) mask = 0;
+            else if(topTileId >= 0) mask = TileData[topTileId].CollisionMask;
+            Game.PhysicsWorld.SetTileMask(tileCoord, mask);
+            MapDisplay.QueueTileUpdate(tileCoord);
+            Foliage.QueueTileUpdate(tileCoord);
+        }
+        TileUpdateQueue.Clear();
     }
     public void Update(ErVec2 targetPoint)
     {
@@ -66,6 +123,24 @@ public class SwMap
     {
         MapDisplay.Draw();
         Foliage.Draw();
+    }
+    public void Cleanup()
+    {
+        // unload all rooms
+        foreach (var id in LoadedRooms.Keys)
+        {
+            UnloadRoom(id);
+        }
+        // unload any remaining objects
+        foreach (var id in LoadedMapObjects.Keys)
+        {
+            UnloadMapObject(id);
+        }
+        // remove handlers
+        foreach (var (verb,action) in GlobalHandlers)
+        {
+            SwApp.CommandQueue.RemoveHandler(verb, action);
+        }
     }
     public int GetTileId(int layerIdx, ErVec2I tileCoord)
     {
@@ -128,22 +203,7 @@ public class SwMap
             SetTile(0, sectorCoord * SectorSizeTiles, -1);
         }
         // set tiles
-        foreach (var span in room.Data.TileSpans)
-        {
-            for (int idx = 0; idx < span.Length; idx++)
-            {
-                ErVec2I offset = new(idx, 0);
-                SetTile(span.LayerIdx, span.TileCoord + offset, span.TileId);
-            }
-        }
-        foreach (var tileCoord in room.RectTiles.GetInnerCoords())
-        {
-            int tileId = GetTopTileId(tileCoord);
-            uint mask = uint.MaxValue;
-            if(tileId == -1) mask = 0;
-            else if(tileId >= 0) mask = TileData[tileId].CollisionMask;
-            Game.PhysicsWorld.SetTileMask(tileCoord, mask);
-        }
+        SetTilesSpans(room.Data.TileSpans);
         // load map objects
         foreach (var mapObjectId in room.Data.ObjectIds)
         {
@@ -246,12 +306,6 @@ public class SwMap
         }
         else mapEntity.Unload();
         // ErEngine.Log("unloaded map entity ", MapData.Objects[value.mapObjectIdx].Name);
-    }
-    private void SetTile(int layerIdx, ErVec2I tileCoord, int tileId)
-    {
-        var sectorCoord = tileCoord / SectorSizeTiles;
-        SectorGrid.Get(sectorCoord, NewSector).SetTile(layerIdx, tileCoord, tileId);
-        MapDisplay.QueueTileUpdate(tileCoord);
     }
     private SwSector NewSector(ErVec2I sectorCoord)
     {

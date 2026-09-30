@@ -689,7 +689,7 @@
 					"max": null,
 					"regex": null,
 					"acceptFileTypes": null,
-					"defaultOverride": null,
+					"defaultOverride": { "id": "V_Int", "params": [1] },
 					"textLanguageMode": null,
 					"symmetricalRef": false,
 					"autoChainRef": true,
@@ -3233,13 +3233,15 @@
 							"defUid": 13,
 							"px": [352,96],
 							"fieldInstances": [
-								{ "__identifier": "on_enter_json", "__type": "String", "__value": "\"boss_wake\"", "__tile": null, "defUid": 17, "realEditorValues": [{
+								{ "__identifier": "on_enter_json", "__type": "String", "__value": "{\n  \"verb\":\"map_set_tiles_rect\",\n  \"layer_idx\": 0,\n  \"rect_tiles\":{\"x\":29,\"y\":1,\"w\":2,\"h\":1},\n  \"tile_id\": -1\n}", "__tile": null, "defUid": 17, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["\"boss_wake\""]
+									"params": [
+										"{\\n  \"verb\":\"map_set_tiles_rect\",\\n  \"layer_idx\": 0,\\n  \"rect_tiles\":{\"x\":29,\"y\":1,\"w\":2,\"h\":1},\\n  \"tile_id\": -1\\n}"
+									]
 								}] },
 								{ "__identifier": "mask", "__type": "Int", "__value": 2, "__tile": null, "defUid": 92, "realEditorValues": [] },
 								{ "__identifier": "is_command_global", "__type": "Bool", "__value": true, "__tile": null, "defUid": 93, "realEditorValues": [] },
-								{ "__identifier": "max_activations", "__type": "Int", "__value": 0, "__tile": null, "defUid": 121, "realEditorValues": [] }
+								{ "__identifier": "max_activations", "__type": "Int", "__value": 1, "__tile": null, "defUid": 121, "realEditorValues": [] }
 							],
 							"__worldX": 992,
 							"__worldY": 96
@@ -3457,6 +3459,8 @@
 						{ "px": [608,0], "src": [192,0], "f": 0, "t": 6, "d": [19], "a": 1 },
 						{ "px": [0,32], "src": [192,0], "f": 0, "t": 6, "d": [20], "a": 1 },
 						{ "px": [256,32], "src": [192,0], "f": 0, "t": 6, "d": [28], "a": 1 },
+						{ "px": [288,32], "src": [192,0], "f": 0, "t": 6, "d": [29], "a": 1 },
+						{ "px": [320,32], "src": [192,0], "f": 0, "t": 6, "d": [30], "a": 1 },
 						{ "px": [352,32], "src": [192,0], "f": 0, "t": 6, "d": [31], "a": 1 },
 						{ "px": [608,32], "src": [192,0], "f": 0, "t": 6, "d": [39], "a": 1 },
 						{ "px": [0,64], "src": [192,0], "f": 0, "t": 6, "d": [40], "a": 1 },

@@ -45,7 +45,7 @@ public class SwGame
     private readonly SwHud[] Huds;
     public readonly SwLookup EntityLookup = new();
     private readonly Queue<SwEntity> NewEntities = [];
-    private readonly Queue<SwEntity> FreedEntities = [];
+    private readonly Queue<SwEntity> FreedEntitiesQueue = [];
     public SwGame(SwMapData mapData, int numPlayers)
     {
         PhysicsWorld = new(new(8,8), mapData.TileData.TileSize);
@@ -86,7 +86,9 @@ public class SwGame
         foreach (var entity in EntityLookup.GetAllValues<SwEntity>())
         {
             entity.GameUpdate(dt);
+            if(entity.IsFreeQueued) FreedEntitiesQueue.Enqueue(entity);
         }
+        FreeEntities();
         // Update areas
         PhysicsWorld.UpdateAreas();
         // Update hud
@@ -110,6 +112,14 @@ public class SwGame
             camera.Update(dt);
         }
         // Handle commands
+    }
+    private void FreeEntities()
+    {
+        while(FreedEntitiesQueue.TryDequeue(out var entity))
+        {
+            entity.GameCleanup();
+            EntityLookup.Remove(entity.Id.ToString());
+        }
     }
     private void HandleNewRoom(SwRoom? room, bool wasNull)
     {
@@ -165,7 +175,15 @@ public class SwGame
         }
         CurrentCamera = null;
     }
-    public void Cleanup(){}
+    public void Cleanup()
+    {
+        Map.Cleanup();
+        foreach (var item in EntityLookup.GetAllValues<SwEntity>())
+        {
+            FreedEntitiesQueue.Enqueue(item);
+        }
+        FreeEntities();
+    }
     public T AddEntity<T>(PriNode props) where T: SwEntity, new()
     {
         var ent = SwEntity.GameLoad<T>(this, props);
