@@ -1,4 +1,6 @@
+using System.Collections;
 using Eris;
+using Eris.Utils.Grid2D;
 using ErisMath;
 using ErisPhysics2D;
 using SpoonWitch.Game.Map.Foliage;
@@ -14,33 +16,46 @@ public class SwMap
     private readonly SwGame Game;
     private readonly SwMapData MapData;
     private readonly Dictionary<string, int> RoomIdLookup = [];
-    private readonly Dictionary<ErVec2I, int> RoomSectorLookup = [];
+    private readonly Dictionary<ErVec2I, string> RoomSectorLookup = [];
     private readonly Dictionary<string, SwRoom> LoadedRooms = [];
     private readonly Dictionary<string, int> MapObjectIdLookup = [];
     private readonly Dictionary<string, int> LoadedMapObjects = [];
+    private readonly ErHashGrid2D<SwSector> SectorGrid;
+    private readonly Queue<Action> PostprocessQueue = [];
+    public Action<SwRoom?,bool> OnNewCurrentRoom{get; set;}
     public SwTileData.Entry[] TileData => MapData.TileData.Entries;
     public SwFoliageData FoliageData => MapData.FoliageData;
     public ErVec2I TileSize => MapData.TileData.TileSize;
     public SwMapObjectData CurrentCheckpoint{get; private set;}
+    public ErVec2 CurrentCheckpointPos => (ErVec2)(CurrentCheckpoint.RectTiles * TileSize).Center;
     public ErVec2I SectorSizeTiles => MapData.SectorSizeTiles;
     public ErVec2I SectorSizePx => MapData.SectorSizeTiles * TileSize;
+    public SwRoom? CurrentRoom{get; private set;}
     public SwMap(SwGame game, SwMapData mapData)
     {
+        OnNewCurrentRoom = (_,_)=>{};
         Game = game;
         MapData = mapData;
+        SectorGrid = new();
         MapDisplay = new(this, mapData.NumTileLayers);
         Foliage = new(this);
         CurrentCheckpoint = mapData.DefaultCheckpoint;
         for (int idx = 0; idx < mapData.Rooms.Length; idx++)
         {
-            RoomIdLookup[mapData.Rooms[idx].Iid] = idx;
+            string id = mapData.Rooms[idx].Iid;
+            RoomIdLookup[id] = idx;
             foreach (var sectorCoord in mapData.Rooms[idx].RectSectors.GetInnerCoords())
             {
-                RoomSectorLookup[sectorCoord] = idx;
+                RoomSectorLookup[sectorCoord] = id;
             }
         }
     }
-    // public void Update(double dt){}
+    public void Update(ErVec2 targetPoint)
+    {
+        var sectorCoord = (ErVec2I)targetPoint / SectorSizePx;
+        HandleLoading(sectorCoord);
+        // handle commands
+    }
     public void Draw()
     {
         MapDisplay.Draw();
@@ -48,78 +63,126 @@ public class SwMap
     }
     public int GetTileId(int layerIdx, ErVec2I tileCoord)
     {
-        // var sectorCoord = tileCoord / MapData.SectorSizeTiles;
-        // if(!MapData.Sectors.TryGetCell(sectorCoord, out var sectorData)) return -2;
-        // return sectorData.GetTile(layerIdx, tileCoord);
-        return -1;
+        var sectorCoord = tileCoord / MapData.SectorSizeTiles;
+        if(!SectorGrid.TryGet(sectorCoord, out var sector)) return -2;
+        return sector.GetTile(layerIdx, tileCoord);
     }
     public int GetTopTileId(ErVec2I tileCoord)
     {
-        // var sectorCoord = tileCoord / MapData.SectorSizeTiles;
-        // if(!MapData.Sectors.TryGetCell(sectorCoord, out var sectorData)) return -2;
-        // return sectorData.GetTopTile(tileCoord);
-        return -1;
+        var sectorCoord = tileCoord / MapData.SectorSizeTiles;
+        if(!SectorGrid.TryGet(sectorCoord, out var sector)) return -2;
+        return sector.GetTopTile(tileCoord);
     }
     public bool InSameRoom(ErVec2 posA, ErVec2 posB)
     {
-        // Todo: you know, implement this
-        return false;
+        var aSectorCoord = (ErVec2I)posA / SectorSizePx;
+        if(!RoomSectorLookup.TryGetValue(aSectorCoord, out string? aRoomId)) return false;
+        var bSectorCoord = (ErVec2I)posB / SectorSizePx;
+        if(!RoomSectorLookup.TryGetValue(bSectorCoord, out string? bRoomId)) return false;
+        return aRoomId == bRoomId;
     }
-    public void DebugLoadAllRooms()
+    private void HandleLoading(ErVec2I sectorCoord)
     {
-        foreach (var item in MapData.Rooms)
-        {
-            LoadRoomData(item);
-        }
-    }
-    public bool TryLoadRoom(out SwRoomData roomData, ErVec2 point)
-    {
-        roomData = default!;
-        ErVec2I sectorCoord = (ErVec2I)point / SectorSizePx;
-        if(!RoomSectorLookup.TryGetValue(sectorCoord, out int roomIdx)) return false;
+        if(CurrentRoom is not null && CurrentRoom.RectSectors.Contains(sectorCoord)) return; // no work to do
+        bool wasNull = CurrentRoom is null;
+        if(!RoomSectorLookup.TryGetValue(sectorCoord, out string? roomId)) CurrentRoom = null;
+        else CurrentRoom = LoadRoomData(roomId);
+        if(CurrentRoom is null && wasNull) return; // no work to do
+        OnNewCurrentRoom(CurrentRoom, wasNull);
+        if(CurrentRoom is null) return; // the target position is out of bounds somehow, don't load or unload anything
         // get a hash set of the currently loaded room ids
+        HashSet<string> loadedIds = [..LoadedRooms.Keys];
+        loadedIds.Remove(CurrentRoom.Data.Iid);
         // for the room and all of its neighbors
-        // if they are present in the hash set, that means they are loaded. remove them
-        // otherwise load that room
-        // what remains in the hash set are the rooms that need to be freed. free them
-        return true;
-    }
-    private void LoadRoomData(SwRoomData roomData)
-    {
-        if (LoadedRooms.ContainsKey(roomData.Iid))
+        foreach (var adj in CurrentRoom.AdjRoomIds)
         {
-            ErEngine.LogWarning("room already loaded: ", roomData.Iid);
+            // if they are present in the hash set, that means they are loaded. remove them
+            if(!loadedIds.Remove(adj)) LoadRoomData(adj);
+        }
+        // what remains in the hash set are the rooms that need to be freed. free them
+        foreach (var adjId in loadedIds)
+        {
+            UnloadRoom(adjId);
+        }
+        // handle postprocessing
+        while(PostprocessQueue.TryDequeue(out var action)) action();
+    }
+    // private SwRoom? LoadRoomData(ErVec2I sectorCoord)
+    // {
+    //     if(!RoomSectorLookup.TryGetValue(sectorCoord, out int roomIdx)) return null;
+    //     return LoadRoomData(roomIdx);
+    // }
+    private SwRoom? LoadRoomData(string roomId)
+    {
+        if(LoadedRooms.TryGetValue(roomId, out var room)) return room;
+        if(!RoomIdLookup.TryGetValue(roomId, out int roomIdx))
+        {
+            ErEngine.LogWarning("invalid room id: ", roomId);
+        }
+        room = new(this, MapData.Rooms[roomIdx]);
+        LoadedRooms[room.Data.Iid] = room;
+        // set tiles
+        foreach (var span in room.Data.TileSpans)
+        {
+            for (int idx = 0; idx < span.Length; idx++)
+            {
+                ErVec2I offset = new(idx, 0);
+                SetTile(span.LayerIdx, span.TileCoord + offset, span.TileId);
+            }
+        }
+        foreach (var tileCoord in room.RectTiles.GetInnerCoords())
+        {
+            int tileId = GetTopTileId(tileCoord);
+            uint mask = uint.MaxValue;
+            if(tileId == -1) mask = 0;
+            else if(tileId >= 0) mask = TileData[tileId].CollisionMask;
+            Game.PhysicsWorld.SetTileMask(tileCoord, mask);
+        }
+        // load map objects
+        // handle postprocessing
+        PostprocessQueue.Enqueue(()=>HandleFoliage(room.RectTiles));
+        ErEngine.Log("loaded room: ", room.Data.Iid);
+        return room;
+    }
+    private void HandleFoliage(ErRect2I tileRect)
+    {
+        Foliage.SeedArea(tileRect);
+        Foliage.LifeSimArea(tileRect, 1);
+        Foliage.TrimArea(tileRect);
+    }
+    private void UnloadRoom(string roomId)
+    {
+        if(!LoadedRooms.TryGetValue(roomId, out var room))
+        {
+            ErEngine.LogWarning("failed to unload room, bad id: ", roomId);
             return;
         }
-        SwRoom room = new(this, roomData);
-        LoadedRooms[roomData.Iid] = room;
-        // set tiles
-        // load map objects
-    //     foreach (var item in roomData.RectSectors.GetInnerCoords())
-    //     {
-    //         if(MapData.Sectors.TryGetCell(item, out var sectorData)) LoadSector(sectorData);
-    //     }
-    //     Foliage.SeedArea(roomData.RectTiles);
-    //     Foliage.LifeSimArea(roomData.RectTiles, 1);
-    //     Foliage.TrimArea(roomData.RectTiles);
+        ErEngine.Log("unloaded room ", roomId);
+        // remove sectors
+        foreach (var sectorCoord in room.RectSectors.GetInnerCoords())
+        {
+            if(!SectorGrid.Remove(sectorCoord)) continue;
+        }
+        foreach (var tileCoord in room.RectTiles.GetInnerCoords())
+        {
+            MapDisplay.QueueTileUpdate(tileCoord);
+            Foliage.QueueTileUpdate(tileCoord);
+            // Todo: revisit this
+            Game.PhysicsWorld.SetTileMask(tileCoord, uint.MaxValue);
+        }
     }
-    private void UnloadRoom(SwRoom room){}
     private void LoadMapObject(SwMapObjectData mapObjectData){}
     private void UnloadMapObject(SwMapObjectData mapObjectData){}
-    // private void LoadSector(SwSectorData sectorData)
-    // {
-    //     foreach (var tileCoord in sectorData.RectTiles.GetInnerCoords())
-    //     {
-    //         // update map display
-    //         MapDisplay.QueueTileUpdate(tileCoord);
-    //         // update foliage
-    //         // Foliage.QueueTileUpdate(tileCoord);
-    //         int tileId = sectorData.GetTopTile(tileCoord);
-    //         if(tileId < 0) continue;
-    //         // update physics world
-    //         Game.PhysicsWorld.SetTileMask(tileCoord, MapData.TileData[tileId].CollisionMask);
-    //     }
-    // }
+    private void SetTile(int layerIdx, ErVec2I tileCoord, int tileId)
+    {
+        var sectorCoord = tileCoord / SectorSizeTiles;
+        SectorGrid.Get(sectorCoord, NewSector).SetTile(layerIdx, tileCoord, tileId);
+        MapDisplay.QueueTileUpdate(tileCoord);
+    }
+    private SwSector NewSector(ErVec2I sectorCoord)
+    {
+        return new(sectorCoord, SectorSizeTiles, MapData.NumTileLayers);
+    }
 }
 
 // using Eris;

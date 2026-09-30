@@ -69,6 +69,7 @@ public readonly struct SwRoomData
             RectSectors = rectSectors,
             ObjectIds = ids,
             TileSpans = spans,
+            AdjRoomIds = adjRoomIds,
         };
         return true;
     }

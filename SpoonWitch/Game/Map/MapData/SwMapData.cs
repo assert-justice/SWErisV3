@@ -120,6 +120,7 @@ public readonly struct SwMapData
         PriList objects = [];
         res.Add("objects", objects);
         if(!data.TryGet("levels", out PriList levels)) return ErEngine.LogWarning("map missing levels");
+        SwMapTileSpan.Builder builder = new();
         foreach (var levelData in levels.Values)
         {
             PriDict roomData = [];
@@ -140,7 +141,7 @@ public readonly struct SwMapData
                 neighbors.Add(item.Get("levelIid"));
             }
             int tileLayerIdx = 0;
-            SwMapTileSpan.Builder builder = new();
+            
             foreach (var layer in levelData.Get("layerInstances").Values)
             {
                 if(!layer.TryGet("__identifier", out string layerName)) layerName = string.Empty;
@@ -168,7 +169,7 @@ public readonly struct SwMapData
                         }
                         break;
                     case "Tiles":
-                        List<SwMapTileSpan> tileSpans = [];
+                        // List<SwMapTileSpan> tileSpans = [];
                         if(!layer.TryGet("gridTiles", out PriList tiles)) {ErEngine.LogWarning("no tiles"); continue;}
                         foreach (var tile in tiles.Values)
                         {

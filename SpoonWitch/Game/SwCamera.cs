@@ -34,9 +34,8 @@ public class SwCamera
         if(!UseBounds) TargetPos = targetPosition;
         else TargetPos = Bounds.Clamp(targetPosition);
     }
-    public void SnapToPosition(ErVec2 position)
+    public void SnapToTarget()
     {
-        SetTargetPosition(position);
         CurrentPos = TargetPos;
         NextPos = TargetPos;
     }

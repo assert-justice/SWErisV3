@@ -8,7 +8,6 @@ public class SwSector
 {
     public readonly ErRect2I RectTiles;
     public readonly ErVec2I SectorCoord;
-    // private readonly int[][] Layers;
     private readonly ErArrayGrid2D<int> TopGrid;
     private readonly ErArrayGrid2D<int>?[] Layers;
     public SwSector(ErVec2I sectorCoord, ErVec2I sizeTiles, int numTileLayers)
@@ -35,7 +34,7 @@ public class SwSector
     {
         if (!RectTiles.Contains(tileCoord))
         {
-            ErEngine.LogWarning("attempted to get tile ", tileCoord, " of sector ", SectorCoord, ". coord out of bounds");
+            ErEngine.LogWarning("attempted to get top tile ", tileCoord, " of sector ", SectorCoord, ". coord out of bounds");
             return -1;
         }
         TopGrid.TryGet(tileCoord, out int tileId);
@@ -52,6 +51,7 @@ public class SwSector
         if(layer is null)
         {
             layer = new(RectTiles);
+            layer.Fill(-1);
             Layers[layerIdx] = layer;
         }
         layer.Set(tileCoord, tileId);

@@ -36,8 +36,8 @@ public readonly struct ErRect2I
     public static explicit operator ErRect2(ErRect2I value) => new((ErVec2)value.Position, (ErVec2)value.Size);
     public bool Contains(ErVec2I point)
     {
-        if(point.X < Left || point.X > Right) return false;
-        if(point.Y < Top || point.Y > Bottom) return false;
+        if(point.X < Left || point.X >= Right) return false;
+        if(point.Y < Top || point.Y >= Bottom) return false;
         return true;
     }
     public bool Contains(ErRect2I rect)

@@ -17,29 +17,6 @@ public class SwGame
 {
     // Tilemap stuff
     public readonly SwMap Map;
-    private SwRoomData? CurrentRoom;
-    private void HandleRooms()
-    {
-        var cameraTarget = (ErVec2I)CameraTarget;
-        // if(CurrentRoom is not null && CurrentRoom.RectPx.Contains(cameraTarget)) return; // No work to do
-        if(!Map.TryLoadRoom(out var roomData, CameraTarget))
-        {
-            if(CurrentRoom is not null) ErEngine.LogWarning("camera target out of bounds");
-            foreach (var camera in Cameras)
-            {
-                camera.UseBounds = false;
-            }
-            CurrentRoom = null;
-            return;
-        }
-        foreach (var camera in Cameras)
-        {
-            camera.UseBounds = true;
-            // camera.SetBounds((ErRect2)roomData.RectPx);
-            if(CurrentRoom is null) camera.SnapToPosition(CameraTarget);
-        }
-        CurrentRoom = roomData;
-    }
     // Rendering stuff
     private readonly ErTexture[] RenderTextures;
     private int RenderLayerIdx;
@@ -72,7 +49,10 @@ public class SwGame
     public SwGame(SwMapData mapData, int numPlayers)
     {
         PhysicsWorld = new(new(8,8), mapData.TileData.TileSize);
-        Map = new(this, mapData);
+        Map = new(this, mapData)
+        {
+            OnNewCurrentRoom = HandleNewRoom,
+        };
         // Todo: support more cameras
         Cameras = [new()];
         RenderTextures = new ErTexture[5];
@@ -80,8 +60,7 @@ public class SwGame
         {
             RenderTextures[idx] = ErTexture.GetRenderTexture((int)SwApp.CameraSize.X, (int)SwApp.CameraSize.Y);
         }
-        Map.DebugLoadAllRooms();
-        CameraTarget = ErVec2.Zero;// ((ErRect2)Map.CurrentCheckpoint.RectPx).Center;
+        CameraTarget = Map.CurrentCheckpointPos;
         // add players
         Huds = new SwHud[numPlayers];
         var playerProps = SwData.Prototypes.Get("entities/player");
@@ -113,7 +92,7 @@ public class SwGame
         // target pos = average of focus points
         if(FocusPoints.Count > 0)
         {
-            ErVec2 pos = default;
+            ErVec2 pos = ErVec2.Zero;
             foreach (var item in FocusPoints)
             {
                 pos += item;
@@ -121,15 +100,29 @@ public class SwGame
             CameraTarget = pos / FocusPoints.Count;
         }
         // Handle room stuff
-        HandleRooms();
+        Map.Update(CameraTarget);
         // Update cameras
         foreach (var camera in Cameras)
         {
             camera.SetTargetPosition(CameraTarget);
             camera.Update(dt);
         }
-        // Room 
         // Handle commands
+    }
+    private void HandleNewRoom(SwRoom? room, bool wasNull)
+    {
+        foreach (var camera in Cameras)
+        {
+            if(room is null)
+            {
+                camera.UseBounds = false;
+                continue;
+            }
+            camera.UseBounds = true;
+            camera.SetBounds((ErRect2)room.RectPx);
+            camera.SetTargetPosition(CameraTarget);
+            if(wasNull) camera.SnapToTarget();
+        }
     }
     public void Draw()
     {

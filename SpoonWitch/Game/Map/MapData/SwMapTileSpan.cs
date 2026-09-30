@@ -19,12 +19,12 @@ public readonly struct SwMapTileSpan
         dict.TrySet("length", Length);
         return dict;
     }
-    private bool IsNext(int layerIdx, ErVec2I tileCoord, int tileId)
+    private bool IsNext(int layerIdx, ErVec2I tileCoord, int tileId, int length)
     {
         if(layerIdx != LayerIdx) return false;
         if(tileId != TileId) return false;
         if(tileCoord.Y != TileCoord.Y) return false;
-        if(tileCoord.X != TileCoord.X + 1) return false;
+        if(tileCoord.X != TileCoord.X + length) return false;
         return true;
     }
     public static bool TryFromData(out SwMapTileSpan span, PriNode data)
@@ -65,7 +65,7 @@ public readonly struct SwMapTileSpan
         private int Length = 0;
         public void Add(int layerIdx, ErVec2I tileCoord, int tileId)
         {
-            if(Pending is not null && Pending.Value.IsNext(layerIdx, tileCoord, tileId))
+            if(Pending is not null && Pending.Value.IsNext(layerIdx, tileCoord, tileId, Length))
             {
                 Length++;
                 return;
