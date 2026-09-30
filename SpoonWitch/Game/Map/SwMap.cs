@@ -59,6 +59,7 @@ public class SwMap
             MapObjectIdLookup[mapData.Objects[idx].Iid] = idx;
         }
         AddGlobalHandler("map_set_tiles_rect", HandleSetTilesRect);
+        AddGlobalHandler("map_set_tiles_area", HandleSetTilesArea);
     }
     private void AddGlobalHandler(string verb, Action<PriNode> handler)
     {
@@ -70,6 +71,17 @@ public class SwMap
         if(!command.TryGet("layer_idx", out int layerIdx)) {ErEngine.LogWarning("set tiles command missing layer_idx"); return;}
         if(!SwPrion.TryGetRect2I(out var tileRect, command.Get("rect_tiles"))) {ErEngine.LogWarning("set tiles command missing rect_tiles"); return;}
         if(!command.TryGet("tile_id", out int tileId)) {ErEngine.LogWarning("set tiles command missing tile_id"); return;}
+        SetTilesRect(layerIdx, tileRect, tileId);
+    }
+    private void HandleSetTilesArea(PriNode command)
+    {
+        if(!command.TryGet("layer_idx", out int layerIdx)) {ErEngine.LogWarning("set tiles command missing layer_idx"); return;}
+        if(!command.TryGet("area_iid", out string areaIid)) {ErEngine.LogWarning("set tiles command missing area_iid"); return;}
+        if(!command.TryGet("tile_id", out int tileId)) {ErEngine.LogWarning("set tiles command missing tile_id"); return;}
+        if(!MapObjectIdLookup.TryGetValue(areaIid, out int mapObjectIdx)) {ErEngine.LogWarning("no such area iid ", areaIid); return;}
+        string className = MapData.Objects[mapObjectIdx].Class;
+        if(className != "area") {ErEngine.LogWarning("iid does not point to an area, it is a ", className); return;}
+        var tileRect = MapData.Objects[mapObjectIdx].RectTiles;
         SetTilesRect(layerIdx, tileRect, tileId);
     }
     private void SetTilesRect(int layerIdx, ErRect2I tileRect, int tileId)
