@@ -2,6 +2,7 @@ using Eris;
 using ErisMath;
 using Prion.Db;
 using Prion.Node;
+using SpoonWitch.Command;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Rendering;
 using SpoonWitch.Utils;
@@ -19,41 +20,19 @@ public abstract class SwEntity
     public ErVec2 Position;
     public bool Visible = true;
     public bool IsFreeQueued{get; private set;}
-    private readonly Queue<PriNode> CommandQueue = [];
-    private readonly Dictionary<string,Action<PriNode>> Handlers = [];
-    private readonly Dictionary<string,Action<PriNode>> GlobalHandlers = [];
+    private readonly SwCommandQueue CommandQueue = new();
     protected readonly SwClockGroup Clocks = new();
     protected void AddHandler(string verb, Action<PriNode> action)
     {
-        if(!Handlers.TryAdd(verb, action)) ErEngine.LogWarning("tried to add duplicate handler: ", verb);
+        CommandQueue.AddHandler(verb, action);
     }
     protected void AddGlobalHandler(string verb, Action<PriNode> action)
     {
-        if(!GlobalHandlers.TryAdd(verb, action)) ErEngine.LogWarning("tried to add duplicate global: ", verb);
+        SwApp.CommandQueue.AddHandler(verb, action);
     }
     public void AddCommand(PriNode command)
     {
-        if(command is PriNull)
-        {
-            ErEngine.LogWarning("null command passed to entity: ", this);
-            return;
-        }
-        if(command.TryAs(out string verb))
-        {
-            PriDict com = [];
-            com.TrySet("verb", verb);
-            AddCommand(com);
-            return;
-        }
-        if(command is PriList list)
-        {
-            foreach (var item in list.Data)
-            {
-                AddCommand(item);
-            }
-            return;
-        }
-        CommandQueue.Enqueue(command);
+        CommandQueue.AddCommand(command);
     }
     protected SwComponent RegisterComponent(SwComponent component)
     {
@@ -78,28 +57,9 @@ public abstract class SwEntity
     {
         IsFreeQueued = true;
     }
-    protected void HandleCommands()
-    {
-        while(CommandQueue.TryDequeue(out var command))
-        {
-            if(!command.TryGet("verb", out string verb))
-            {
-                ErEngine.LogWarning("bad command, no verb");
-                return;
-            }
-            if(!Handlers.TryGetValue(verb, out var action)) continue;
-            action(command);
-        }
-        foreach (var (verb, action) in GlobalHandlers)
-        {
-            foreach (var item in SwApp.CommandStore.GetCommands(verb))
-            {
-                action(item);
-            }
-        }
-    }
     public void GameUpdate(double dt)
     {
+        CommandQueue.Process();
         Update(dt);
         foreach (var comp in Components)
         {
@@ -109,7 +69,6 @@ public abstract class SwEntity
     }
     protected virtual void Update(double dt)
     {
-        HandleCommands();
     }
     protected virtual void UpdateLate(double dt){}
     public void GameDraw()

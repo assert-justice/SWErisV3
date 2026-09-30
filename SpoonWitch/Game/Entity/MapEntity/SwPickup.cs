@@ -69,7 +69,7 @@ public class SwPickup : SwMapEntity
             }
             entity.AddCommand(command);
         }
-        if(Props.TryGet("on_enter_global", out command)) SwApp.CommandStore.AddCommand(command);
+        if(Props.TryGet("on_enter_global", out command)) SwApp.CommandQueue.AddCommand(command);
         Uses++;
         if(MaxUses > 0 && Uses >= MaxUses)
         {

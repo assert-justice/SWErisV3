@@ -63,6 +63,6 @@ public class SwButton : SwUiNode
     public override void Confirm()
     {
         base.Confirm();
-        if(Command != PriNull.Null) SwApp.CommandStore.AddCommand(Command);
+        if(Command != PriNull.Null) SwApp.CommandQueue.AddCommand(Command);
     }
 }

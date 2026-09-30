@@ -27,17 +27,12 @@ public class SwApp : IErApp
     private SwMenuHolder MenuHolder = null!;
     private static int NextId;
     private ErTexture RenderTexture = null!;
-    public static readonly SwCommandStore CommandStore = new();
-    // public static readonly PriDb Settings = new();
-    // public static readonly PriDb SaveData = new();
-    // public static readonly PriDb Manifest = new();
-    // private ErAudioSource Source = null!;
+    public static readonly SwCommandQueue CommandQueue = new();
     // public static double GameSpeed => IsPaused ? GameSpeedMul : 0;
     // public static double GameSpeedMul => 1;
     public static bool IsPaused{get; private set;} = false;
-    // public const string GAME_DATA_PATH = "game_data";
     public static bool Debug => false;// Settings.TryGet("debug/debug", out bool debug) && debug;
-    private readonly SwCommandHandler CommandHandler = new(CommandStore);
+    // private SwCommandQueue CommandHandler => CommandStore;
     public static int Main()
     {
         SwApp app = new();
@@ -47,25 +42,20 @@ public class SwApp : IErApp
     }
     public void Init()
     {
-        CommandHandler.AddHandlerAction("quit", ErEngine.Quit);
-        CommandHandler.AddHandlerAction("launch", Launch);
-        CommandHandler.AddHandlerAction("pause", Pause);
-        CommandHandler.AddHandlerAction("unpause", UnPause);
+        CommandQueue.AddHandler("quit", (_)=>ErEngine.Quit());
+        CommandQueue.AddHandler("launch", (_)=>Launch());
+        CommandQueue.AddHandler("pause", (_)=>Pause());
+        CommandQueue.AddHandler("unpause", (_)=>UnPause());
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
         if (!SwData.TryInit())
         {
             ErEngine.LogError("game initialization failed");
             return;
         }
-        // if(!Temp()) ErEngine.LogWarning("failed to load map");
-        // else ErEngine.Log("map loaded!");
-        // ErEngine.Quit();
         TryInitMenu();
     }
     private bool TryInitMenu()
     {
-        // SwData.TryLoadPrion()
-        // if(!TryLoadPrion("game_data/menus/menus.json", out var node)) return false;
         if(!SwUiNode.TryFromPrion(SwData.Manifest.Get("menu_config"), out SwMenuHolder menuHolder)) return false;
         MenuHolder = menuHolder;
         return true;
@@ -86,9 +76,6 @@ public class SwApp : IErApp
         mapData = default!;
         if(!SwMapData.TryConvertLdtkData(out var mapDataPri, SwData.Manifest.Get("map"))) return ErEngine.LogWarning("failed to convert map data");
         if(!SwMapData.TryFromData(out mapData, mapDataPri)) return ErEngine.LogWarning("failed to load map data");
-        // if(!SwTileData.TryFromData(out var tileData, SwData.Manifest.Get("map/tile_data"))) return ErEngine.LogWarning("failed to load tile data");
-        // if(!SwFoliageData.TryFromData(out var foliageData, SwData.Manifest.Get("map/foliage_data"))) return ErEngine.LogWarning("failed to load foliage data");
-        // if(!SwMapData.TryFromLdtkData(out mapData, tileData, foliageData, SwData.Manifest.Get("map/map_data"))) return ErEngine.LogWarning("failed to load map data");
         return true;
     }
     private void Pause()
@@ -104,8 +91,9 @@ public class SwApp : IErApp
     }
     public void Update()
     {
-        CommandStore.Flush();
-        CommandHandler.Dispatch();
+        // CommandStore.Flush();
+        // CommandHandler.Dispatch();
+        CommandQueue.Process();
         if(!IsPaused) Game?.Update(ErEngine.DeltaTime);
         // Game?.Update(IsPaused ? 0 : ErEngine.DeltaTime);
         MenuInput();
@@ -138,7 +126,7 @@ public class SwApp : IErApp
             if (ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Escape))
             {
                 MenuHolder.Visible = true;
-                CommandStore.AddCommandVerb("pause");
+                CommandQueue.AddCommandVerb("pause");
             }
             return;
         }

@@ -172,7 +172,7 @@ public class SwPlayer: SwActor
         if(IsAlive) Game.AddFocusPoint(Position);
         if(!GotMad && ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.M))
         {
-            SwApp.CommandStore.AddCommandVerb("get_mad");
+            SwApp.CommandQueue.AddCommandVerb("get_mad");
             GotMad = true;
         }
     }

@@ -8,14 +8,12 @@ namespace SpoonWitch.UI.Node;
 public class SwMenuHolder: SwUiNode
 {
     private readonly Stack<string> MenuStack = [];
-    private readonly SwCommandHandler CommandHandler;
     private readonly Dictionary<string,SwMenu> MenuLookup = [];
     private SwMenu? CurrentMenu;
     public SwMenuHolder(PriNode node) : base(node)
     {
-        CommandHandler = new(SwApp.CommandStore);
-        CommandHandler.AddHandler("menu_set", SetMenu);
-        CommandHandler.AddHandler("menu_back", (_)=>PopMenu());
+        SwApp.CommandQueue.AddHandler("menu_set", SetMenu);
+        SwApp.CommandQueue.AddHandler("menu_back", (_)=>PopMenu());
         foreach (var menu in GetChildren<SwMenu>())
         {
             if(MenuStack.Count == 0) MenuStack.Push(menu.Id);
@@ -25,7 +23,6 @@ public class SwMenuHolder: SwUiNode
     }
     public override void Update()
     {
-        CommandHandler.Dispatch();
         HandleQueued();
         base.Update();
     }
@@ -108,16 +105,5 @@ public class SwMenuHolder: SwUiNode
             return;
         }
         SetMenu(menuId);
-        // if (!MenuLookup.ContainsKey(menuId))
-        // {
-        //     ErEngine.LogWarning("invalid menu name ", menuId);
-        //     return;
-        // }
-        // if(CurrentMenu is not null && CurrentMenu.Id == menuId) return;
-        // if (MenuStack.Contains(menuId))
-        // {
-        //     while(MenuStack.TryPop(out var id) && id != menuId){}
-        // }
-        // MenuStack.Push(menuId);
     }
 }

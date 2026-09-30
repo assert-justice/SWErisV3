@@ -25,15 +25,24 @@ public class SwTrigger : SwMapEntity
         Area = new(this, "area", mask, size, enabled: true, onBodyEnter: OnEnter);
         RegisterComponent(Area);
     }
+    private bool IsEnabled()
+    {
+        if(!Props.TryGet("max_activations", out int max_activations)) max_activations = 1;
+        if(max_activations < 0) return true;
+        return Activations < max_activations;
+    }
     private void OnEnter(SwEntity entity)
     {
+        if (!IsEnabled())
+        {
+            ErEngine.LogWarning("attempted to activate trigger after it was disabled");
+            return;
+        }
         var command = Props.Get("fields/on_enter_json");
         if(command is PriNull) return;
-        if(Props.TryGet("is_command_global", out bool b) && b) SwApp.CommandStore.AddCommand(command);
+        if(Props.TryGet("is_command_global", out bool b) && b) SwApp.CommandQueue.AddCommand(command);
         else entity.AddCommand(command);
-        if(!Props.TryGet("max_activations", out int max_activations)) max_activations = 1;
-        if(max_activations < 0) return;
         Activations++;
-        if(Activations >= max_activations) Area.Enabled = false;
+        if(!IsEnabled()) Area.Enabled = false;
     }
 }
