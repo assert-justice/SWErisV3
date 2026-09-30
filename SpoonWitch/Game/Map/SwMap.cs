@@ -3,9 +3,11 @@ using Eris;
 using Eris.Utils.Grid2D;
 using ErisMath;
 using ErisPhysics2D;
+using SpoonWitch.Game.Entity.MapEntity;
 using SpoonWitch.Game.Map.Foliage;
 using SpoonWitch.Game.Map.MapData;
 using SpoonWitch.Game.Map.MapDisplay;
+using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Map;
 
@@ -19,7 +21,7 @@ public class SwMap
     private readonly Dictionary<ErVec2I, string> RoomSectorLookup = [];
     private readonly Dictionary<string, SwRoom> LoadedRooms = [];
     private readonly Dictionary<string, int> MapObjectIdLookup = [];
-    private readonly Dictionary<string, int> LoadedMapObjects = [];
+    private readonly Dictionary<string, (int mapObjectIdx, int entityId)> LoadedMapObjects = [];
     private readonly ErHashGrid2D<SwSector> SectorGrid;
     private readonly Queue<Action> PostprocessQueue = [];
     public Action<SwRoom?,bool> OnNewCurrentRoom{get; set;}
@@ -48,6 +50,10 @@ public class SwMap
             {
                 RoomSectorLookup[sectorCoord] = id;
             }
+        }
+        for (int idx = 0; idx < mapData.Objects.Length; idx++)
+        {
+            MapObjectIdLookup[mapData.Objects[idx].Iid] = idx;
         }
     }
     public void Update(ErVec2 targetPoint)
@@ -139,9 +145,13 @@ public class SwMap
             Game.PhysicsWorld.SetTileMask(tileCoord, mask);
         }
         // load map objects
+        foreach (var mapObjectId in room.Data.ObjectIds)
+        {
+            LoadMapObject(mapObjectId);
+        }
         // enqueue postprocessing
         PostprocessQueue.Enqueue(()=>HandleFoliage(room.RectTiles));
-        ErEngine.Log("loaded room: ", room.Data.Name);
+        // ErEngine.Log("loaded room: ", room.Data.Name);
         return room;
     }
     private void HandleFoliage(ErRect2I tileRect)
@@ -158,7 +168,7 @@ public class SwMap
             return;
         }
         LoadedRooms.Remove(roomId);
-        ErEngine.Log("unloaded room ", room.Data.Name);
+        // ErEngine.Log("unloaded room ", room.Data.Name);
         // remove sectors
         foreach (var sectorCoord in room.RectSectors.GetInnerCoords())
         {
@@ -171,9 +181,49 @@ public class SwMap
             // Todo: revisit this
             Game.PhysicsWorld.SetTileMask(tileCoord, uint.MaxValue);
         }
+        foreach (var mapObjectId in room.Data.ObjectIds)
+        {
+            UnloadMapObject(mapObjectId);
+        }
     }
-    private void LoadMapObject(SwMapObjectData mapObjectData){}
-    private void UnloadMapObject(SwMapObjectData mapObjectData){}
+    private void LoadMapObject(string mapObjectId)
+    {
+        if (LoadedMapObjects.ContainsKey(mapObjectId))
+        {
+            ErEngine.LogWarning("attempted to load already loaded map object: ", mapObjectId);
+            return;
+        }
+        if(!MapObjectIdLookup.TryGetValue(mapObjectId, out int mapObjectIdx))
+        {
+            ErEngine.LogWarning("no map object with id ", mapObjectId, " exists");
+            return;
+        }
+        ErEngine.Log("loaded map entity ", MapData.Objects[mapObjectIdx].Name);
+        var props = MapData.Objects[mapObjectIdx].GetProps();
+        var rectPx = (ErRect2)(MapData.Objects[mapObjectIdx].RectTiles * TileSize);
+        SwPrion.TrySetRect2(props, "rect_px", rectPx);
+        SwPrion.TrySetVec2(props, rectPx.Center);
+        ErEngine.Log(props);
+        int entId = 0;
+        LoadedMapObjects.Add(mapObjectId, (mapObjectIdx, entId));
+    }
+    private void UnloadMapObject(string mapObjectId)
+    {
+        if(!LoadedMapObjects.TryGetValue(mapObjectId, out var value))
+        {
+            ErEngine.LogWarning("failed to unload map object, bad id: ", mapObjectId);
+            return;
+        }
+        LoadedMapObjects.Remove(mapObjectId);
+        // get entity and tell it to unload
+        // if(!Game.EntityLookup.TryGet(mapObjectId, out SwMapEntity mapEntity))
+        // {
+        //     ErEngine.LogWarning("failed to unload map entity, no such entity for id: ", mapObjectId);
+        //     return;
+        // }
+        // mapEntity.Unload();
+        ErEngine.Log("unloaded map entity ", MapData.Objects[value.mapObjectIdx].Name);
+    }
     private void SetTile(int layerIdx, ErVec2I tileCoord, int tileId)
     {
         var sectorCoord = tileCoord / SectorSizeTiles;

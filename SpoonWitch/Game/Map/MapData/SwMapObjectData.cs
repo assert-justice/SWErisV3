@@ -14,6 +14,13 @@ public readonly struct SwMapObjectData
     public string Class{get; init;}
     public ErRect2I RectTiles{get; init;}
     public PriDict Fields{get; init;}
+    public PriNode GetProps()
+    {
+        PriDict res = [];
+        res.Merge(ToPri());
+        res.Merge(SwData.Prototypes.Get($"map_objects/{Class}"));
+        return res;
+    }
     public PriNode ToPri()
     {
         PriDict res = [];

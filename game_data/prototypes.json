@@ -26,6 +26,7 @@
         "slume": "entities/actors/slume/slume_properties.json",
         "knight": "entities/actors/knight/knight_properties.json"
     },
+    "map_objects":{},
     "projectiles":{
         "sling":{
             "mask": 3,
