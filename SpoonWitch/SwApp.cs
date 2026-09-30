@@ -1,16 +1,10 @@
-﻿using System.Reflection;
-using System.Text.Json.Nodes;
-using Eris;
+﻿using Eris;
 using Eris.App;
 using Eris.Renderer;
 using ErisMath;
-using Prion.Db;
-using Prion.Node;
-using Prion.Parser;
 using SpoonWitch.Command;
 using SpoonWitch.Data;
 using SpoonWitch.Game;
-using SpoonWitch.Game.Map.Foliage;
 using SpoonWitch.Game.Map.MapData;
 using SpoonWitch.UI.Node;
 
@@ -32,7 +26,6 @@ public class SwApp : IErApp
     // public static double GameSpeedMul => 1;
     public static bool IsPaused{get; private set;} = false;
     public static bool Debug => false;// Settings.TryGet("debug/debug", out bool debug) && debug;
-    // private SwCommandQueue CommandHandler => CommandStore;
     public static int Main()
     {
         SwApp app = new();
@@ -91,11 +84,8 @@ public class SwApp : IErApp
     }
     public void Update()
     {
-        // CommandStore.Flush();
-        // CommandHandler.Dispatch();
         CommandQueue.Process();
         if(!IsPaused) Game?.Update(ErEngine.DeltaTime);
-        // Game?.Update(IsPaused ? 0 : ErEngine.DeltaTime);
         MenuInput();
         MenuHolder.Update();
     }
@@ -111,7 +101,7 @@ public class SwApp : IErApp
     }
     public void Cleanup()
     {
-        //
+        CommandQueue.Clear();
     }
     private bool Up;
     private bool Down;

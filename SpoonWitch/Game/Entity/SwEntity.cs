@@ -12,6 +12,7 @@ namespace SpoonWitch.Game.Entity;
 public abstract class SwEntity
 {
     private readonly Dictionary<(Type,string), SwComponent> ComponentLookup = [];
+    private readonly List<(string verb, Action<PriNode> handler)> GlobalHandlers = [];
     private IEnumerable<SwComponent> Components => ComponentLookup.Values;
     public SwGame Game{get; private set;} = null!;
     public PriDb Props{get; private set;} = new(new PriDict());
@@ -29,6 +30,7 @@ public abstract class SwEntity
     protected void AddGlobalHandler(string verb, Action<PriNode> action)
     {
         SwApp.CommandQueue.AddHandler(verb, action);
+        GlobalHandlers.Add((verb,action));
     }
     public void AddCommand(PriNode command)
     {
@@ -116,6 +118,10 @@ public abstract class SwEntity
         foreach (var item in Components)
         {
             item.Cleanup();
+        }
+        foreach (var (verb,action) in GlobalHandlers)
+        {
+            SwApp.CommandQueue.RemoveHandler(verb, action);
         }
     }
     public static T GameLoad<T>(SwGame game, PriNode props) where T: SwEntity, new()
