@@ -198,13 +198,35 @@ public class SwMap
             ErEngine.LogWarning("no map object with id ", mapObjectId, " exists");
             return;
         }
-        ErEngine.Log("loaded map entity ", MapData.Objects[mapObjectIdx].Name);
+        // ErEngine.Log("loaded map entity ", MapData.Objects[mapObjectIdx].Name);
         var props = MapData.Objects[mapObjectIdx].GetProps();
         var rectPx = (ErRect2)(MapData.Objects[mapObjectIdx].RectTiles * TileSize);
         SwPrion.TrySetRect2(props, "rect_px", rectPx);
         SwPrion.TrySetVec2(props, rectPx.Center);
-        ErEngine.Log(props);
-        int entId = 0;
+        // ErEngine.Log(props);
+        string className = MapData.Objects[mapObjectIdx].Class;
+        int entId = -1;// int.MaxValue;
+        switch (className)
+        {
+            case "area":
+                // areas do not have a map entity, so their id is -1
+                entId = -1;
+                break;
+            case "prop":
+                break;
+            case "checkpoint":
+                break;
+            case "spawner":
+                break;
+            case "pickup":
+                break;
+            case "trigger":
+                entId = Game.AddEntity<SwTrigger>(props).Id;
+                break;
+            default:
+                ErEngine.LogWarning("unsupported map object class ", className);
+                return;
+        }
         LoadedMapObjects.Add(mapObjectId, (mapObjectIdx, entId));
     }
     private void UnloadMapObject(string mapObjectId)
@@ -216,13 +238,14 @@ public class SwMap
         }
         LoadedMapObjects.Remove(mapObjectId);
         // get entity and tell it to unload
-        // if(!Game.EntityLookup.TryGet(mapObjectId, out SwMapEntity mapEntity))
-        // {
-        //     ErEngine.LogWarning("failed to unload map entity, no such entity for id: ", mapObjectId);
-        //     return;
-        // }
-        // mapEntity.Unload();
-        ErEngine.Log("unloaded map entity ", MapData.Objects[value.mapObjectIdx].Name);
+        if(value.entityId == -1){}
+        else if(!Game.EntityLookup.TryGet(value.entityId.ToString(), out SwMapEntity mapEntity))
+        {
+            ErEngine.LogWarning("failed to unload map entity, no such entity for id: ", mapObjectId);
+            return;
+        }
+        else mapEntity.Unload();
+        // ErEngine.Log("unloaded map entity ", MapData.Objects[value.mapObjectIdx].Name);
     }
     private void SetTile(int layerIdx, ErVec2I tileCoord, int tileId)
     {

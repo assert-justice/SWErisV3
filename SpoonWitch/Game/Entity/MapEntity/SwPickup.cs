@@ -6,9 +6,9 @@ using SpoonWitch.Data;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Utils;
 
-namespace SpoonWitch.Game.Entity;
+namespace SpoonWitch.Game.Entity.MapEntity;
 
-public class SwPickup : SwEntity
+public class SwPickup : SwMapEntity
 {
     private SwAreaComponent Area = null!;
     private ErTexture? Texture;

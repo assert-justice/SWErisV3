@@ -88,7 +88,7 @@ public readonly struct SwMapObjectData
                         {
                             if(!item.TryGet("__value", out s)) continue;
                             if(!SwData.TryParseJsonToPrion(s, out var priNode)){ErEngine.LogWarning("failed to parse property overrides json"); continue;}
-                            fields.TrySet(s, priNode);
+                            fields.TrySet(key, priNode);
                         }
                         else fields.Data[key] = item.Get("__value");
                     break;

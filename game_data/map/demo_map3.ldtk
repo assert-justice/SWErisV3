@@ -2709,34 +2709,7 @@
 					"seed": 8484405,
 					"overrideTilesetUid": null,
 					"gridTiles": [],
-					"entityInstances": [
-						{
-							"__identifier": "trigger",
-							"__grid": [1,1],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#FEE761",
-							"iid": "877ee7a0-96d0-11f1-a632-2dc4a040148d",
-							"width": 576,
-							"height": 160,
-							"defUid": 13,
-							"px": [32,32],
-							"fieldInstances": [
-								{ "__identifier": "single_use", "__type": "Bool", "__value": true, "__tile": null, "defUid": 14, "realEditorValues": [] },
-								{ "__identifier": "whitelist", "__type": "String", "__value": null, "__tile": null, "defUid": 15, "realEditorValues": [] },
-								{ "__identifier": "blacklist", "__type": "String", "__value": null, "__tile": null, "defUid": 16, "realEditorValues": [] },
-								{ "__identifier": "on_enter_json", "__type": "String", "__value": "{\"verb\": \"boss_wake\"}", "__tile": null, "defUid": 17, "realEditorValues": [{
-									"id": "V_String",
-									"params": ["{\"verb\": \"boss_wake\"}"]
-								}] },
-								{ "__identifier": "mask", "__type": "Int", "__value": 2, "__tile": null, "defUid": 92, "realEditorValues": [] },
-								{ "__identifier": "is_command_global", "__type": "Bool", "__value": true, "__tile": null, "defUid": 93, "realEditorValues": [] }
-							],
-							"__worldX": 672,
-							"__worldY": -288
-						}
-					]
+					"entityInstances": []
 				},
 				{
 					"__identifier": "entities",
@@ -3323,6 +3296,29 @@
 							"fieldInstances": [],
 							"__worldX": 928,
 							"__worldY": 32
+						},
+						{
+							"__identifier": "trigger",
+							"__grid": [11,3],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FEE761",
+							"iid": "7a4e93b0-96d0-11f1-b56b-bd1309d4dc3f",
+							"width": 64,
+							"height": 64,
+							"defUid": 13,
+							"px": [352,96],
+							"fieldInstances": [
+								{ "__identifier": "single_use", "__type": "Bool", "__value": true, "__tile": null, "defUid": 14, "realEditorValues": [] },
+								{ "__identifier": "whitelist", "__type": "String", "__value": null, "__tile": null, "defUid": 15, "realEditorValues": [] },
+								{ "__identifier": "blacklist", "__type": "String", "__value": null, "__tile": null, "defUid": 16, "realEditorValues": [] },
+								{ "__identifier": "on_enter_json", "__type": "String", "__value": null, "__tile": null, "defUid": 17, "realEditorValues": [] },
+								{ "__identifier": "mask", "__type": "Int", "__value": 2, "__tile": null, "defUid": 92, "realEditorValues": [] },
+								{ "__identifier": "is_command_global", "__type": "Bool", "__value": true, "__tile": null, "defUid": 93, "realEditorValues": [] }
+							],
+							"__worldX": 992,
+							"__worldY": 96
 						}
 					]
 				},

@@ -1,6 +1,7 @@
 ﻿using Eris;
 using Eris.Renderer;
 using Eris.Utils;
+using Eris.Utils.Grid2D;
 using ErisMath;
 using ErisPhysics2D.Collider;
 
@@ -13,7 +14,8 @@ public class ErPhysicsWorld2D
     public readonly ErVec2I TileSize;
     private readonly Dictionary<int, ErColliderArea> Areas = [];
     private readonly Dictionary<int, ErColliderBody> Bodies = [];
-    private readonly ErSpatialGrid2D<ErWorldCell> Grid;
+    // private readonly ErSpatialGrid2D<ErWorldCell> Grid;
+    private readonly ErHashGrid2D<ErWorldCell> Grid;
     private readonly HashSet<ErVec2I> CoordSet = [];
     private readonly HashSet<int> IntSet = [];
     public ErPhysicsWorld2D(ErVec2I cellSizeTiles, ErVec2I tileSize)
@@ -21,7 +23,7 @@ public class ErPhysicsWorld2D
         CellSizeTiles = cellSizeTiles;
         TileSize = tileSize;
         CellSizePx = cellSizeTiles * tileSize;
-        Grid = new(cellSizeTiles, NewCell);
+        Grid = new();
     }
     private ErWorldCell NewCell(ErVec2I cellCoord)
     {
@@ -30,7 +32,27 @@ public class ErPhysicsWorld2D
     public void SetTileMask(ErVec2I tileCoord, uint mask)
     {
         var cellCoord = tileCoord / CellSizeTiles;
-        Grid.GetCellInit(cellCoord).SetTileMask(tileCoord, mask);
+        GetCellInit(cellCoord).SetTileMask(tileCoord, mask);
+    }
+    public ErVec2I PointToCellCoord(ErVec2 point)
+    {
+        return (ErVec2I)point / CellSizePx;
+    }
+    private IEnumerable<ErVec2I> GetCellCoordsTouchingRect(ErRect2 rect)
+    {
+        var tl = PointToCellCoord(rect.Position);
+        var br = PointToCellCoord(rect.Position+rect.Size);
+        for (int xi = tl.X; xi <= br.X; xi++)
+        {
+            for(int yi = tl.Y; yi <= br.Y; yi++)
+            {
+                yield return new(xi,yi);
+            }
+        }
+    }
+    private ErWorldCell GetCellInit(ErVec2I cellCoord)
+    {
+        return Grid.Get(cellCoord, NewCell);
     }
     public void AddArea(ErColliderArea area)
     {
@@ -38,7 +60,7 @@ public class ErPhysicsWorld2D
         if(Areas.TryGetValue(area.Id, out var oldArea))
         {
             // get old overlapping cell coord hash set
-            foreach (var cellCoord in Grid.GetCellCoordsTouchingRect(oldArea.Rect))
+            foreach (var cellCoord in GetCellCoordsTouchingRect(oldArea.Rect))
             {
                 CoordSet.Add(cellCoord);
             }
@@ -49,15 +71,15 @@ public class ErPhysicsWorld2D
         // so loop through all the cells with the new area
         // if that cell is already in the old cells, remove it from the set
         // for all the remaining cells remove the area from each cell
-        foreach (var cellCoord in Grid.GetCellCoordsTouchingRect(area.Rect))
+        foreach (var cellCoord in GetCellCoordsTouchingRect(area.Rect))
         {
-            var cell = Grid.GetCellInit(cellCoord);
+            var cell = GetCellInit(cellCoord);
             cell.Areas[area.Id] = area;
             CoordSet.Remove(cellCoord);
         }
         foreach (var cellCoord in CoordSet)
         {
-            if(Grid.TryGetCell(cellCoord, out var cell)) cell.Areas.Remove(area.Id);
+            if(Grid.TryGet(cellCoord, out var cell)) cell.Areas.Remove(area.Id);
         }
     }
     public bool RemoveArea(int areaId)
@@ -65,9 +87,9 @@ public class ErPhysicsWorld2D
         if(!Areas.TryGetValue(areaId, out var area)) return false;
         Areas.Remove(areaId);
         // remove from adj cells
-        foreach (var cellCoord in Grid.GetCellCoordsTouchingRect(area.Rect))
+        foreach (var cellCoord in GetCellCoordsTouchingRect(area.Rect))
         {
-            if(Grid.TryGetCell(cellCoord, out var cell)) cell.Areas.Remove(area.Id);
+            if(Grid.TryGet(cellCoord, out var cell)) cell.Areas.Remove(area.Id);
         }
         return true;
     }
@@ -77,7 +99,7 @@ public class ErPhysicsWorld2D
         if(Bodies.TryGetValue(body.Id, out var oldBody))
         {
             // get old overlapping cell coord hash set
-            foreach (var cellCoord in Grid.GetCellCoordsTouchingRect(oldBody.Rect))
+            foreach (var cellCoord in GetCellCoordsTouchingRect(oldBody.Rect))
             {
                 CoordSet.Add(cellCoord);
             }
@@ -88,15 +110,15 @@ public class ErPhysicsWorld2D
         // so loop through all the cells with the new area
         // if that cell is already in the old cells, remove it from the set
         // for all the remaining cells remove the area from each cell
-        foreach (var cellCoord in Grid.GetCellCoordsTouchingRect(body.Rect))
+        foreach (var cellCoord in GetCellCoordsTouchingRect(body.Rect))
         {
-            var cell = Grid.GetCellInit(cellCoord);
+            var cell = GetCellInit(cellCoord);
             cell.Bodies[body.Id] = body;
             CoordSet.Remove(cellCoord);
         }
         foreach (var cellCoord in CoordSet)
         {
-            if(Grid.TryGetCell(cellCoord, out var cell)) cell.Bodies.Remove(body.Id);
+            if(Grid.TryGet(cellCoord, out var cell)) cell.Bodies.Remove(body.Id);
         }
     }
     public bool RemoveBody(int bodyId)
@@ -104,9 +126,9 @@ public class ErPhysicsWorld2D
         if(!Bodies.TryGetValue(bodyId, out var body)) return false;
         Bodies.Remove(bodyId);
         // remove from adj cells
-        foreach (var cellCoord in Grid.GetCellCoordsTouchingRect(body.Rect))
+        foreach (var cellCoord in GetCellCoordsTouchingRect(body.Rect))
         {
-            if(Grid.TryGetCell(cellCoord, out var cell)) cell.Bodies.Remove(body.Id);
+            if(Grid.TryGet(cellCoord, out var cell)) cell.Bodies.Remove(body.Id);
         }
         return true;
     }
@@ -114,23 +136,21 @@ public class ErPhysicsWorld2D
     {
         foreach (var area in Areas.Values)
         {
-            area.Update(GetBodiesInRect(area.Rect));
+            area.Process(GetBodiesInRect(area.Rect));
         }
     }
     private IEnumerable<ErColliderBody> GetBodiesInRect(ErRect2 rect)
     {
         IntSet.Clear();
-        foreach (var cellCoord in Grid.GetCellCoordsTouchingRect(rect))
+        foreach (var cellCoord in GetCellCoordsTouchingRect(rect))
         {
-            if(!Grid.TryGetCell(cellCoord, out var cell)) continue;
-            foreach(var bodyId in cell.Bodies.Keys)
+            if(!Grid.TryGet(cellCoord, out var cell)) continue;
+            foreach(var body in cell.Bodies.Values)
             {
-                IntSet.Add(bodyId);
+                if(IntSet.Contains(body.Id)) continue;
+                IntSet.Add(body.Id);
+                if(body.Rect.Overlaps(rect)) yield return body;
             }
-        }
-        foreach (var bodyId in IntSet)
-        {
-            if(Bodies.TryGetValue(bodyId, out var body)) yield return body;
         }
     }
     public void MoveAndSlide(double dt, ErColliderBody body)
@@ -211,14 +231,14 @@ public class ErPhysicsWorld2D
             {
                 ErVec2I tileCoord = new(xi, yi);
                 var cellCoord = tileCoord / CellSizeTiles;
-                if(!Grid.TryGetCell(cellCoord, out var cell)) continue;
+                if(!Grid.TryGet(cellCoord, out var cell)) continue;
                 if((cell.GetTileMask(tileCoord) & mask) != 0) yield return new((ErVec2)(tileCoord * TileSize),(ErVec2)TileSize);
             }
         }
         IntSet.Clear();
-        foreach (var cellCoord in Grid.GetCellCoordsTouchingRect(rect))
+        foreach (var cellCoord in GetCellCoordsTouchingRect(rect))
         {
-            if(!Grid.TryGetCell(cellCoord, out var cell)) continue;
+            if(!Grid.TryGet(cellCoord, out var cell)) continue;
             foreach (var body in cell.Bodies.Values)
             {
                 if(IntSet.Contains(body.Id)) continue;
@@ -250,20 +270,25 @@ public class ErPhysicsWorld2D
         foreach (var tileCoord in GetLine(start, end))
         {
             var cellCoord = tileCoord / CellSizeTiles;
-            if(!Grid.TryGetCell(cellCoord, out var cell)) continue;
+            if(!Grid.TryGet(cellCoord, out var cell)) continue;
             if((mask & cell.GetTileMask(tileCoord)) != 0) return true;
         }
         return false;
     }
     public void DebugDraw()
     {
-        foreach (var cell in Grid.GetAllCells())
+        foreach (var cell in Grid.Values)
         {
             foreach (var tileCoord in cell.RectTiles.GetInnerCoords())
             {
                 var mask = cell.GetTileMask(tileCoord);
                 if(mask == 0) continue;
                 ErEngine.Renderer.DrawRect(new(tileCoord.X * TileSize.X, tileCoord.Y * TileSize.Y, TileSize.X, TileSize.Y), ErColor.Blue, filled: false);
+            }
+            foreach (var item in cell.Areas.Values)
+            {
+                if(item.OverlappingCount > 0) ErEngine.Renderer.DrawRect(item.Rect, ErColor.Red, filled: false);
+                else ErEngine.Renderer.DrawRect(item.Rect, ErColor.Blue, filled: false);
             }
         }
     }

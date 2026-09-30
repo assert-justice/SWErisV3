@@ -87,6 +87,8 @@ public class SwGame
         {
             entity.GameUpdate(dt);
         }
+        // Update areas
+        PhysicsWorld.UpdateAreas();
         // Update hud
         // Get focus point
         // target pos = average of focus points
@@ -144,7 +146,7 @@ public class SwGame
             SetRenderLayer(0);
             // draw map
             Map.Draw();
-            // PhysicsWorld.DebugDraw();
+            PhysicsWorld.DebugDraw();
             // draw entities
             foreach (var entity in EntityLookup.GetAllValues<SwEntity>())
             {
