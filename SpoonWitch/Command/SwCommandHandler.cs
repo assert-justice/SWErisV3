@@ -6,7 +6,6 @@ public class SwCommandHandler(SwCommandStore store)
 {
     private readonly SwCommandStore Store = store;
     private readonly List<(Action<PriNode> handler, string verb)> GeneralHandlers = [];
-
     public void AddHandler(string verb, Action<PriNode> handler)
     {
         GeneralHandlers.Add((handler, verb));

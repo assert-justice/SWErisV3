@@ -40,7 +40,16 @@ public class SwCommandStore
     }
     public void AddCommand(PriNode command)
     {
-        if(command is PriNull) return;
+        if(command is PriNull)
+        {
+            ErEngine.LogWarning("null command");
+            return;
+        }
+        if(command.TryAs(out string str))
+        {
+            AddCommandVerb(str);
+            return;
+        }
         if(command is PriList list)
         {
             foreach (var item in list.Data)

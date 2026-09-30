@@ -33,6 +33,26 @@ public abstract class SwEntity
     }
     public void AddCommand(PriNode command)
     {
+        if(command is PriNull)
+        {
+            ErEngine.LogWarning("null command passed to entity: ", this);
+            return;
+        }
+        if(command.TryAs(out string verb))
+        {
+            PriDict com = [];
+            com.TrySet("verb", verb);
+            AddCommand(com);
+            return;
+        }
+        if(command is PriList list)
+        {
+            foreach (var item in list.Data)
+            {
+                AddCommand(item);
+            }
+            return;
+        }
         CommandQueue.Enqueue(command);
     }
     protected SwComponent RegisterComponent(SwComponent component)
