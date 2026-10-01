@@ -8,23 +8,23 @@ using SpoonWitch.Game.Inventory;
 using SpoonWitch.Rendering;
 using SpoonWitch.Utils;
 
-namespace SpoonWitch.Game.Entity.Actor.Player;
+namespace SpoonWitch.Game.Entity.Actor.Player.PlayerState;
 
 public abstract class SwPlayerState : SwState<SwPlayer>
 {
-    private SwSprite BodySprite = null!;
-    private SwSprite HatSprite = null!;
-    private SwSprite SpoonSprite = null!;
-    private SwSprite SlingSprite = null!;
-    private SwSprite ReticleSprite = null!;
-    private SwPlayerControls Controls = null!;
-    private SwAreaComponent SpoonHurtbox = null!;
-    private SwParticleComponent DustParticles = null!;
-    private SwInventory Inventory => Entity.Inventory;
+    protected SwSprite BodySprite = null!;
+    protected SwSprite HatSprite = null!;
+    protected SwSprite SpoonSprite = null!;
+    protected SwSprite SlingSprite = null!;
+    protected SwSprite ReticleSprite = null!;
+    protected SwPlayerControls Controls = null!;
+    protected SwAreaComponent SpoonHurtbox = null!;
+    protected SwParticleComponent DustParticles = null!;
+    protected SwInventory Inventory => Entity.Inventory;
     protected virtual double StaminaRegenClockMul => 1;
     protected virtual double ManaRegenMul => 1;
     // name, hands, facing
-    private static readonly string[][][] BodyAnims = [
+    private static readonly string[][][] BodyAnimations = [
         [
             [
                 "idle_dr_0h",
@@ -66,33 +66,33 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             ],
         ],
     ];
-    public string[] DodgeAnims = [
+    private static readonly string[] DodgeAnimations = [
         "def_dodge_dr",
         "def_dodge_d",
         "def_dodge_dl",
         "def_dodge_u",
     ];
-    private static readonly string[] ReticleAnims = [
+    private static readonly string[] ReticleAnimations = [
         "charge_0",
         "charge_1",
         "charge_2",
         "charge_3",
     ];
     public SwPlayerState(){}
-    private bool CanDodge()
+    protected bool CanDodge()
     {
-        if(Entity.DodgeCooldownClock > 0) return false;
+        if(Entity.DodgeCooldownClock.IsRunning) return false;
         if(!Controls.Move.IsNonzero()) return false;
         if(Entity.Stamina <= 0) return false;
         return true;
     }
-    private bool CanAttack()
+    protected bool CanAttack()
     {
-        if(Entity.SpoonCooldownClock > 0) return false;
+        if(Entity.SpoonCooldownClock.IsRunning) return false;
         if(Entity.Stamina <= 0) return false;
         return true;
     }
-    private bool CanCast()
+    protected bool CanCast()
     {
         if(Entity.CurrentSpell is null) return false;
         if(Entity.Mana < Entity.CurrentSpell.ManaCost) return false;
@@ -111,19 +111,19 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         Controls = Entity.GetComponent<SwPlayerControls>("controls")!;
         SpoonHurtbox = Entity.GetComponent<SwAreaComponent>("spoon_hurtbox")!;
     }
-    private void SetBodyHandedAnim(int animIdx, int hands, int facing)
+    protected void SetBodyHandedAnim(int animIdx, int hands, int facing)
     {
-        string animName = BodyAnims[animIdx][hands][facing];
+        string animName = BodyAnimations[animIdx][hands][facing];
         BodySprite.Play(animName);
         HatSprite.Play(animName);
     }
-    private void SetBodyDodgeAnim(int facing)
+    protected void SetBodyDodgeAnim(int facing)
     {
-        string animName = DodgeAnims[facing];
+        string animName = DodgeAnimations[facing];
         BodySprite.Play(animName);
         HatSprite.Play(animName);
     }
-    private void PlayBodyAnim(string animName)
+    protected void PlayBodyAnim(string animName)
     {
         BodySprite.Play(animName);
         HatSprite.Play(animName);
@@ -138,14 +138,10 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         base.Update(dt);
         ReticleSprite.Visible = Controls.ReticleVisible;
         ReticleSprite.Offset = Controls.ReticlePosition;
-        if(Entity.Stamina < Entity.MaxStamina)
+        if(Entity.Stamina < Entity.MaxStamina && !Entity.StaminaRegenClock.IsRunning)
         {
-            if(Entity.StaminaRegenClock > 0) Entity.StaminaRegenClock -= dt * StaminaRegenClockMul;
-            else
-            {
-                Entity.Stamina += Entity.StaminaRegen * dt;
-                if(Entity.Stamina > Entity.MaxStamina) Entity.Stamina = Entity.MaxStamina;
-            }
+            Entity.Stamina += Entity.StaminaRegen * dt;
+            if(Entity.Stamina > Entity.MaxStamina) Entity.Stamina = Entity.MaxStamina;
         }
         if(Entity.Mana < Entity.MaxMana)
         {
@@ -279,13 +275,6 @@ public abstract class SwPlayerState : SwState<SwPlayer>
     public class Default: SwPlayerState
     {
         public override string Name => "default";
-        // public override void BeginState(string lastState)
-        // {
-        //     ErEngine.Log(BodySprite.AnimationState.Fps);
-        //     // base.BeginState(lastState);
-        //     // BodySprite.SetPallet(Entity.PlayerIdx);
-        //     // HatSprite.SetPallet(Entity.PlayerIdx);
-        // }
         public override void Update(double dt)
         {
             base.Update(dt);
@@ -302,8 +291,6 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             }
             else if(Entity.CurrentSpell is not null && Entity.CurrentSpell.IsActive && Controls.CastJustPressed){}
             else if(ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.T)) StateMachine.SetState("dancing");
-            if(Entity.DodgeCooldownClock > 0) Entity.DodgeCooldownClock -= dt;
-            if(Entity.SpoonCooldownClock > 0) Entity.SpoonCooldownClock -= dt;
         }
     }
     public class Attack: SwPlayerState
@@ -319,9 +306,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             SetBodyHandedAnim(0, 0, Controls.LastFacingIdx);
             Entity.Velocity = ErVec2.Zero;
             SetHurtbox();
-            Entity.Stamina -= Entity.SpoonStaminaCost;
-            Entity.StaminaRegenClock = Entity.StaminaRegenDelay;
-            if(Entity.Stamina < 0) Entity.StaminaRegenClock += Entity.StaminaRegenDelayPenalty;
+            Entity.UseStamina(Entity.SpoonStaminaCost);
             SpoonSprite.HFlip = !SpoonSprite.HFlip;
         }
         public override void Update(double dt)
@@ -347,13 +332,16 @@ public abstract class SwPlayerState : SwState<SwPlayer>
     public class Charging: SwPlayerState
     {
         public override string Name => "charging";
+        private const int NumThresholds = 3;
+        private int Threshold = 0;
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
             SlingSprite.Visible = true;
             SlingSprite.Play("charging");
-            ReticleSprite.Play(ReticleAnims[0]);
-            Entity.SlingChargeClock = 0;
+            ReticleSprite.Play(ReticleAnimations[0]);
+            Entity.SlingChargeClock.Start(Entity.SlingChargeTime / NumThresholds);
+            Threshold = 0;
         }
         public override void Update(double dt)
         {
@@ -370,16 +358,16 @@ public abstract class SwPlayerState : SwState<SwPlayer>
                 StateMachine.SetState("default");
                 return;
             }
-            int lastThresh = ErMath.FloorToInt(Entity.SlingChargeClock * 3 / Entity.SlingChargeTime);
-            Entity.SlingChargeClock += dt;
-            int nextThresh = ErMath.FloorToInt(Entity.SlingChargeClock * 3 / Entity.SlingChargeTime);
-            if(lastThresh == nextThresh) return;
-            int frame = ReticleSprite.FrameIdx;
-            double progress = ReticleSprite.FrameProgress;
-            ReticleSprite.Play(ReticleAnims[nextThresh]);
-            ReticleSprite.FrameIdx = frame;
-            ReticleSprite.FrameProgress = progress;
-            if(nextThresh == 3) StateMachine.SetState("charged");
+            if (!Entity.SlingChargeClock.IsRunning)
+            {
+                if(Threshold == NumThresholds) StateMachine.SetState("charged");
+                else
+                {
+                    Threshold++;
+                    // Todo: set reticle sprite
+                    Entity.SlingChargeClock.Restart();
+                }
+            }
         }
     }
     public class Charged: SwPlayerState
@@ -398,7 +386,6 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         }
         private void Fire()
         {
-            Entity.SpoonCooldownClock = 0.1;
             Entity.Ammo--;
             var sling = Entity.Props.Get("sling");
             if(!Entity.Props.TryGet("sling/projectile", out string slingProto)) return;
@@ -427,46 +414,6 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             SlingSprite.Visible = false;
             SlingSprite.Stop();
             ReticleSprite.Play("still");
-        }
-    }
-    public class Dodging: SwPlayerState
-    {
-        public override string Name => "dodging";
-        protected override double StaminaRegenClockMul => 0;
-        public override void BeginState(string lastState)
-        {
-            base.BeginState(lastState);
-            BodySprite.Stop();
-            SetBodyDodgeAnim(Controls.LastFacingIdx);
-            Entity.DodgeCooldownClock = 0;
-            // set and lock in velocity
-            Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.DodgeSpeedMul;
-            if(DustParticles.Particles is SwParticles2D particles)
-            {
-                particles.Emitting = true;
-                particles.Speed = 30;
-                particles.Amount = 80;
-                particles.UseLocalCoordinates = false;
-                particles.Lifetime = 5 * 0.125;
-                particles.OneShot = true;
-            }
-            Entity.Stamina -= Entity.DodgeStaminaCost;
-            Entity.StaminaRegenClock = Entity.StaminaRegenDelay;
-            if(Entity.Stamina < 0) Entity.StaminaRegenClock += Entity.StaminaRegenDelayPenalty;
-        }
-        public override void Update(double dt)
-        {
-            base.Update(dt);
-            double elapsed = Entity.DodgeCooldownClock;
-            Entity.DodgeCooldownClock += dt;
-            if(!BodySprite.IsPlaying) StateMachine.SetState("default");
-            // Note: edge detection. fires when the clock is now past invuln delay
-            else if(Entity.DodgeCooldownClock >= Entity.DodgeInvulnDelay && elapsed < Entity.DodgeInvulnDelay) Entity.InvulnClock = Entity.DodgeInvulnDuration;
-        }
-        public override void EndState(string nextState)
-        {
-            base.EndState(nextState);
-            Entity.DodgeCooldownClock = Entity.DodgeCooldown;
         }
     }
     public class ItemGet: SwPlayerState
@@ -515,7 +462,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             new Attack(),
             new Charging(),
             new Charged(),
-            new Dodging(),
+            new SwPlayerDodging(),
             new Dead(),
             new ItemGet(),
             new Dancing(),

@@ -2,7 +2,6 @@ using Eris;
 using ErisMath;
 using Prion.Node;
 using SpoonWitch.Game.Effect;
-using SpoonWitch.Game.Map.Collision;
 using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Entity.Actor;
@@ -12,16 +11,15 @@ public abstract class SwActor: SwEntity
     public double BaseSpeed = 150;
     public double MaxHealth = 100;
     public double InvulnTime = 0.5;
-    public double InvulnClock = 0;
-    public virtual bool IsInvuln => InvulnClock > 0;
+    public readonly SwClock InvulnClock;
+    public virtual bool IsInvuln => InvulnClock.IsRunning;
     public double KnockbackFactor = 1;
     public double KnockbackTime = 0.5;
-    public double KnockbackClock = 0;
-    public virtual bool IsKnockback => KnockbackClock > 0;
-    public double FlickerTime = 0.5;
-    private double FlickerClock = 0;
-    public double FlickerLen = 1.0/8;
-    private double FlickerCycle = 0;
+    public readonly SwClock KnockbackClock;
+    public virtual bool IsKnockback => KnockbackClock.IsRunning;
+    private readonly SwClock FlickerClock;
+    public double FlickerLen = 1.0/16;
+    private readonly SwClock FlickerCycle;
     public double Health;
     private bool _IsAlive = true;
     public bool IsAlive
@@ -35,6 +33,12 @@ public abstract class SwActor: SwEntity
     private SwColliderBody Body = null!;
     public SwActor()
     {
+        InvulnClock = AddClock();
+        KnockbackClock = AddClock();
+        FlickerClock = AddClock();
+        FlickerClock.OnFinish = OnFlickerFinish;
+        FlickerCycle = AddClock(FlickerLen);
+        FlickerCycle.OnFinish = OnFlickerCycle;
         AddHandler("damage", DamageHandler);
     }
     public override void Init()
@@ -47,33 +51,27 @@ public abstract class SwActor: SwEntity
     {
         base.SetProps(props);
         if(SwPrion.TryGetVec2(out var size, Props.Get("size"))) Size = size;
-        if(props.TryGet("health/max_health", out double d)) MaxHealth = d; 
-        if(props.TryGet("health/health", out d)) Health = d; 
-        if(props.TryGet("speed/base_speed", out d)) BaseSpeed = d;
+        if(Props.TryGet("health/max_health", out double d)) MaxHealth = d; 
+        if(Props.TryGet("health/health", out d)) Health = d; 
+        if(Props.TryGet("speed/base_speed", out d)) BaseSpeed = d;
     }
     public override void Ready()
     {
         base.Ready();
     }
-    private void HandleFlicker(double dt)
+    private void OnFlickerFinish()
     {
-        if(FlickerClock <= 0) return;
-        FlickerClock -= dt;
-        if(FlickerClock <= 0)
-        {
-            Visible = true;
-            return;
-        }
-        FlickerCycle -= dt;
-        if(FlickerCycle <= 0) FlickerCycle = FlickerLen;
-        Visible = FlickerCycle > FlickerLen * 0.5;
+        FlickerCycle.Pause();
+        Visible = true;
+    }
+    private void OnFlickerCycle()
+    {
+        Visible = !Visible;
+        FlickerCycle.Restart();
     }
     protected override void Update(double dt)
     {
         base.Update(dt);
-        if(InvulnClock > 0)InvulnClock -= dt;
-        if(KnockbackClock > 0)KnockbackClock -= dt;
-        HandleFlicker(dt);
         Body.Mask = Mask;
         Body.Rect = ErRect2.Centered(Position, Size);
         Body.Velocity = Velocity;
@@ -106,9 +104,10 @@ public abstract class SwActor: SwEntity
         var knockback = (Position - damage.SourcePos).Normalized() * value * KnockbackFactor;
         Velocity = knockback;
         Health -= value;
-        KnockbackClock = KnockbackTime;
-        InvulnClock = InvulnTime;
-        FlickerClock = FlickerTime;
+        KnockbackClock.Start(KnockbackTime);
+        InvulnClock.Start(InvulnTime);
+        FlickerClock.Start(InvulnTime);
+        FlickerCycle.Start();
         if(Health > 0)
         {
             if(SwApp.Debug) ErEngine.Log("entity ", Id," '", GetTypeName(), "' took ", value, " damage. health is now ", Health);
@@ -126,19 +125,24 @@ public abstract class SwActor: SwEntity
         IsAlive = false;
         if(SwApp.Debug) ErEngine.Log("entity ", Id," died.");
     }
-    public double MoveToward(ErVec2 point, double speed)
+    // Todo: figure out how I want to implement this
+    // public double MoveToward(ErVec2 point, double speed)
+    // {
+    //     var diff = point - Position;
+    //     var distance = diff.GetLength();
+    //     // Note: the tickrate 
+    //     double spd = speed / ErEngine.Tickrate;
+    //     if(distance < spd)
+    //     {
+    //         Position = point;
+    //         distance = 0;
+    //         Velocity = ErVec2.Zero;
+    //     }
+    //     else Velocity = diff.Normalized() * speed;
+    //     return distance;
+    // }
+    public void SetInvulnerable(double duration)
     {
-        var diff = point - Position;
-        var distance = diff.GetLength();
-        Velocity = diff.Normalized() * speed;
-        // double spd = speed * SwGame.DeltaTime;
-        // if(distance < spd)
-        // {
-        //     Position = point;
-        //     distance = 0;
-        //     Velocity = ErVec2.Zero;
-        // }
-        // else Velocity = diff.Normalized() * speed;
-        return distance;
+        InvulnClock.Start(duration);
     }
 }

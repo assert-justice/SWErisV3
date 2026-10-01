@@ -5,10 +5,12 @@ using Prion.Node;
 using SpoonWitch.Data;
 using SpoonWitch.Game.Effect;
 using SpoonWitch.Game.Effect.Spell;
+using SpoonWitch.Game.Entity.Actor.Player.PlayerState;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
 using SpoonWitch.Game.Inventory;
 using SpoonWitch.Rendering;
+using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Entity.Actor.Player;
 
@@ -19,17 +21,14 @@ public class SwPlayer: SwActor
     public int PlayerIdx;
     // Health
     // Note: Health and MaxHealth defined in SwActor
+    public readonly SwClock HealthClock;
     // Stamina
     public double Stamina = 100;
     public double MaxStamina = 100;
     public double StaminaRegen = 30;
     public double StaminaRegenDelay = 0.1;
     public double StaminaRegenDelayPenalty = 0.3;
-    public double StaminaRegenClock
-    {
-        get => Clocks[0];
-        set => Clocks[0] = value;
-    }
+    public readonly SwClock StaminaRegenClock;
     // Mana
     public double Mana = 100;
     public double MaxMana = 100;
@@ -39,16 +38,13 @@ public class SwPlayer: SwActor
     public double SlowedSpeedMul = 0.5;
     // Dodge
     public double DodgeSpeedMul = 1.5;
-    public double DodgeDuration = 9.0 / 8;
+    // public double DodgeDuration = 9.0 / 8;
     public double DodgeInvulnDelay = 3.0 / 8;
     public double DodgeInvulnDuration = 4.0 / 8;
+    public double DodgeCancelWindow = 0.225;
     public double DodgeCooldown = 0.15;
     public double DodgeStaminaCost = 20;
-    public double DodgeCooldownClock
-    {
-        get => Clocks[1];
-        set => Clocks[1] = value;
-    }
+    public readonly SwClock DodgeCooldownClock;
     // Spoon
     // Note: SpoonDamage stays in props
     public double SpoonSwingDuration = 0.625;
@@ -56,20 +52,12 @@ public class SwPlayer: SwActor
     public double SpoonHurtDuration = 0.125;
     public double SpoonRecoveryTime = 0.125;
     public double SpoonStaminaCost = 30;
-    public double SpoonCooldownClock
-    {
-        get => Clocks[2];
-        set => Clocks[2] = value;
-    }
+    public readonly SwClock SpoonCooldownClock;
     // Sling
     // Note: Likewise, SlingDamage stays in props
     public double SlingBulletSpeed = 600;
     public double SlingChargeTime = 0.75;
-    public double SlingChargeClock
-    {
-        get => Clocks[3];
-        set => Clocks[3] = value;
-    }
+    public readonly SwClock SlingChargeClock;
     // Inventory
     public readonly SwInventory Inventory = new();
     public int Ammo
@@ -100,6 +88,11 @@ public class SwPlayer: SwActor
     {
         AddHandler("ent_offer_item", EntOfferItem);
         AddGlobalHandler("player_add_item", PlayerAddItem);
+        HealthClock = AddClock();
+        StaminaRegenClock = AddClock();
+        DodgeCooldownClock = AddClock();
+        SpoonCooldownClock = AddClock();
+        SlingChargeClock = AddClock();
     }
     private void OnEnterSpoonHurtbox(SwEntity entity)
     {
@@ -126,9 +119,9 @@ public class SwPlayer: SwActor
         if(Props.TryGet("speed/slowed_speed_mul", out d)) SlowedSpeedMul = d;
         // Dodge
         if(Props.TryGet("dodge/dodge_speed_mul", out d)) DodgeSpeedMul = d;
-        if(Props.TryGet("dodge/dodge_duration", out d)) DodgeDuration = d;
         if(Props.TryGet("dodge/dodge_invuln_delay", out d)) DodgeInvulnDelay = d;
         if(Props.TryGet("dodge/dodge_invuln_duration", out d)) DodgeInvulnDuration = d;
+        if(Props.TryGet("dodge/dodge_cancel_window", out d)) DodgeCancelWindow = d;
         if(Props.TryGet("dodge/dodge_cooldown", out d)) DodgeCooldown = d;
         if(Props.TryGet("dodge/dodge_stamina_cost", out d)) DodgeStaminaCost = d;
         // Spoon
@@ -146,17 +139,16 @@ public class SwPlayer: SwActor
         Inventory.SetData(Props.Get("inventory"));
         // var spell = new SwCometShield(this);
         // CurrentSpell = spell;
-        Clocks.Reset();
     }
     public override void Init()
     {
         base.Init();
         // Register components
-        LoadSprites("anim_data/sprites");
         var Controls = new SwPlayerControls(this);
         RegisterComponent(Controls);
         if(!SwParticles2D.TryFromData(out var particles, Props.Get("dust_particles"))) ErEngine.LogWarning("unable to read player dust particles");
         else RegisterComponent(new SwParticleComponent(this, "dust_particles", particles));
+        LoadSprites("anim_data/sprites");
         var SpoonHurtbox = new SwAreaComponent(this, "spoon_hurtbox", 4, new(32, 32), onBodyEnter: OnEnterSpoonHurtbox);
         RegisterComponent(SpoonHurtbox);
         StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
@@ -168,7 +160,7 @@ public class SwPlayer: SwActor
         Props.TrySet("spoon_damage/source_pos_x", Position.X);
         Props.TrySet("spoon_damage/source_pos_y", Position.Y);
         CurrentSpell?.Update();
-        if(IsAlive && ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Semicolon)) TestDamage(1000);
+        if(IsAlive && ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Semicolon)) TestDamage(10);
         if(IsAlive) Game.AddFocusPoint(Position);
         if(!GotMad && ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.M))
         {
@@ -207,6 +199,13 @@ public class SwPlayer: SwActor
     {
         SwDamage damage = new([(SwDamageType.Untyped,value)]);
         Damage(damage);
+    }
+    public void UseStamina(double cost)
+    {
+        Stamina -= cost;
+        double delay = StaminaRegenDelay;
+        if(Stamina < 0) delay += StaminaRegenDelayPenalty;
+        StaminaRegenClock.Start(delay);
     }
     private void EntOfferItem(PriNode command)
     {

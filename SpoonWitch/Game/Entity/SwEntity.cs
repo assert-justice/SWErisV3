@@ -22,7 +22,7 @@ public abstract class SwEntity
     public bool Visible = true;
     public bool IsFreeQueued{get; private set;}
     private readonly SwCommandQueue CommandQueue = new();
-    protected readonly SwClockGroup Clocks = new();
+    private readonly List<SwClock> Clocks = [];
     protected void AddHandler(string verb, Action<PriNode> action)
     {
         CommandQueue.AddHandler(verb, action);
@@ -35,6 +35,13 @@ public abstract class SwEntity
     public void AddCommand(PriNode command)
     {
         CommandQueue.AddCommand(command);
+    }
+    public SwClock AddClock(double duration = 1, bool startRunning = false)
+    {
+        SwClock clock = new();
+        clock.SetDuration(duration);
+        Clocks.Add(clock);
+        return clock;
     }
     protected SwComponent RegisterComponent(SwComponent component)
     {
@@ -62,6 +69,10 @@ public abstract class SwEntity
     public void GameUpdate(double dt)
     {
         CommandQueue.Process();
+        foreach (var clock in Clocks)
+        {
+            clock.Update(dt);
+        }
         Update(dt);
         foreach (var comp in Components)
         {
@@ -69,9 +80,7 @@ public abstract class SwEntity
         }
         UpdateLate(dt);
     }
-    protected virtual void Update(double dt)
-    {
-    }
+    protected virtual void Update(double dt){}
     protected virtual void UpdateLate(double dt){}
     public void GameDraw()
     {
