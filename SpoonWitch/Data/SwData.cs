@@ -12,7 +12,7 @@ public static class SwData
 {
     public static readonly string ManifestPath = "game_data/manifest.json";
     public static readonly PriDb Settings = new();
-    public static readonly PriDb SaveData = new();
+    public static readonly PriDb SaveData = new(new PriDict());
     public static readonly PriDb Manifest = new();
     public static readonly PriDb Prototypes = new();
     public static readonly PriDb UiConfig = new();
@@ -119,7 +119,7 @@ public static class SwData
         saveData = PriNull.Null;
         try
         {
-            string saveFilepath = Path.Join(GameDataPath, $"saves/save_{slotId}");
+            string saveFilepath = Path.Join(GameDataPath, $"saves/save_{slotId}.json");
             if (!File.Exists(saveFilepath)) return false;
             string saveText = File.ReadAllText(saveFilepath);
             if(!TryParseJsonToPrion(saveText, out saveData)) return ErEngine.LogWarning("unable to parse save data");
@@ -138,7 +138,7 @@ public static class SwData
             string saveDirpath = Path.Join(GameDataPath, "saves");
             if(!Directory.Exists(saveDirpath)) Directory.CreateDirectory(saveDirpath);
             string text = PriJsonConverter.PrionToJson(SaveData.Data)?.ToJsonString()!;
-            File.WriteAllText(Path.Join(saveDirpath, $"save_{slotId}"), text);
+            File.WriteAllText(Path.Join(saveDirpath, $"save_{slotId}.json"), text);
             return true;
         }
         catch

@@ -156,7 +156,7 @@ public class SwGame
             SetRenderLayer(0);
             // draw map
             Map.Draw();
-            // PhysicsWorld.DebugDraw();
+            if(SwData.Settings.TryGet("debug/debug", out bool b) && b) PhysicsWorld.DebugDraw();
             // draw entities
             foreach (var entity in EntityLookup.GetAllValues<SwEntity>())
             {

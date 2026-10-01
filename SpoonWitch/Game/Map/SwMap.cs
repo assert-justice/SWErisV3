@@ -4,6 +4,8 @@ using Eris.Utils.Grid2D;
 using ErisMath;
 using ErisPhysics2D;
 using Prion.Node;
+using SpoonWitch.Data;
+using SpoonWitch.Game.Effect;
 using SpoonWitch.Game.Entity.MapEntity;
 using SpoonWitch.Game.Map.Foliage;
 using SpoonWitch.Game.Map.MapData;
@@ -83,6 +85,22 @@ public class SwMap
         if(className != "area") {ErEngine.LogWarning("iid does not point to an area, it is a ", className); return;}
         var tileRect = MapData.Objects[mapObjectIdx].RectTiles;
         SetTilesRect(layerIdx, tileRect, tileId);
+        // add room diff
+        SaveCommand(command);
+    }
+    private void SaveCommand(PriNode command)
+    {
+        if(!command.TryGet("no_save", out bool no_save)) no_save = false;
+        if(no_save) return;
+        if(CurrentRoom is null) return;
+        string roomDiffPath = $"maps/{MapData.Iid}/room_diffs/{CurrentRoom.Data.Iid}";
+        if(!SwData.SaveData.TryGet(roomDiffPath, out PriList roomDiffs))
+        {
+            roomDiffs = [];
+            SwData.SaveData.TrySet(roomDiffPath, roomDiffs);
+        }
+        command.TrySet("no_save", true);
+        roomDiffs.Add(command);
     }
     private void SetTilesRect(int layerIdx, ErRect2I tileRect, int tileId)
     {
@@ -224,6 +242,14 @@ public class SwMap
         // enqueue postprocessing
         PostprocessQueue.Enqueue(()=>HandleFoliage(room.RectTiles));
         // ErEngine.Log("loaded room: ", room.Data.Name);
+        string roomDiffPath = $"maps/{MapData.Iid}/room_diffs/{roomId}";
+        if(SwData.SaveData.TryGet(roomDiffPath, out PriList diffs))
+        {
+            foreach (var item in diffs.Values)
+            {
+                SwApp.CommandQueue.AddCommand(item);
+            }
+        }
         return room;
     }
     private void HandleFoliage(ErRect2I tileRect)
@@ -275,6 +301,7 @@ public class SwMap
         var rectPx = (ErRect2)(MapData.Objects[mapObjectIdx].RectTiles * TileSize);
         SwPrion.TrySetRect2(props, "rect_px", rectPx);
         SwPrion.TrySetVec2(props, rectPx.Center);
+        props.TrySet("map_iid", MapData.Iid);
         // ErEngine.Log(props);
         string className = MapData.Objects[mapObjectIdx].Class;
         int entId = -1;// int.MaxValue;

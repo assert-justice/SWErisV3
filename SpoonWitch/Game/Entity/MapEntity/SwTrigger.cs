@@ -9,7 +9,11 @@ namespace SpoonWitch.Game.Entity.MapEntity;
 public class SwTrigger : SwMapEntity
 {
     private SwAreaComponent Area = null!;
-    public int Activations;
+    public int Activations
+    {
+        get => Props.TryGet("activations", out int activations) ? activations : 0;
+        set => Props.TrySet("activations", value);
+    }
     public SwTrigger()
     {
     }
@@ -22,7 +26,7 @@ public class SwTrigger : SwMapEntity
         base.Init();
         var size = SwPrion.GetVec2(Props.Data.Get("rect_px"), "w", "h", new ErVec2(32,32));
         if(!Props.TryGet("mask", out uint mask)) mask = 2;
-        Area = new(this, "area", mask, size, enabled: true, onBodyEnter: OnEnter);
+        Area = new(this, "area", mask, size, enabled: IsEnabled(), onBodyEnter: OnEnter);
         RegisterComponent(Area);
     }
     private bool IsEnabled()

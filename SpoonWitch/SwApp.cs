@@ -69,6 +69,7 @@ public class SwApp : IErApp
         if(Game is not null)
         {
             Game.Cleanup();
+            if(!SwData.TrySaveGame(0)) ErEngine.LogWarning("failed to save game");
             CommandQueue.Clear();
         }
         if(!SwData.TryLoadMap(out var mapData))
