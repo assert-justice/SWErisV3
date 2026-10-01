@@ -1,0 +1,7 @@
+{
+    "fonts":{
+        "default_font": "fonts/PixAntiqua.ttf"
+    },
+    "menu_config": "menus/menus.json",
+    "hud_config": "hud/hud_config.json"
+}

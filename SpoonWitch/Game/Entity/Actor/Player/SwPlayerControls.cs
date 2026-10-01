@@ -45,9 +45,9 @@ public class SwPlayerControls: SwComponent
     public ErInputDevice Device = ErInputDevice.All();
     public SwPlayerControls(SwPlayer parent): base(parent, "controls")
     {
-        if(!SwData.Manifest.TryGet("settings/default_input_settings", out PriDict node))
+        if(!SwData.Settings.TryGet("input_binds", out PriDict node))
         {
-            ErEngine.LogWarning("no input bindings");
+            ErEngine.LogError("no input bindings");
             return;
         }
         if(!ErInputProfile.TryGetAxes2(node, ["move", "aim"], out Axis2s)) return;

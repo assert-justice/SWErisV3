@@ -22,7 +22,7 @@ public class SwHud
     private SwHud(ErVec2 offset)
     {
         Offset = offset;
-        var node = SwData.Manifest.Get("ui/hud_config");
+        var node = SwData.UiConfig.Get("hud_config");
         var baseData = node.Get("base");
         BaseOff = SwPrion.GetVec2(baseData);
         if(!SwData.TryLoadTexture(out Base, baseData.Get("base_filepath"))) throw new("bad base path");

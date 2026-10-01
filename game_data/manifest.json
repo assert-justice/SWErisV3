@@ -3,20 +3,9 @@
     "game_version": "0.0.1",
     "authors":[],
     "description": "",
-    "ui":{
-        "default_font": "fonts/PixAntiqua.ttf",
-        "hud_config": "hud/hud_config.json"
-    },
+    "ui_config": "ui_config.json",
     "prototypes": "prototypes.json",
-    "settings":{
-        "default_settings": "settings/default_settings.json",
-        "default_input_settings": "settings/default_input_settings.json"
-    },
-    "map":{
-        "tile_data":"map/tile_data.json",
-        "foliage_data":"map/foliage_data.json",
-        "ldtk_data": "map/demo_map3.ldtk"
-    },
-    "menu_config": "menus/menus.json",
-    "pallets": "pallets.png"
+    "default_settings": "settings/default_settings.json",
+    "map":"map/map.json",
+    "palettes": "palettes.png"
 }

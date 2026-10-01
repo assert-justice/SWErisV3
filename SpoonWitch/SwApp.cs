@@ -29,6 +29,11 @@ public class SwApp : IErApp
     public static int Main()
     {
         SwApp app = new();
+        if (!SwData.TryLoadManifest())
+        {
+            ErEngine.LogError("game initialization failed");
+            return 1;
+        }
         ErEngine.Renderer.SetWindow("Spoon Witch", new(1920, 1080));
         ErEngine.Run(app);
         return 0;
@@ -40,16 +45,21 @@ public class SwApp : IErApp
         CommandQueue.AddHandler("pause", (_)=>Pause());
         CommandQueue.AddHandler("unpause", (_)=>UnPause());
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
-        if (!SwData.TryInit())
+        if (!TryInit())
         {
-            ErEngine.LogError("game initialization failed");
+            ErEngine.LogError("initialization failed");
             return;
         }
-        TryInitMenu();
     }
-    private bool TryInitMenu()
+    private bool TryInit()
     {
-        if(!SwUiNode.TryFromPrion(SwData.Manifest.Get("menu_config"), out SwMenuHolder menuHolder)) return false;
+        if(!SwData.TryLoadPallets()) return ErEngine.LogWarning("failed to load pallets");
+        if(!SwData.TryLoadUiConfig()) return ErEngine.LogWarning("failed to load ui config");
+        if(!SwData.TryLoadPrototypes()) return ErEngine.LogWarning("failed to load prototypes");
+        if(!SwUiNode.TryFromPrion(SwData.UiConfig.Get("menu_config"), out SwMenuHolder menuHolder))
+        {
+            return ErEngine.LogWarning("failed to load menu config");
+        }
         MenuHolder = menuHolder;
         return true;
     }
@@ -61,19 +71,12 @@ public class SwApp : IErApp
             Game.Cleanup();
             CommandQueue.Clear();
         }
-        if(!TryLoadMap(out var mapData))
+        if(!SwData.TryLoadMap(out var mapData))
         {
             ErEngine.Quit();
             return;
         }
         Game = new(mapData, 1);
-    }
-    private static bool TryLoadMap(out SwMapData mapData)
-    {
-        mapData = default!;
-        if(!SwMapData.TryConvertLdtkData(out var mapDataPri, SwData.Manifest.Get("map"))) return ErEngine.LogWarning("failed to convert map data");
-        if(!SwMapData.TryFromData(out mapData, mapDataPri)) return ErEngine.LogWarning("failed to load map data");
-        return true;
     }
     private void Pause()
     {

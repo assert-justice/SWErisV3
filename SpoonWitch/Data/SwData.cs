@@ -4,55 +4,75 @@ using Eris.Renderer;
 using Prion.Db;
 using Prion.Node;
 using Prion.Parser;
+using SpoonWitch.Game.Map.MapData;
 
 namespace SpoonWitch.Data;
 
 public static class SwData
 {
-    // private static readonly Dictionary<float,ErFont> FontLookup = [];
-    // private static readonly Dictionary<string, Func<PriNode,object?>> Loaders = [];
-    public static string FontPath{get; set;} = "game_data/fonts/PixAntiqua.ttf";
-    // public const string GAME_DATA_PATH = "game_data";
     public static readonly string ManifestPath = "game_data/manifest.json";
     public static readonly PriDb Settings = new();
     public static readonly PriDb SaveData = new();
     public static readonly PriDb Manifest = new();
     public static readonly PriDb Prototypes = new();
+    public static readonly PriDb UiConfig = new();
+    // public static string DefaultFontPath{get; private set;} = null!;
     private static readonly List<nint> PalletLookup = [];
-    private static readonly Dictionary<string, Func<string,PriNode?>> Converters;
-    // Note: these are the file extensions where the path is extended relative to the game data path
-    private static readonly HashSet<string> NormalizedExtensions = [".png", ".ttf"];
-    static SwData()
+    public static bool TryLoadManifest()
     {
-        static PriNode? json(string filepath)
-        {
-            if(!TryLoadPrion(filepath, out var node)) return null;
-            return node;
-        }
-        Converters = new()
-        {
-            {".json", json},
-            {".ldtk", json},
-        };
-    }
-    public static bool TryInit()
-    {
-        if(!TryLoadAndExpand(out var data, ManifestPath)) return ErEngine.LogError("unable to load manifest");
+        if(!TryLoadAndExpand(out var data, ManifestPath, [".json", ".ldtk", ".ttf", ".png"])) return ErEngine.LogError("unable to load manifest");
         Manifest.SetData(data);
-        Prototypes.SetData(data.Get("prototypes"));
-
-        if(!ErTexture.TryGetPaletteHandles(out var palletHandles, "game_data/palettes.png")) return ErEngine.LogError("unable to load palettes");
-        foreach (var item in palletHandles)
+        ErEngine.Log(data);
+        if(!TryLoadSettings()) return ErEngine.LogError("unable to load settings");
+        return true;
+    }
+    public static bool TryLoadPrototypes()
+    {
+        if(!Manifest.TryGet("prototypes", out string prototypesPath)) return ErEngine.LogWarning("no prototype path");
+        if(!TryLoadAndExpand(out var data, prototypesPath, [".png"], [".json"])) return ErEngine.LogWarning("failed to load prototypes");
+        Prototypes.SetData(data);
+        return true;
+    }
+    public static bool TryLoadUiConfig()
+    {
+        if(!Manifest.TryGet("ui_config", out string uiConfigPath)) return ErEngine.LogWarning("no ui config path");
+        if(!TryLoadAndExpand(out var data, uiConfigPath, [".png", ".ttf"], [".json"])) return ErEngine.LogWarning("failed to load ui config");
+        UiConfig.SetData(data);
+        return true;
+    }
+    public static bool TryLoadPallets()
+    {
+        if(!Manifest.TryGet("palettes", out string paletteFilepath)) return ErEngine.LogError("no valid pallet filepath");
+        if(!ErTexture.TryGetPaletteHandles(out var paletteHandles, paletteFilepath)) return ErEngine.LogError("unable to load palettes");
+        foreach (var item in paletteHandles)
         {
             PalletLookup.Add(item);
         }
+        return true;
+    }
+    public static bool TryLoadMap(out SwMapData mapData)
+    {
+        mapData = default;
+        if(!Manifest.TryGet("map", out string mapDataLdtkPath)) return ErEngine.LogWarning("no map path");
+        if(!TryLoadAndExpand(out var mapDataLdtk, mapDataLdtkPath, [".png"], [".json", ".ldtk"])) return ErEngine.LogWarning("failed to load map");
+        if(!SwMapData.TryConvertLdtkData(out var mapDataPri, mapDataLdtk)) return ErEngine.LogWarning("failed to convert map data");
+        if(!SwMapData.TryFromData(out mapData, mapDataPri)) return ErEngine.LogWarning("failed to load map data");
+        return true;
+    }
+    public static bool TryLoadSettings()
+    {
+        // get default settings
+        if(!Manifest.TryGet("default_settings", out string defaultSettingsPath)) return ErEngine.LogWarning("no map path");
+        if(!TryLoadAndExpand(out var defaultSettings, defaultSettingsPath, [], [".json"])) return ErEngine.LogWarning("failed to load map");
+        // Todo: merge user settings if present
+        Settings.SetData(defaultSettings);
         return true;
     }
     public static int PaletteCount => PalletLookup.Count;
     public static bool TryGetPallet(out nint palletHandle, int palletIdx)
     {
         palletHandle = default;
-        // Note, a pallet index of 0 is the default pallet, so valid pallet indicies start at 1
+        // Note, a pallet index of 0 is the default pallet, so valid pallet indices start at 1
         // We decrement the pallet index to get it back in range
         palletIdx--;
         if(palletIdx < 0 || palletIdx >= PalletLookup.Count) return false;
@@ -63,7 +83,7 @@ public static class SwData
     {
         texture = default!;
         if(!TryGetPallet(out nint palletHandle, palletIdx)) return ErEngine.LogError("invalid pallet id ", palletIdx);
-        if(!ErTexture.TryFromPath(filepath, palletHandle, out texture)) return ErEngine.LogError("failed to get palleted texture at filepath ", filepath);
+        if(!ErTexture.TryFromPath(filepath, palletHandle, out texture)) return ErEngine.LogError("failed to get paletted texture at filepath ", filepath);
         return true;
     }
     private static bool TryLoadPrion(string filepath, out PriNode priNode)
@@ -89,26 +109,28 @@ public static class SwData
         return true;
     }
     // public static bool TryLoadFont()
-    private static bool TryLoadAndExpand(out PriNode data, string filepath)
+    private static bool TryLoadAndExpand(out PriNode data, string filepath, string[]? normalizedExtensions = null, string[]? prionExtensions = null)
     {
         data = PriNull.Null;
         string dp = Path.GetDirectoryName(filepath)!;
         if(!TryLoadPrion(filepath, out var src)) return false;
-        data = Expand(src, dp);
+        HashSet<string> normExt = normalizedExtensions is null ? [] : [..normalizedExtensions];
+        HashSet<string> prionExt = prionExtensions is null ? [] : [..prionExtensions];
+        data = Expand(src, dp, normExt, prionExt);
         return true;
     }
-    private static PriNode Expand(PriNode srcNode, string dirpath)
+    private static PriNode Expand(PriNode srcNode, string dirpath, HashSet<string> normExt, HashSet<string> prionExt)
     {
         if(srcNode.TryAs(out string filepath))
         {
-            if(TryExpand(out var node, filepath, dirpath)) return node;
+            if(TryExpand(out var node, filepath, dirpath, normExt, prionExt)) return node;
         }
         else if(srcNode is PriDict srcDict)
         {
             PriDict dict = [];
             foreach (var (key, value) in srcDict.Data)
             {
-                dict.Data.Add(key, Expand(value, dirpath));
+                dict.Data.Add(key, Expand(value, dirpath, normExt, prionExt));
             }
             return dict;
         }
@@ -117,25 +139,25 @@ public static class SwData
             PriList list = [];
             foreach (var item in srcList.Data)
             {
-                list.Data.Add(Expand(item, dirpath));
+                list.Data.Add(Expand(item, dirpath, normExt, prionExt));
             }
             return list;
         }
         return srcNode.DeepCopy();
     }
-    private static bool TryExpand(out PriNode node, string filepath, string dirpath)
+    private static bool TryExpand(out PriNode node, string filepath, string dirpath, HashSet<string> normExt, HashSet<string> prionExt)
     {
         node = PriNull.Null;
         filepath = Path.Join(dirpath, filepath);
         if(!Path.HasExtension(filepath)) return false;
         string ext = Path.GetExtension(filepath);
-        if(Converters.TryGetValue(ext, out var fn))
+        if(prionExt.Contains(ext))
         {
-            if(fn(filepath) is not PriNode n) return false;
-            node = Expand(n, Path.GetDirectoryName(filepath)!);
+            if(!TryLoadPrion(filepath, out var n)) return false;
+            node = Expand(n, Path.GetDirectoryName(filepath)!, normExt, prionExt);
             return true;
         }
-        else if (NormalizedExtensions.Contains(ext))
+        else if (normExt.Contains(ext))
         {
             node = new PriString(filepath);
             return true;
