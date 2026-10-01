@@ -108,7 +108,7 @@ public class SwApp : IErApp
     }
     public void Cleanup()
     {
-        CommandQueue.Clear();
+        if(!SwData.TrySaveSettings()) ErEngine.LogWarning("failed to save settings");
     }
     private bool Up;
     private bool Down;

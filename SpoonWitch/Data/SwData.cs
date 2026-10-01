@@ -16,13 +16,13 @@ public static class SwData
     public static readonly PriDb Manifest = new();
     public static readonly PriDb Prototypes = new();
     public static readonly PriDb UiConfig = new();
+    private static string GameDataPath => Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SpoonWitch");
     // public static string DefaultFontPath{get; private set;} = null!;
     private static readonly List<nint> PalletLookup = [];
     public static bool TryLoadManifest()
     {
         if(!TryLoadAndExpand(out var data, ManifestPath, [".json", ".ldtk", ".ttf", ".png"])) return ErEngine.LogError("unable to load manifest");
         Manifest.SetData(data);
-        ErEngine.Log(data);
         if(!TryLoadSettings()) return ErEngine.LogError("unable to load settings");
         return true;
     }
@@ -64,9 +64,36 @@ public static class SwData
         // get default settings
         if(!Manifest.TryGet("default_settings", out string defaultSettingsPath)) return ErEngine.LogWarning("no map path");
         if(!TryLoadAndExpand(out var defaultSettings, defaultSettingsPath, [], [".json"])) return ErEngine.LogWarning("failed to load map");
-        // Todo: merge user settings if present
-        Settings.SetData(defaultSettings);
+        // merge user settings if present
+        string userSettingsPath = Path.Join(GameDataPath, "settings.json");
+        PriDict settings = [];
+        settings.Merge(defaultSettings);
+        if (File.Exists(userSettingsPath))
+        {
+            if(!TryLoadPrion(userSettingsPath, out var userSettings)) ErEngine.LogWarning("unable to read user settings");
+            else settings.Merge(userSettings);
+        }
+        Settings.SetData(settings);
         return true;
+    }
+    public static bool TrySaveSettings()
+    {
+        try
+        {
+            if(!Directory.Exists(GameDataPath)) Directory.CreateDirectory(GameDataPath);
+            string userSettingsPath = Path.Join(GameDataPath, "settings.json");
+            PriDict settings = [];
+            // todo: don't hardcode this
+            settings.TrySet("game_version", "0.0.1");
+            settings.Merge(Settings.Data);
+            string text = PriJsonConverter.PrionToJson(settings)?.ToJsonString()!;
+            File.WriteAllText(userSettingsPath, text);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
     public static int PaletteCount => PalletLookup.Count;
     public static bool TryGetPallet(out nint palletHandle, int palletIdx)
