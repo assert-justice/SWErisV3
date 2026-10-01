@@ -127,7 +127,7 @@ public class SwMapDisplay
                 int numFrames = displayTile.LastFrameIdx - displayTile.FirstFrameIdx + 1;
                 int frameIdx = ErMath.RoundToInt(ErEngine.CurrentTime * Map.TileData[displayTile.TileId].Fps) % numFrames + displayTile.FirstFrameIdx;
                 ErVec2 pos = (ErVec2)tileCoord * tileSize - half;
-                Frames[displayTile.FirstFrameIdx].Draw(pos);
+                Frames[frameIdx].Draw(pos);
             }
         }
     }
