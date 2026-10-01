@@ -70,7 +70,9 @@ public class SwGame
             player.PlayerIdx = idx;
             player.Position = CameraTarget;
             int hudX = SwApp.INTERNAL_WIDTH / 2 * idx;
-            if(!SwHud.TryLoad(new(hudX, 0), out var hud)) Huds[idx] = hud; 
+            if(!SwHud.TryLoad(new(hudX, 0), out var hud)){}
+            Huds[idx] = hud;
+            hud.Player = player; 
         }
     }
     public void Update(double dt)
@@ -89,9 +91,13 @@ public class SwGame
             if(entity.IsFreeQueued) FreedEntitiesQueue.Enqueue(entity);
         }
         FreeEntities();
+        // Update hud
+        foreach (var hud in Huds)
+        {
+            hud.Update(dt);
+        }
         // Update areas
         PhysicsWorld.UpdateAreas();
-        // Update hud
         // Get focus point
         // target pos = average of focus points
         if(FocusPoints.Count > 0)
@@ -172,6 +178,11 @@ public class SwGame
             }
             // end camera draw
             camera.EndDraw();
+            // draw huds
+            foreach (var hud in Huds)
+            {
+                hud.Draw();
+            }
         }
         CurrentCamera = null;
     }
