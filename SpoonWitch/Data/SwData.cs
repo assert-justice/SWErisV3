@@ -95,6 +95,57 @@ public static class SwData
             return false;
         }
     }
+    // Todo: implement this
+    public static PriList ListSaveGames()
+    {
+        PriList list = [];
+        return list;
+    }
+    private static PriDict GetDefaultSave()
+    {
+        PriDict res = [];
+        // todo: don't hardcode this
+        res.TrySet("game_version", "0.0.1");
+        return res;
+    }
+    public static void LoadGame(int slotId)
+    {
+        var saveData = GetDefaultSave();
+        if(TryLoadGame(slotId, out var localSaveData)) saveData.Merge(localSaveData);
+        SaveData.SetData(saveData);
+    }
+    private static bool TryLoadGame(int slotId, out PriNode saveData)
+    {
+        saveData = PriNull.Null;
+        try
+        {
+            string saveFilepath = Path.Join(GameDataPath, $"saves/save_{slotId}");
+            if (!File.Exists(saveFilepath)) return false;
+            string saveText = File.ReadAllText(saveFilepath);
+            if(!TryParseJsonToPrion(saveText, out saveData)) return ErEngine.LogWarning("unable to parse save data");
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+    public static bool TrySaveGame(int slotId)
+    {
+        try
+        {
+            if(!Directory.Exists(GameDataPath)) Directory.CreateDirectory(GameDataPath);
+            string saveDirpath = Path.Join(GameDataPath, "saves");
+            if(!Directory.Exists(saveDirpath)) Directory.CreateDirectory(saveDirpath);
+            string text = PriJsonConverter.PrionToJson(SaveData.Data)?.ToJsonString()!;
+            File.WriteAllText(Path.Join(saveDirpath, $"save_{slotId}"), text);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
     public static int PaletteCount => PalletLookup.Count;
     public static bool TryGetPallet(out nint palletHandle, int palletIdx)
     {

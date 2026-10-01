@@ -76,6 +76,7 @@ public class SwApp : IErApp
             ErEngine.Quit();
             return;
         }
+        SwData.LoadGame(0);
         Game = new(mapData, 1);
     }
     private void Pause()
@@ -109,6 +110,7 @@ public class SwApp : IErApp
     public void Cleanup()
     {
         if(!SwData.TrySaveSettings()) ErEngine.LogWarning("failed to save settings");
+        if(!SwData.TrySaveGame(0)) ErEngine.LogWarning("failed to save game");
     }
     private bool Up;
     private bool Down;
