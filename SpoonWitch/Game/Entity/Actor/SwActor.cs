@@ -29,7 +29,7 @@ public abstract class SwActor: SwEntity
     }
     public ErVec2 Velocity;
     public ErVec2 Size = new (32, 32);
-    public virtual uint Mask => 0;
+    public virtual SwCollisionMask Mask => 0;
     private SwColliderBody Body = null!;
     public SwActor()
     {
@@ -72,7 +72,7 @@ public abstract class SwActor: SwEntity
     protected override void Update(double dt)
     {
         base.Update(dt);
-        Body.Mask = Mask;
+        Body.Mask = (uint)Mask;
         Body.Rect = ErRect2.Centered(Position, Size);
         Body.Velocity = Velocity;
         Game.PhysicsWorld.MoveAndSlide(dt, Body);

@@ -29,7 +29,8 @@
     "map_objects":{},
     "projectiles":{
         "sling":{
-            "mask": 3,
+            "hurtbox_mask": 8,
+            "size": {"x": 14, "y": 14},
             "damage": null,
             "body":{
                 "texture_filepath": "entities/actors/player/images/bella_sling_ammo_shot.png"

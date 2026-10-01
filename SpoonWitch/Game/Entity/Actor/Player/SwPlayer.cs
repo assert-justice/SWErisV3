@@ -16,7 +16,7 @@ namespace SpoonWitch.Game.Entity.Actor.Player;
 
 public class SwPlayer: SwActor
 {
-    public override uint Mask => (uint)(IsAlive ? 3 : 0);
+    public override SwCollisionMask Mask => IsAlive ? SwCollisionMask.Player : SwCollisionMask.None;
     public override int RenderLayer => 3;
     public int PlayerIdx;
     // Health

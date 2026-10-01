@@ -24,6 +24,7 @@ public abstract class ErColliderArea: ErCollider
         // loop through the bodies we are colliding with. if they weren't previously in our overlapping ids, call on body enter. otherwise remove the id from the set
         foreach (var body in bodies)
         {
+            if((body.Mask & Mask) == 0) continue;
             OldBodyQueue.Enqueue(body);
             if(!_OverlappingBodies.Remove(body.Id)) OnBodyEnter(body);
         }

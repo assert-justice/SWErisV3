@@ -329,93 +329,93 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             SpoonHurtbox.Enabled = true;
         }
     }
-    public class Charging: SwPlayerState
-    {
-        public override string Name => "charging";
-        private const int NumThresholds = 3;
-        private int Threshold = 0;
-        public override void BeginState(string lastState)
-        {
-            base.BeginState(lastState);
-            SlingSprite.Visible = true;
-            SlingSprite.Play("charging");
-            ReticleSprite.Play(ReticleAnimations[0]);
-            Entity.SlingChargeClock.Start(Entity.SlingChargeTime / NumThresholds);
-            Threshold = 0;
-        }
-        public override void Update(double dt)
-        {
-            base.Update(dt);
-            int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
+    // public class Charging: SwPlayerState
+    // {
+    //     public override string Name => "charging";
+    //     private const int NumThresholds = 3;
+    //     private int Threshold = 0;
+    //     public override void BeginState(string lastState)
+    //     {
+    //         base.BeginState(lastState);
+    //         SlingSprite.Visible = true;
+    //         SlingSprite.Play("charging");
+    //         ReticleSprite.Play(ReticleAnimations[0]);
+    //         Entity.SlingChargeClock.Start(Entity.SlingChargeTime / NumThresholds);
+    //         Threshold = 0;
+    //     }
+    //     public override void Update(double dt)
+    //     {
+    //         base.Update(dt);
+    //         int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
 
-            SetBodyHandedAnim(animIdx, 1, Controls.LastFacingIdx);
-            Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.SlowedSpeedMul;
-            if (!Controls.IsCharging)
-            {
-                SlingSprite.Visible = false;
-                SlingSprite.Stop();
-                ReticleSprite.Play("still");
-                StateMachine.SetState("default");
-                return;
-            }
-            if (!Entity.SlingChargeClock.IsRunning)
-            {
-                if(Threshold == NumThresholds) StateMachine.SetState("charged");
-                else
-                {
-                    Threshold++;
-                    // Todo: set reticle sprite
-                    Entity.SlingChargeClock.Restart();
-                }
-            }
-        }
-    }
-    public class Charged: SwPlayerState
-    {
-        public override string Name => "charged";
-        public override void BeginState(string lastState)
-        {
-            base.BeginState(lastState);
-            SlingSprite.Play("charged");
-        }
-        private bool CanFire()
-        {
-            if(!Controls.FireJustPressed) return false;
-            if(!Controls.Aim.IsNonzero()) return false;
-            return true;
-        }
-        private void Fire()
-        {
-            Entity.Ammo--;
-            var sling = Entity.Props.Get("sling");
-            if(!Entity.Props.TryGet("sling/projectile", out string slingProto)) return;
-            var props = SwData.Prototypes.Get($"projectiles/{slingProto}");
-            SwPrion.TrySetVec2(props, "velocity", Controls.Aim * Entity.SlingBulletSpeed);
-            SwPrion.TrySetVec2(props, Entity.Position);
-            props.TrySet("damage", sling.Get("sling_damage"));
-            Entity.Game.AddEntity<SwProjectile>(props);
-        }
-        public override void Update(double dt)
-        {
-            base.Update(dt);
-            int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
-            SetBodyHandedAnim(animIdx, 1, Controls.LastFacingIdx);
-            Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.SlowedSpeedMul;
-            if (!Controls.IsCharging) StateMachine.SetState("default");
-            else if (CanFire())
-            {
-                Fire();
-                StateMachine.SetState("default");
-            }
-        }
-        public override void EndState(string nextState)
-        {
-            base.EndState(nextState);
-            SlingSprite.Visible = false;
-            SlingSprite.Stop();
-            ReticleSprite.Play("still");
-        }
-    }
+    //         SetBodyHandedAnim(animIdx, 1, Controls.LastFacingIdx);
+    //         Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.SlowedSpeedMul;
+    //         if (!Controls.IsCharging)
+    //         {
+    //             SlingSprite.Visible = false;
+    //             SlingSprite.Stop();
+    //             ReticleSprite.Play("still");
+    //             StateMachine.SetState("default");
+    //             return;
+    //         }
+    //         if (!Entity.SlingChargeClock.IsRunning)
+    //         {
+    //             if(Threshold == NumThresholds) StateMachine.SetState("charged");
+    //             else
+    //             {
+    //                 Threshold++;
+    //                 // Todo: set reticle sprite
+    //                 Entity.SlingChargeClock.Restart();
+    //             }
+    //         }
+    //     }
+    // }
+    // public class Charged: SwPlayerState
+    // {
+    //     public override string Name => "charged";
+    //     public override void BeginState(string lastState)
+    //     {
+    //         base.BeginState(lastState);
+    //         SlingSprite.Play("charged");
+    //     }
+    //     private bool CanFire()
+    //     {
+    //         if(!Controls.FireJustPressed) return false;
+    //         if(!Controls.Aim.IsNonzero()) return false;
+    //         return true;
+    //     }
+    //     private void Fire()
+    //     {
+    //         Entity.Ammo--;
+    //         var sling = Entity.Props.Get("sling");
+    //         if(!Entity.Props.TryGet("sling/projectile", out string slingProto)) return;
+    //         var props = SwData.Prototypes.Get($"projectiles/{slingProto}");
+    //         SwPrion.TrySetVec2(props, "velocity", Controls.Aim * Entity.SlingBulletSpeed);
+    //         SwPrion.TrySetVec2(props, Entity.Position);
+    //         props.TrySet("damage", sling.Get("sling_damage"));
+    //         Entity.Game.AddEntity<SwProjectile>(props);
+    //     }
+    //     public override void Update(double dt)
+    //     {
+    //         base.Update(dt);
+    //         int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
+    //         SetBodyHandedAnim(animIdx, 1, Controls.LastFacingIdx);
+    //         Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.SlowedSpeedMul;
+    //         if (!Controls.IsCharging) StateMachine.SetState("default");
+    //         else if (CanFire())
+    //         {
+    //             Fire();
+    //             StateMachine.SetState("default");
+    //         }
+    //     }
+    //     public override void EndState(string nextState)
+    //     {
+    //         base.EndState(nextState);
+    //         SlingSprite.Visible = false;
+    //         SlingSprite.Stop();
+    //         ReticleSprite.Play("still");
+    //     }
+    // }
     public class ItemGet: SwPlayerState
     {
         public override string Name => "item_get";
@@ -460,8 +460,8 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             // new Respawn(),
             new Default(),
             new Attack(),
-            new Charging(),
-            new Charged(),
+            new SwPlayerCharging(),
+            new SwPlayerCharged(),
             new SwPlayerDodging(),
             new Dead(),
             new ItemGet(),

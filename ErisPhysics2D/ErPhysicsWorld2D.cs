@@ -34,9 +34,26 @@ public class ErPhysicsWorld2D
         var cellCoord = tileCoord / CellSizeTiles;
         GetCellInit(cellCoord).SetTileMask(tileCoord, mask);
     }
+    public uint GetTileMask(ErVec2I tileCoord)
+    {
+        var cellCoord = tileCoord / CellSizeTiles;
+        if(Grid.TryGet(cellCoord, out var cell)) return cell.GetTileMask(tileCoord);
+        else return uint.MaxValue;
+    }
+    public uint GetTileMaskAtPoint(ErVec2 point)
+    {
+        var tileCoord = PointToTileCoord(point);
+        var cellCoord = PointToCellCoord(point);
+        if(Grid.TryGet(cellCoord, out var cell)) return cell.GetTileMask(tileCoord);
+        else return uint.MaxValue;
+    }
     public ErVec2I PointToCellCoord(ErVec2 point)
     {
-        return (ErVec2I)point / CellSizePx;
+        return (point / (ErVec2)CellSizePx).FloorToInt();
+    }
+    public ErVec2I PointToTileCoord(ErVec2 point)
+    {
+        return (point / (ErVec2)TileSize).FloorToInt();
     }
     private IEnumerable<ErVec2I> GetCellCoordsTouchingRect(ErRect2 rect)
     {
@@ -247,10 +264,6 @@ public class ErPhysicsWorld2D
                 if((body.Mask & mask) != 0) yield return body.Rect;
             }
         }
-    }
-    private ErVec2I PointToTileCoord(ErVec2 position)
-    {
-        return (position / (ErVec2)TileSize).FloorToInt();
     }
     // raycasting
     private IEnumerable<ErVec2I> GetLine(ErVec2 start, ErVec2 end)

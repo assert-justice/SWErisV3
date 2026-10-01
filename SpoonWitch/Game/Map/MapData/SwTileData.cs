@@ -7,19 +7,19 @@ namespace SpoonWitch.Game.Map.MapData;
 
 public readonly struct SwTileData
 {
-    private enum TileFlags: uint
-    {
-        IsWalkable = 1,
-        IsOpaque = 2,
-    }
+    // private enum TileFlags: uint
+    // {
+    //     BlocksNav = 1,
+    //     IsOpaque = 2,
+    // }
     public readonly struct Entry
     {
         public int Id{get; init;}
         public string Name{get; init;}
         public string? TextureFilepath{get; init;}
         public bool IsVisible => TextureFilepath is not null;
-        public bool IsWalkable => (CollisionMask & (uint)TileFlags.IsWalkable) != 0;
-        public bool IsOpaque => (CollisionMask & (uint)TileFlags.IsOpaque) != 0;
+        public bool BlocksNav => (CollisionMask & (uint)SwCollisionMask.BlocksNav) != 0;
+        public bool IsOpaque => (CollisionMask & (uint)SwCollisionMask.IsOpaque) != 0;
         public double MoveSpeedMul{get; init;}
         public uint CollisionMask{get; init;}
         public double Arable{get; init;}
@@ -42,9 +42,9 @@ public readonly struct SwTileData
             if(entry.TextureFilepath is not null) dict.TrySet("source", entry.TextureFilepath);
             else dict.Add("source", PriNull.Null);
             dict.TrySet("collision_mask", entry.CollisionMask);
-            dict.TrySet("is_walkable", entry.IsWalkable);
+            dict.TrySet("blocks_nav", entry.BlocksNav);
             dict.TrySet("is_opaque", entry.IsOpaque);
-            if(!entry.IsWalkable) dict.TrySet("move_speed_mul", 0);
+            if(!entry.BlocksNav) dict.TrySet("move_speed_mul", 0);
             else if(entry.MoveSpeedMul != 1) dict.TrySet("move_speed_mul", entry.MoveSpeedMul);
             if(entry.IsAnimated) dict.TrySet("is_animated", true);
             if(entry.Fps != 4) dict.TrySet("fps", entry.Fps);
@@ -64,19 +64,19 @@ public readonly struct SwTileData
             PriNode data = list.Data[idx];
             if(!data.TryGet("name", out string name)) name = string.Empty;
             if(!data.TryGet("collision_mask", out uint collision_mask)) collision_mask = 0;
-            if(data.TryGet("is_walkable", out bool b))
+            if(data.TryGet("blocks_nav", out bool b))
             {
-                if(b) collision_mask |= (uint)TileFlags.IsWalkable;
-                else collision_mask &= (uint)~TileFlags.IsWalkable;
+                if(b) collision_mask |= (uint)SwCollisionMask.BlocksNav;
+                else collision_mask &= (uint)~SwCollisionMask.BlocksNav;
             }
             if(data.TryGet("is_opaque", out b))
             {
-                if(b) collision_mask |= (uint)TileFlags.IsOpaque;
-                else collision_mask &= (uint)~TileFlags.IsOpaque;
+                if(b) collision_mask |= (uint)SwCollisionMask.IsOpaque;
+                else collision_mask &= (uint)~SwCollisionMask.IsOpaque;
             }
             double move_speed_mul = 1;
             double d;
-            if((collision_mask & (uint)TileFlags.IsWalkable) != 0) move_speed_mul = 0;
+            if((collision_mask & (uint)SwCollisionMask.BlocksNav) != 0) move_speed_mul = 0;
             else if(data.TryGet("move_speed_mul", out d)) move_speed_mul = d;
 
             if(!data.TryGet("is_animated", out bool is_animated)) is_animated = false;

@@ -7,7 +7,7 @@ namespace SpoonWitch.Game.Entity.Actor.Enemy;
 
 public abstract class SwEnemy: SwActor
 {
-    public override uint Mask => (uint)(IsAlive ? 5 : 0);
+    public override SwCollisionMask Mask => IsAlive ? SwCollisionMask.Enemy : SwCollisionMask.None;
     public override int RenderLayer => 2;
     public bool IsPassive;
     public ErVec2 TargetPosition;
