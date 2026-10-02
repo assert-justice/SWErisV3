@@ -249,17 +249,17 @@ public class SwPlayerInput: ErInputDevice
                 }
                 button.GamepadIdx = gamepadIdx;
                 if(value.TryGet("buffer", out double d)) button.Buffer = d;
-                foreach (var item in dict.Get("gamepad_buttons").Values)
+                foreach (var item in value.Get("gamepad_buttons").Values)
                 {
                     if(!TryAsEnum(item, out SDL.GamepadButton code)) continue;
                     button.GamepadButtons.Add(code);
                 }
-                foreach (var item in dict.Get("gamepad_axes_low").Values)
+                foreach (var item in value.Get("gamepad_axes_low").Values)
                 {
                     if(!TryAsEnum(item, out SDL.GamepadAxis code)) continue;
                     button.GamepadAxesLow.Add(code);
                 }
-                foreach (var item in dict.Get("gamepad_axes_high").Values)
+                foreach (var item in value.Get("gamepad_axes_high").Values)
                 {
                     if(!TryAsEnum(item, out SDL.GamepadAxis code)) continue;
                     button.GamepadAxesHigh.Add(code);

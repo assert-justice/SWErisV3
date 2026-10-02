@@ -66,28 +66,28 @@
             "pulse_cooldown": 0.25,
             "pulse_delay": 0.2,
             "keys": ["A","Left"],
-            "gamepad_buttons": ["DpadLeft"],
+            "gamepad_buttons": ["DPadLeft"],
             "gamepad_axes_low":["LeftX"]
         },
         "ui_right":{
             "pulse_cooldown": 0.25,
             "pulse_delay": 0.2,
             "keys": ["D","Right"],
-            "gamepad_buttons": ["DpadRight"],
+            "gamepad_buttons": ["DPadRight"],
             "gamepad_axes_high":["LeftX"]
         },
         "ui_up":{
             "pulse_cooldown": 0.25,
             "pulse_delay": 0.2,
             "keys": ["W","Up"],
-            "gamepad_buttons": ["DpadUp"],
+            "gamepad_buttons": ["DPadUp"],
             "gamepad_axes_low":["LeftY"]
         },
         "ui_down":{
             "pulse_cooldown": 0.25,
             "pulse_delay": 0.2,
             "keys": ["S","Down"],
-            "gamepad_buttons": ["DpadDown"],
+            "gamepad_buttons": ["DPadDown"],
             "gamepad_axes_high":["LeftY"]
         }
     },

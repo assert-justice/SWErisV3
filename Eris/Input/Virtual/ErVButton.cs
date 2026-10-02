@@ -81,15 +81,15 @@ public class ErVButton : ErBaseInput
         }
         foreach (var button in GamepadButtons)
         {
-            if(ErEngine.Input.HandleGamepadButtonDown(button, GamepadIdx)) res = true;
+            if(ErEngine.Input.GetGamepadButtonDown(button, GamepadIdx)) res = true;
         }
         foreach (var axis in GamepadAxesLow)
         {
-            if(ErEngine.Input.HandleGamepadAxis(axis, GamepadIdx) < -ErEngine.Input.GlobalAxisDeadzone) res = true;
+            if(ErEngine.Input.GetGamepadAxis(axis, GamepadIdx) < -ErEngine.Input.GlobalAxisDeadzone) res = true;
         }
         foreach (var axis in GamepadAxesHigh)
         {
-            if(ErEngine.Input.HandleGamepadAxis(axis, GamepadIdx) > ErEngine.Input.GlobalAxisDeadzone) res = true;
+            if(ErEngine.Input.GetGamepadAxis(axis, GamepadIdx) > ErEngine.Input.GlobalAxisDeadzone) res = true;
         }
         return res;
     }

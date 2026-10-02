@@ -7,12 +7,13 @@ namespace Eris.Input;
 public class ErInput
 {
     private bool[] KeyboardState = [];
-    // private readonly Dictionary<uint, nint> DeviceLookup = [];
-    // private uint[] Devices = [];
-    private readonly Dictionary<uint, ErGamepadState> GamepadStates = [];
+    private readonly Dictionary<uint, ErGamepad> GamepadLookup = [];
+    private readonly List<ErGamepad?> Gamepads = [];
     private SDL.MouseButtonFlags MouseButtonFlags;
     private ErVec2 MousePosition;
     public double GlobalAxisDeadzone{get; set;} = 0.1;
+    public Action<int> OnGamepadConnect = idx => ErEngine.Log("gamepad ", idx, " connected");
+    public Action<int> OnGamepadDisconnect = idx => ErEngine.Log("gamepad ", idx, " disconnected");
     public enum DeviceKind
     {
         Kbm,
@@ -25,7 +26,6 @@ public class ErInput
     }
     public void Poll()
     {
-        // Todo: obviously need to handle controller disconnections
         while (SDL.PollEvent(out var e))
         {
             SDL.EventType eventType = (SDL.EventType)e.Type;
@@ -70,33 +70,11 @@ public class ErInput
         MouseButtonFlags = SDL.GetMouseState(out float mouseX, out float mouseY);
         MousePosition = new(mouseX, mouseY);
         // Note: Gamepad baloney
-        uint[] gamepads = SDL.GetGamepads(out _) ?? [];
-        if(GamepadsOk(gamepads)) return;
-        // HashSet<uint> connected = [];
-        // foreach (var item in collection)
-        // {
-            
-        // }
-        // foreach (var id in gamepads)
-        // {
-        //     if (connected.Remove(id)) continue;
-        //     nint gamepadId = SDL.OpenGamepad(id);
-        //     DeviceLookup.Add(id, gamepadId);
-        // }
-        // foreach (var id in connected)
-        // {
-        //     SDL.CloseGamepad(DeviceLookup[id]);
-        // }
-        // Devices = gamepads;
-    }
-    private bool GamepadsOk(uint[] gamepadIds)
-    {
-        // if(GamepadStates.Count != gamepadIds.Length) return false;
-        // for (int idx = 0; idx < gamepadIds.Length; idx++)
-        // {
-        //     if(GamepadStates[idx].SdlId != gamepadIds[idx]) return false;
-        // }
-        return true;
+        HandleGamepadConnections();
+        foreach (var gamepad in GamepadLookup.Values)
+        {
+            gamepad.Poll();
+        }
     }
     public bool HandleKeyDown(SDL.Scancode keyCode)
     {
@@ -107,7 +85,6 @@ public class ErInput
     public bool GetKeyDown(SDL.Scancode keyCode)
     {
         bool res = KeyboardState[(int)keyCode];
-        // if(res) KeyboardState[(int)keyCode] = false;
         return res;
     }
     public ErVec2 GetMousePosition()
@@ -126,99 +103,122 @@ public class ErInput
     public bool GetMouseButtonDown(SDL.MouseButtonFlags mouseButton)
     {
         bool res = (int)(MouseButtonFlags & mouseButton) != 0;
-        // if(res)
-        // {
-        //     MouseButtonFlags &= ~mouseButton;
-        // }
         return res;
     }
-    // private IEnumerable<ErGamepadState> GetGamepadStates(uint gamepadId)
-    // {
-    //     if(gamepadId < 0)
-    //     {
-    //         foreach (var item in GamepadStates.Values)
-    //         {
-    //             yield return item;
-    //         }
-    //     }
-    //     else if(GamepadStates.TryGetValue(gamepadId, out var state))
-    //     {
-            
-    //     }
-    //     else if(gamepadId >= GamepadStates.Count)
-    //     {
-    //         ErEngine.LogWarning("bad gamepad index ", gamepadId);
-    //     }
-    //     else
-    //     {
-    //         yield return GamepadStates[gamepadId];
-    //     }
-    // }
-    public bool HandleGamepadButtonDown(SDL.GamepadButton button, int gamepadIdx)
+    public bool TryGetGamepad(int gamepadIdx, out ErGamepad gamepad)
     {
-        return false;
-        // bool res = false;
-        // foreach (var item in GetGamepadStates(gamepadIdx))
-        // {
-        //     if(item.GetGamepadButtonDown(button)) res = true;
-        // }
-        // return res;
+        gamepad = default!;
+        if(gamepadIdx < 0 || gamepadIdx >= Gamepads.Count) return false;
+        var gp = Gamepads[gamepadIdx];
+        if(gp is null) return false;
+        gamepad = gp;
+        return true;
+    }
+    public IEnumerable<(int gamepadIdx, ErGamepad gamepad)> GetAllGamepads()
+    {
+        for (int idx = 0; idx < Gamepads.Count; idx++)
+        {
+            var gp = Gamepads[idx];
+            if(gp is null) continue;
+            yield return (idx, gp);
+        }
     }
     public bool GetGamepadButtonDown(SDL.GamepadButton button, int gamepadIdx)
     {
+        foreach (var gp in GetGamepads(gamepadIdx))
+        {
+            if(gp.GetGamepadButtonDown(button)) return true;
+        }
         return false;
     }
-    public double HandleGamepadAxis(SDL.GamepadAxis axis, int gamepadIdx)
+    public bool HandleGamepadButtonDown(SDL.GamepadButton button, int gamepadIdx)
     {
-        return 0;
-        // double res = 0;
-        // foreach (var item in GetGamepadStates(gamepadIdx))
-        // {
-        //     res += item.GetGamepadAxis(axis);
-        // }
-        // return Math.Clamp(res, -1, 1);
+        bool res = false;
+        foreach (var item in GetGamepads(gamepadIdx))
+        {
+            if(item.GetGamepadButtonDown(button)) res = true;
+        }
+        return res;
     }
     public double GetGamepadAxis(SDL.GamepadAxis axis, int gamepadIdx)
     {
-        return 0;
+        double res = 0;
+        foreach (var item in GetGamepads(gamepadIdx))
+        {
+            res += item.GetGamepadAxis(axis);
+        }
+        return Math.Clamp(res, -1, 1);
     }
-    // private bool TryGetGamepadId(int deviceId, out nint sdlId)
-    // {
-    //     sdlId = default;
-    //     if(deviceId < 0 || deviceId >= Devices.Length) return false;
-    //     if(!DeviceLookup.TryGetValue(Devices[deviceId], out sdlId)) return false;
-    //     return true;
-    // }
-    // public bool GetGamepadButtonDown(SDL.GamepadButton button, int deviceId = -1)
-    // {
-    //     if(deviceId < 0) return GetAllGamepadButtonDown(button);
-    //     if(!TryGetGamepadId(deviceId, out nint sdlId)) return false;
-    //     return SDL.GetGamepadButton(sdlId, button);
-    // }
-    // public bool GetAllGamepadButtonDown(SDL.GamepadButton button)
-    // {
-    //     foreach (nint ptr in DeviceLookup.Values)
-    //     {
-    //         if(SDL.GetGamepadButton(ptr, button)) return true;
-    //     }
-    //     return false;
-    // }
-    // public double GetGamepadAxis(SDL.GamepadAxis axis, int deviceId = -1)
-    // {
-    //     if(deviceId < 0) return GetAllGamepadAxis(axis);
-    //     if(!TryGetGamepadId(deviceId, out nint sdlId)) return 0;
-    //     double val = SDL.GetGamepadAxis(sdlId, axis);
-    //     // Note: A short? Really!?
-    //     return val / 32767;
-    // }
-    // public double GetAllGamepadAxis(SDL.GamepadAxis axis)
-    // {
-    //     double val = 0;
-    //     foreach (nint ptr in DeviceLookup.Values)
-    //     {
-    //         short temp = SDL.GetGamepadAxis(ptr, axis);
-    //         val += temp;
-    //     }
-    //     return val / 32767;
-    // }
+    public double HandleGamepadAxis(SDL.GamepadAxis axis, int gamepadIdx)
+    {
+        double res = 0;
+        foreach (var item in GetGamepads(gamepadIdx))
+        {
+            res += item.GetGamepadAxis(axis);
+        }
+        return Math.Clamp(res, -1, 1);
+    }
+    private IEnumerable<ErGamepad> GetGamepads(int gamepadIdx)
+    {
+        if(gamepadIdx == -1)
+        {
+            foreach (var gp in Gamepads)
+            {
+                if(gp is not null) yield return gp;
+            }
+        }
+        else if(TryGetGamepad(gamepadIdx, out var gamepad)) yield return gamepad;
+    }
+    private void HandleGamepadConnections()
+    {
+        uint[] gamepads = SDL.GetGamepads(out _) ?? [];
+        if(GamepadsOk(gamepads)) return;
+        HashSet<uint> connected = [..GamepadLookup.Keys];
+        foreach (var id in gamepads)
+        {
+            if (connected.Remove(id)) continue;
+            AddGamepad(id);
+        }
+        foreach (var id in connected)
+        {
+            RemoveGamepad(id);
+        }
+    }
+    private int AddGamepad(uint sdlId)
+    {
+        nint handle = SDL.OpenGamepad(sdlId);
+        ErGamepad gamepad = new(handle, sdlId);
+        GamepadLookup.Add(gamepad.SdlId, gamepad);
+        for (int idx = 0; idx < Gamepads.Count; idx++)
+        {
+            if(Gamepads[idx] is not null) continue;
+            Gamepads[idx] = gamepad;
+            OnGamepadConnect(idx);
+            return idx;
+        }
+        Gamepads.Add(gamepad);
+        int gamepadIdx = Gamepads.Count-1;
+        OnGamepadConnect(gamepadIdx);
+        return gamepadIdx;
+    }
+    private int RemoveGamepad(uint sdlId)
+    {
+        var gamepad = GamepadLookup[sdlId];
+        GamepadLookup.Remove(sdlId);
+        int gamepadIdx = Gamepads.IndexOf(gamepad);
+        OnGamepadDisconnect(gamepadIdx);
+
+        Gamepads[gamepadIdx] = null;
+        SDL.CloseGamepad(gamepad.Handle);
+        return gamepadIdx;
+    }
+    private bool GamepadsOk(uint[] gamepadIds)
+    {
+        if(GamepadLookup.Count != gamepadIds.Length) return false;
+        for (int idx = 0; idx < gamepadIds.Length; idx++)
+        {
+            if(!GamepadLookup.ContainsKey(gamepadIds[idx])) return false;
+        }
+        return true;
+    }
 }
