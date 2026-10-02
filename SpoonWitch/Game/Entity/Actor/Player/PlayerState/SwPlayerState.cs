@@ -17,7 +17,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
     protected SwSprite SpoonSprite = null!;
     protected SwSprite SlingSprite = null!;
     protected SwSprite ReticleSprite = null!;
-    protected SwPlayerControls Controls = null!;
+    protected SwPlayerInput Controls = null!;
     protected SwAreaComponent SpoonHurtbox = null!;
     protected SwParticleComponent DustParticles = null!;
     protected SwInventory Inventory => Entity.Inventory;
@@ -108,7 +108,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         SlingSprite = Entity.GetComponent<SwSpriteComponent>("sling")?.Sprite!;
         ReticleSprite = Entity.GetComponent<SwSpriteComponent>("reticle")?.Sprite!;
         DustParticles = Entity.GetComponent<SwParticleComponent>("dust_particles")!;
-        Controls = Entity.GetComponent<SwPlayerControls>("controls")!;
+        Controls = Entity.GetComponent<SwPlayerControls>("controls")?.InputDevice!;
         SpoonHurtbox = Entity.GetComponent<SwAreaComponent>("spoon_hurtbox")!;
     }
     protected void SetBodyHandedAnim(int animIdx, int hands, int facing)
@@ -136,8 +136,9 @@ public abstract class SwPlayerState : SwState<SwPlayer>
     public override void Update(double dt)
     {
         base.Update(dt);
-        ReticleSprite.Visible = Controls.ReticleVisible;
-        ReticleSprite.Offset = Controls.ReticlePosition;
+        if(Controls.PauseJustPressed) SwApp.CommandQueue.AddCommandVerb("pause");
+        // ReticleSprite.Visible = Controls.ReticleVisible;
+        // ReticleSprite.Offset = Controls.ReticlePosition;
         if(Entity.Stamina < Entity.MaxStamina && !Entity.StaminaRegenClock.IsRunning)
         {
             Entity.Stamina += Entity.StaminaRegen * dt;
@@ -290,7 +291,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
                 Entity.Mana -= Entity.CurrentSpell.ManaCost;
             }
             else if(Entity.CurrentSpell is not null && Entity.CurrentSpell.IsActive && Controls.CastJustPressed){}
-            else if(ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.T)) StateMachine.SetState("dancing");
+            else if(ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.T)) StateMachine.SetState("dancing");
         }
     }
     public class Attack: SwPlayerState

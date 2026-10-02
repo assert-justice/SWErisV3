@@ -18,13 +18,15 @@ public class SwApp : IErApp
     public static readonly ErVec2 ScreenSize = new(INTERNAL_WIDTH, INTERNAL_HEIGHT);
     public static readonly ErVec2 CameraSize = new(INTERNAL_WIDTH, INTERNAL_HEIGHT - HUD_HEIGHT);
     private SwGame? Game;
+    private bool GameSavingEnabled = false;
+    private bool SettingSavingEnabled = false;
     private SwMenuHolder MenuHolder = null!;
     private static int NextId;
     private ErTexture RenderTexture = null!;
     public static readonly SwCommandQueue CommandQueue = new();
     // public static double GameSpeed => IsPaused ? GameSpeedMul : 0;
     // public static double GameSpeedMul => 1;
-    public static bool IsPaused{get; private set;} = false;
+    public static bool IsPaused{get; private set;} = true;
     public static bool Debug => false;// Settings.TryGet("debug/debug", out bool debug) && debug;
     public static int Main()
     {
@@ -69,7 +71,10 @@ public class SwApp : IErApp
         if(Game is not null)
         {
             Game.Cleanup();
-            if(!SwData.TrySaveGame(0)) ErEngine.LogWarning("failed to save game");
+            if (GameSavingEnabled)
+            {
+                if(!SwData.TrySaveGame(0)) ErEngine.LogWarning("failed to save game");
+            }
             CommandQueue.Clear();
         }
         if(!SwData.TryLoadMap(out var mapData))
@@ -95,7 +100,7 @@ public class SwApp : IErApp
     {
         CommandQueue.Process();
         if(!IsPaused) Game?.Update(ErEngine.DeltaTime);
-        MenuInput();
+        else MenuInput();
         MenuHolder.Update();
     }
     public void Draw()
@@ -110,8 +115,14 @@ public class SwApp : IErApp
     }
     public void Cleanup()
     {
-        if(!SwData.TrySaveSettings()) ErEngine.LogWarning("failed to save settings");
-        if(!SwData.TrySaveGame(0)) ErEngine.LogWarning("failed to save game");
+        if (SettingSavingEnabled)
+        {
+            if(!SwData.TrySaveSettings()) ErEngine.LogWarning("failed to save settings");
+        }
+        if (GameSavingEnabled)
+        {
+            if(!SwData.TrySaveGame(0)) ErEngine.LogWarning("failed to save game");
+        }
     }
     private bool Up;
     private bool Down;
@@ -123,29 +134,29 @@ public class SwApp : IErApp
     {
         if(!MenuHolder.Visible)
         {
-            if (ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Escape))
+            if (ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.Escape))
             {
                 MenuHolder.Visible = true;
                 CommandQueue.AddCommandVerb("pause");
             }
             return;
         }
-        bool pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Up);
+        bool pressed = ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.Up);
         if(pressed && !Up) MenuHolder.Up();
         Up = pressed;
-        pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Down);
+        pressed = ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.Down);
         if(pressed && !Down) MenuHolder.Down();
         Down = pressed;
-        pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Left);
+        pressed = ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.Left);
         if(pressed && !Left) MenuHolder.Left();
         Left = pressed;
-        pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Right);
+        pressed = ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.Right);
         if(pressed && !Right) MenuHolder.Right();
         Right = pressed;
-        pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Space);
+        pressed = ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.Space);
         if(pressed && !Confirm) MenuHolder.Confirm();
         Confirm = pressed;
-        pressed = ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Escape);
+        pressed = ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.Escape);
         if(pressed && !Cancel) MenuHolder.Cancel();
         Cancel = pressed;
     }

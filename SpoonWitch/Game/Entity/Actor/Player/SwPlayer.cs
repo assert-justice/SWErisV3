@@ -19,6 +19,7 @@ public class SwPlayer: SwActor
     public override SwCollisionMask Mask => IsAlive ? SwCollisionMask.Player : SwCollisionMask.None;
     public override int RenderLayer => 3;
     public int PlayerIdx;
+    public SwCamera Camera = null!;
     // Health
     // Note: Health and MaxHealth defined in SwActor
     public readonly SwClock HealthClock;
@@ -83,7 +84,8 @@ public class SwPlayer: SwActor
     public SwSpell? CurrentSpell;
     public SwStateMachine<SwPlayer>? StateMachine{get; private set;}
     public ErTexture? PickupTexture;
-    private bool GotMad = false;
+    private SwPlayerControls Controls = null!;
+    // private bool GotMad = false;
     public SwPlayer()
     {
         AddHandler("ent_offer_item", EntOfferItem);
@@ -144,7 +146,7 @@ public class SwPlayer: SwActor
     {
         base.Init();
         // Register components
-        var Controls = new SwPlayerControls(this);
+        Controls = new SwPlayerControls(this);
         RegisterComponent(Controls);
         if(!SwParticles2D.TryFromData(out var particles, Props.Get("dust_particles"))) ErEngine.LogWarning("unable to read player dust particles");
         else RegisterComponent(new SwParticleComponent(this, "dust_particles", particles));
@@ -159,14 +161,15 @@ public class SwPlayer: SwActor
         base.Update(dt);
         Props.TrySet("spoon_damage/source_pos_x", Position.X);
         Props.TrySet("spoon_damage/source_pos_y", Position.Y);
-        CurrentSpell?.Update();
-        if(IsAlive && ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Semicolon)) TestDamage(10);
         if(IsAlive) Game.AddFocusPoint(Position);
-        if(!GotMad && ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.M))
-        {
-            SwApp.CommandQueue.AddCommandVerb("get_mad");
-            GotMad = true;
-        }
+        Controls.InputDevice.PlayerScreenPosition = Position - Camera.Position;
+        // CurrentSpell?.Update();
+        // if(IsAlive && ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.Semicolon)) TestDamage(10);
+        // if(!GotMad && ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.M))
+        // {
+        //     SwApp.CommandQueue.AddCommandVerb("get_mad");
+        //     GotMad = true;
+        // }
     }
     protected override void UpdateLate(double dt)
     {

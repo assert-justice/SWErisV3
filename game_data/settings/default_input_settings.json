@@ -1,4 +1,16 @@
 {
+    "gamepad":{
+        "auto_charge": true,
+        "reticle_force_visible": false,
+        "invert_left_x": false,
+        "invert_right_x": false,
+        "invert_left_y": false,
+        "invert_right_y": false
+    },
+    "kbm":{
+        "kb_aiming": true,
+        "reticle_force_visible": true
+    },
     "buttons":{
         "attack": {
             "buffer": 0.25,
@@ -20,6 +32,21 @@
         },
         "cast": {
             "buffer": 0.25,
+            "mouse_buttons":["Middle"],
+            "gamepad_buttons":[]
+        },
+        "use": {
+            "buffer": 0.25,
+            "keys":["E"],
+            "gamepad_buttons":["North"]
+        },
+        "heal": {
+            "buffer": 0.25,
+            "keys":["Q"],
+            "gamepad_buttons":["East"]
+        },
+        "quaff": {
+            "buffer": 0.25,
             "keys":["F"],
             "gamepad_buttons":["North"]
         },
@@ -28,7 +55,7 @@
             "gamepad_buttons": ["Start"]
         },
         "ui_confirm":{
-            "keys": ["Enter", "Space"],
+            "keys": ["Return", "Space"],
             "gamepad_buttons": ["South"]
         },
         "ui_cancel":{

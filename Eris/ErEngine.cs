@@ -73,21 +73,21 @@ public static class ErEngine
         if(!Init(app)) return;
         TimeStarted = GetCurrentTime();
         LastFrameTime = TimeStarted;
-        DeltaTime = 1 / (double)Tickrate;
+        DeltaTime = 1.0 / Tickrate;
         while (IsRunning)
         {
-            double newTime = GetCurrentTime();
-            FrameDuration = newTime - LastFrameTime;
-            LastFrameTime = newTime;
-            FrameTimeRemaining += FrameDuration;
-            while(FrameTimeRemaining >= DeltaTime)
-            {
+            // double newTime = GetCurrentTime();
+            // FrameDuration = newTime - LastFrameTime;
+            // LastFrameTime = newTime;
+            // FrameTimeRemaining += FrameDuration;
+            // while(FrameTimeRemaining >= DeltaTime)
+            // {
                 CurrentTime = GetCurrentTime();
                 Input.Poll();
                 app.Update();
                 AudioApp.Update();
-                FrameTimeRemaining -= DeltaTime;
-            }
+                // FrameTimeRemaining -= DeltaTime;
+            // }
             Renderer.BeginRender();
             app.Draw();
             Renderer.EndRender();

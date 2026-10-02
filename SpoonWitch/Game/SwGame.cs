@@ -68,6 +68,7 @@ public class SwGame
         {
             var player = AddEntity<SwPlayer>(playerProps);
             player.PlayerIdx = idx;
+            player.Camera = Cameras[0];
             player.Position = CameraTarget;
             int hudX = SwApp.INTERNAL_WIDTH / 2 * idx;
             if(!SwHud.TryLoad(new(hudX, 0), out var hud)){}
