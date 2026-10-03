@@ -612,7 +612,7 @@
 					"max": null,
 					"regex": null,
 					"acceptFileTypes": null,
-					"defaultOverride": { "id": "V_Int", "params": [2] },
+					"defaultOverride": { "id": "V_Int", "params": [4] },
 					"textLanguageMode": null,
 					"symmetricalRef": false,
 					"autoChainRef": true,
@@ -3239,7 +3239,7 @@
 										"{\\n  \"verb\":\"map_set_tiles_area\",\\n  \"layer_idx\": 0,\\n  \"area_iid\": \"439a9a70-96d0-11f1-9f78-ef7fb847a63a\",\\n  \"tile_id\": -1\\n}"
 									]
 								}] },
-								{ "__identifier": "mask", "__type": "Int", "__value": 2, "__tile": null, "defUid": 92, "realEditorValues": [] },
+								{ "__identifier": "mask", "__type": "Int", "__value": 4, "__tile": null, "defUid": 92, "realEditorValues": [] },
 								{ "__identifier": "is_command_global", "__type": "Bool", "__value": true, "__tile": null, "defUid": 93, "realEditorValues": [] },
 								{ "__identifier": "max_activations", "__type": "Int", "__value": 1, "__tile": null, "defUid": 121, "realEditorValues": [] }
 							],

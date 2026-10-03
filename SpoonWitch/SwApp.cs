@@ -20,7 +20,7 @@ public class SwApp : IErApp
     public static readonly ErVec2 CameraSize = new(INTERNAL_WIDTH, INTERNAL_HEIGHT - HUD_HEIGHT);
     private SwGame? Game;
     private bool GameSavingEnabled = false;
-    private bool SettingSavingEnabled = false;
+    private bool SettingSavingEnabled = true;
     private SwMenuHolder MenuHolder = null!;
     private readonly SwPlayerInput MenuInput = new();
     private static int NextId;

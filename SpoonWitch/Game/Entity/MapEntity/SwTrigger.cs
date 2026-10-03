@@ -25,7 +25,7 @@ public class SwTrigger : SwMapEntity
     {
         base.Init();
         var size = SwPrion.GetVec2(Props.Data.Get("rect_px"), "w", "h", new ErVec2(32,32));
-        if(!Props.TryGet("mask", out uint mask)) mask = 2;
+        if(!Props.TryGet("mask", out uint mask)) mask = (uint)SwCollisionMask.PlayerTeam;
         Area = new(this, "area", mask, size, enabled: IsEnabled(), onBodyEnter: OnEnter);
         RegisterComponent(Area);
     }
