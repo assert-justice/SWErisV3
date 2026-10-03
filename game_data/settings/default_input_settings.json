@@ -30,11 +30,6 @@
             "keys":["Space"],
             "gamepad_buttons":["East", "LeftShoulder"]
         },
-        "cast": {
-            "buffer": 0.25,
-            "mouse_buttons":["Middle"],
-            "gamepad_buttons":[]
-        },
         "use": {
             "buffer": 0.25,
             "keys":["E"],
@@ -49,6 +44,35 @@
             "buffer": 0.25,
             "keys":["F"],
             "gamepad_buttons":["North"]
+        },
+        "last_potion": {
+            "buffer": 0.25,
+            "keys":["Alpha1"],
+            "gamepad_buttons":["DPadLeft"]
+        },
+        "next_potion": {
+            "buffer": 0.25,
+            "keys":["Alpha2"],
+            "gamepad_buttons":["DPadRight"]
+        },
+        "cast": {
+            "buffer": 0.25,
+            "mouse_buttons":["Middle"],
+            "gamepad_axes_high":["LeftTrigger"]
+        },
+        "last_spell": {
+            "buffer": 0.25,
+            "keys":["Alpha3"],
+            "gamepad_buttons":["DPadUp"]
+        },
+        "next_spell": {
+            "buffer": 0.25,
+            "keys":["Alpha4"],
+            "gamepad_buttons":["DPadDown"]
+        },
+        "map":{
+            "keys":["M"],
+            "gamepad_buttons": ["Back"]
         },
         "pause":{
             "keys": ["Escape"],

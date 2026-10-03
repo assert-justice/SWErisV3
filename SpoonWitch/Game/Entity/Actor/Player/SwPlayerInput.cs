@@ -14,10 +14,14 @@ public class SwPlayerInput: ErInputDevice
     private ErVButton? Fire;
     private ErVButton? Charge;
     private ErVButton? Dodge;
-    private ErVButton? Cast;
     private ErVButton? Use;
     private ErVButton? Heal;
     private ErVButton? Quaff;
+    private ErVButton? LastPotion;
+    private ErVButton? NextPotion;
+    private ErVButton? Cast;
+    private ErVButton? LastSpell;
+    private ErVButton? NextSpell;
     private ErVButton? Pause;
     private ErVButton? UiCancel;
     private ErVButton? UiConfirm;
@@ -42,10 +46,14 @@ public class SwPlayerInput: ErInputDevice
     public bool FireJustPressed => Fire?.JustPressed ?? false;
     public bool IsCharging => GetIsCharging();
     public bool DodgeJustPressed => Dodge?.JustPressed ?? false;
-    public bool CastJustPressed => Cast?.JustPressed ?? false;
     public bool UseJustPressed => Use?.JustPressed ?? false;
     public bool HealJustPressed => Heal?.JustPressed ?? false;
     public bool QuaffJustPressed => Quaff?.JustPressed ?? false;
+    public bool LastPotionJustPressed => LastPotion?.JustPressed ?? false;
+    public bool NextPotionJustPressed => NextPotion?.JustPressed ?? false;
+    public bool CastJustPressed => Cast?.JustPressed ?? false;
+    public bool LastSpellJustPressed => LastSpell?.JustPressed ?? false;
+    public bool NextSpellJustPressed => NextSpell?.JustPressed ?? false;
     public bool PauseJustPressed => Pause?.JustPressed ?? false;
     public bool UiCancelJustPressed => UiCancel?.JustPressed ?? false;
     public bool UiConfirmJustPressed => UiConfirm?.JustPressed ?? false;
@@ -62,18 +70,6 @@ public class SwPlayerInput: ErInputDevice
         if(DeviceKind == ErInput.DeviceKind.Gamepad && AutoCharge && Aim.IsNonzero()) return true;
         return false;
     }
-//         //     // Note: this is where we figure out where the mouse is relative to the player.
-//         //     var playerScreenPos = SwGame.PlayerPos - SwGame.Camera.Position;
-//         //     // Todo: make this less horrible
-//         //     ReticlePosition = ErEngine.Input.GetMousePosition() / (ErVec2)ErEngine.Renderer.WindowSize * SwApp.ScreenSize - SwApp.ScreenSize * 0.5 - playerScreenPos + new ErVec2(0, -SwApp.HUD_HEIGHT * 0.5);
-//         //     Aim = ReticlePosition.Normalized();
-//         //     // Note: If we're not charging and we're using keyboard aiming we aim in the last direction we moved as the aim vector.
-//             if(IsCharging || !kb_aiming) LastFacing = Aim;
-//             else if(Move.IsNonzero()) LastFacing = Move.Normalized();
-//         //     ReticleVisible = IsCharging || (Aim.IsNonzero() && reticle_always_visible_kb);
-//         }
-//         // ReticleVisible = IsCharging || (Aim.IsNonzero() && reticle_always_visible_kb);
-
     private void SetAim()
     {
         if(DeviceKind == ErInput.DeviceKind.Kbm)
@@ -163,10 +159,14 @@ public class SwPlayerInput: ErInputDevice
         Buttons.TryGetValue("fire", out Fire);
         Buttons.TryGetValue("charge", out Charge);
         Buttons.TryGetValue("dodge", out Dodge);
-        Buttons.TryGetValue("cast", out Cast);
         Buttons.TryGetValue("use", out Use);
         Buttons.TryGetValue("heal", out Heal);
         Buttons.TryGetValue("quaff", out Quaff);
+        Buttons.TryGetValue("last_potion", out LastPotion);
+        Buttons.TryGetValue("next_potion", out NextPotion);
+        Buttons.TryGetValue("cast", out Cast);
+        Buttons.TryGetValue("last_spell", out LastSpell);
+        Buttons.TryGetValue("next_spell", out NextSpell);
         Buttons.TryGetValue("pause", out Pause);
         Buttons.TryGetValue("ui_confirm", out UiConfirm);
         Buttons.TryGetValue("ui_cancel", out UiCancel);
