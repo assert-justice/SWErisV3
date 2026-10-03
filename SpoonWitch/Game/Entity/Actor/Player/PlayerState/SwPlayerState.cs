@@ -72,7 +72,8 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         "def_dodge_dl",
         "def_dodge_u",
     ];
-    private static readonly string[] ReticleAnimations = [
+    protected static readonly string[] ReticleAnimations = [
+        "still",
         "charge_0",
         "charge_1",
         "charge_2",
@@ -137,8 +138,8 @@ public abstract class SwPlayerState : SwState<SwPlayer>
     {
         base.Update(dt);
         if(Controls.PauseJustPressed) SwApp.CommandQueue.AddCommandVerb("pause");
-        // ReticleSprite.Visible = Controls.ReticleVisible;
-        // ReticleSprite.Offset = Controls.ReticlePosition;
+        ReticleSprite.Visible = Controls.IsReticleVisible;
+        ReticleSprite.Offset = Controls.ReticlePosition;
         if(Entity.Stamina < Entity.MaxStamina && !Entity.StaminaRegenClock.IsRunning)
         {
             Entity.Stamina += Entity.StaminaRegen * dt;

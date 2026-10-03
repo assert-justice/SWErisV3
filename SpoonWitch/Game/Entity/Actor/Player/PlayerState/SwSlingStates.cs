@@ -14,6 +14,7 @@ public class SwPlayerCharging: SwPlayerState
         base.BeginState(lastState);
         SlingSprite.Visible = true;
         SlingSprite.Play("charging");
+        ReticleSprite.Play(ReticleAnimations[1]);
         Entity.SlingChargeClock.Start(Entity.SlingChargeTime / NumPhases);
         Phase = 0;
     }
@@ -37,7 +38,7 @@ public class SwPlayerCharging: SwPlayerState
         else
         {
             Phase++;
-            // Todo: set reticle sprite
+            ReticleSprite.Play(ReticleAnimations[Phase + 1]);
             Entity.SlingChargeClock.Restart();
         }
     }
@@ -52,7 +53,7 @@ public class SwPlayerCharged: SwPlayerState
     }
     private bool CanFire()
     {
-        // if(!Controls.Aim.IsNonzero()) return false;
+        if(!Controls.Aim.IsNonzero()) return false;
         if(!Controls.FireJustPressed) return false;
         return true;
     }
@@ -62,8 +63,7 @@ public class SwPlayerCharged: SwPlayerState
         var sling = Entity.Props.Get("sling");
         if(!Entity.Props.TryGet("sling/projectile", out string slingProto)) return;
         var props = SwData.Prototypes.Get($"projectiles/{slingProto}");
-        // SwPrion.TrySetVec2(props, "velocity", Controls.Aim * Entity.SlingBulletSpeed);
-        SwPrion.TrySetVec2(props, "velocity", ErVec2.Right * Entity.SlingBulletSpeed);
+        SwPrion.TrySetVec2(props, "velocity", Controls.Aim.Normalized() * Entity.SlingBulletSpeed);
         SwPrion.TrySetVec2(props, Entity.Position);
         props.TrySet("damage", sling.Get("sling_damage"));
         Entity.Game.AddEntity<SwProjectile>(props);
@@ -86,6 +86,6 @@ public class SwPlayerCharged: SwPlayerState
         base.EndState(nextState);
         SlingSprite.Visible = false;
         SlingSprite.Stop();
-        ReticleSprite.Play("still");
+        ReticleSprite.Play(ReticleAnimations[0]);
     }
 }

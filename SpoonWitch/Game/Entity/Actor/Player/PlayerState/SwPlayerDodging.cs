@@ -22,7 +22,7 @@ public class SwPlayerDodging : SwPlayerState
         BodySprite.Stop();
         SetBodyDodgeAnim(Controls.LastFacingIdx);
         // set and lock in velocity
-        Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.DodgeSpeedMul;
+        Entity.Velocity = Controls.Move.Normalized() * Entity.BaseSpeed * Entity.DodgeSpeedMul;
         DustParticles.Particles.Emitting = true;
         Entity.UseStamina(Entity.DodgeStaminaCost);
         Phase = 0;
