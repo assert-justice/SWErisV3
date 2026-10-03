@@ -5,6 +5,7 @@ using ErisMath;
 using SpoonWitch.Command;
 using SpoonWitch.Data;
 using SpoonWitch.Game;
+using SpoonWitch.Game.Entity.Actor.Player;
 using SpoonWitch.Game.Map.MapData;
 using SpoonWitch.UI.Node;
 
@@ -21,6 +22,7 @@ public class SwApp : IErApp
     private bool GameSavingEnabled = false;
     private bool SettingSavingEnabled = false;
     private SwMenuHolder MenuHolder = null!;
+    private readonly SwPlayerInput MenuInput = new();
     private static int NextId;
     private ErTexture RenderTexture = null!;
     public static readonly SwCommandQueue CommandQueue = new();
@@ -52,6 +54,7 @@ public class SwApp : IErApp
             ErEngine.LogError("initialization failed");
             return;
         }
+        MenuInput.SetProfile(SwData.Settings.Get("input_binds"));
     }
     private bool TryInit()
     {
@@ -100,7 +103,7 @@ public class SwApp : IErApp
     {
         CommandQueue.Process();
         if(!IsPaused) Game?.Update(ErEngine.DeltaTime);
-        else MenuInput();
+        else PollMenu();
         MenuHolder.Update();
     }
     public void Draw()
@@ -124,41 +127,15 @@ public class SwApp : IErApp
             if(!SwData.TrySaveGame(0)) ErEngine.LogWarning("failed to save game");
         }
     }
-    private bool Up;
-    private bool Down;
-    private bool Left;
-    private bool Right;
-    private bool Confirm;
-    private bool Cancel;
-    private void MenuInput()
+    private void PollMenu()
     {
-        if(!MenuHolder.Visible)
-        {
-            if (ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.Escape))
-            {
-                MenuHolder.Visible = true;
-                CommandQueue.AddCommandVerb("pause");
-            }
-            return;
-        }
-        bool pressed = ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.Up);
-        if(pressed && !Up) MenuHolder.Up();
-        Up = pressed;
-        pressed = ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.Down);
-        if(pressed && !Down) MenuHolder.Down();
-        Down = pressed;
-        pressed = ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.Left);
-        if(pressed && !Left) MenuHolder.Left();
-        Left = pressed;
-        pressed = ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.Right);
-        if(pressed && !Right) MenuHolder.Right();
-        Right = pressed;
-        pressed = ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.Space);
-        if(pressed && !Confirm) MenuHolder.Confirm();
-        Confirm = pressed;
-        pressed = ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.Escape);
-        if(pressed && !Cancel) MenuHolder.Cancel();
-        Cancel = pressed;
+        MenuInput.Poll();
+        if(MenuInput.UiCancelJustPressed) MenuHolder.Cancel();
+        if(MenuInput.UiConfirmJustPressed) MenuHolder.Confirm();
+        if(MenuInput.UiUpJustPressed) MenuHolder.Up();
+        if(MenuInput.UiDownJustPressed) MenuHolder.Down();
+        if(MenuInput.UiLeftJustPressed) MenuHolder.Left();
+        if(MenuInput.UiRightJustPressed) MenuHolder.Right();
     }
     public static int GetNextId()
     {

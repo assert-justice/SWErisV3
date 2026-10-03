@@ -15,6 +15,7 @@ public class ErVButton : ErBaseInput
     public bool Pressed => GetPressed();
     public bool JustPressed => GetJustPressed();
     public int GamepadIdx = -2;
+    public double Deadzone = ErEngine.Input.GlobalAxisDeadzone;
     private bool State = false;
     private bool LastState = false;
     private double LastChangeTime;
@@ -85,11 +86,11 @@ public class ErVButton : ErBaseInput
         }
         foreach (var axis in GamepadAxesLow)
         {
-            if(ErEngine.Input.GetGamepadAxis(axis, GamepadIdx) < -ErEngine.Input.GlobalAxisDeadzone) res = true;
+            if(ErEngine.Input.GetGamepadAxis(axis, GamepadIdx) < -Deadzone) res = true;
         }
         foreach (var axis in GamepadAxesHigh)
         {
-            if(ErEngine.Input.GetGamepadAxis(axis, GamepadIdx) > ErEngine.Input.GlobalAxisDeadzone) res = true;
+            if(ErEngine.Input.GetGamepadAxis(axis, GamepadIdx) > Deadzone) res = true;
         }
         return res;
     }

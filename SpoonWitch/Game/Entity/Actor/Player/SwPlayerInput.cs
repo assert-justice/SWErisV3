@@ -189,6 +189,7 @@ public class SwPlayerInput: ErInputDevice
                     Buttons.Add(button.Name, button);
                 }
                 if(value.TryGet("buffer", out double d)) button.Buffer = d;
+                if(value.TryGet("deadzone", out d)) button.Deadzone = d;
                 foreach (var item in value.Get("keys").Values)
                 {
                     if(!TryAsEnum(item, out SDL.Scancode code)) continue;
@@ -249,6 +250,7 @@ public class SwPlayerInput: ErInputDevice
                 }
                 button.GamepadIdx = gamepadIdx;
                 if(value.TryGet("buffer", out double d)) button.Buffer = d;
+                if(value.TryGet("deadzone", out d)) button.Deadzone = d;
                 foreach (var item in value.Get("gamepad_buttons").Values)
                 {
                     if(!TryAsEnum(item, out SDL.GamepadButton code)) continue;
