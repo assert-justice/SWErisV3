@@ -54,7 +54,7 @@ public class SwApp : IErApp
             ErEngine.LogError("initialization failed");
             return;
         }
-        MenuInput.SetProfile(SwData.Settings.Get("input_binds"));
+        MenuInput.SetProfileAll(SwData.Settings.Get("input_binds"));
     }
     private bool TryInit()
     {
@@ -130,12 +130,12 @@ public class SwApp : IErApp
     private void PollMenu()
     {
         MenuInput.Poll();
-        if(MenuInput.UiCancelJustPressed) MenuHolder.Cancel();
-        if(MenuInput.UiConfirmJustPressed) MenuHolder.Confirm();
-        if(MenuInput.UiUpJustPressed) MenuHolder.Up();
-        if(MenuInput.UiDownJustPressed) MenuHolder.Down();
-        if(MenuInput.UiLeftJustPressed) MenuHolder.Left();
-        if(MenuInput.UiRightJustPressed) MenuHolder.Right();
+        if(MenuInput.UiCancelJustDown) MenuHolder.Cancel();
+        if(MenuInput.UiConfirmJustDown) MenuHolder.Confirm();
+        if(MenuInput.UiUpJustDown) MenuHolder.Up();
+        if(MenuInput.UiDownJustDown) MenuHolder.Down();
+        if(MenuInput.UiLeftJustDown) MenuHolder.Left();
+        if(MenuInput.UiRightJustDown) MenuHolder.Right();
     }
     public static int GetNextId()
     {

@@ -53,7 +53,7 @@ public class SwPlayerCharged: SwPlayerState
     private bool CanFire()
     {
         if(!Controls.Aim.IsNonzero()) return false;
-        if(!Controls.FireJustPressed) return false;
+        if(!Controls.FireJustDown) return false;
         return true;
     }
     private void Fire()
