@@ -38,6 +38,19 @@ public readonly struct ErRect2
     {
         return Contains(rect.Position) && Contains(rect.Position + rect.Size);
     }
+    public double DistanceToPoint(ErVec2 point)
+    {
+        double res = double.MaxValue;
+        double lDis = Left - point.X;
+        double rDis = point.X - Right;
+        double tDis = Top - point.Y;
+        double bDis = point.Y - Bottom;
+        if(Math.Abs(lDis) < Math.Abs(res)) res = lDis;
+        if(Math.Abs(rDis) < Math.Abs(res)) res = rDis;
+        if(Math.Abs(tDis) < Math.Abs(res)) res = tDis;
+        if(Math.Abs(bDis) < Math.Abs(res)) res = bDis;
+        return res;
+    }
     public bool Overlaps(ErRect2 rect)
     {
         if(rect.Left > Right) return false;

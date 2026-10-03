@@ -184,6 +184,14 @@ public class SwMap
         if(!SectorGrid.TryGet(sectorCoord, out var sector)) return -2;
         return sector.GetTopTile(tileCoord);
     }
+    public bool TryGetRoomId(ErVec2 point, out string roomId)
+    {
+        roomId = string.Empty;
+        var sectorCoord = (ErVec2I)point / SectorSizePx;
+        if(!RoomSectorLookup.TryGetValue(sectorCoord, out var id)) return false;
+        roomId = id;
+        return true;
+    }
     public bool InSameRoom(ErVec2 posA, ErVec2 posB)
     {
         var aSectorCoord = (ErVec2I)posA / SectorSizePx;
