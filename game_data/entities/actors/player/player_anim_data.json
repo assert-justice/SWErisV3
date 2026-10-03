@@ -19,7 +19,7 @@
         {
             "name": "body",
             "ase_animations": {
-                "filepath": "images/belladonna_sheet.json",
+                "filepath": "images/bella_sheet.json",
                 "blacklist": [
                     "swipe_d",
                     "spin_sling"
