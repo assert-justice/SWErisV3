@@ -324,6 +324,7 @@ public class SwMap
             case "checkpoint":
                 break;
             case "spawner":
+                entId = Game.AddEntity<SwSpawner>(props).Id;
                 break;
             case "pickup":
                 break;

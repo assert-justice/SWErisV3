@@ -445,7 +445,7 @@
 					"uid": 50,
 					"type": "F_Int",
 					"isArray": false,
-					"canBeNull": true,
+					"canBeNull": false,
 					"arrayMinLength": null,
 					"arrayMaxLength": null,
 					"editorDisplayMode": "Hidden",
@@ -465,7 +465,7 @@
 					"max": null,
 					"regex": null,
 					"acceptFileTypes": null,
-					"defaultOverride": null,
+					"defaultOverride": { "id": "V_Int", "params": [1] },
 					"textLanguageMode": null,
 					"symmetricalRef": false,
 					"autoChainRef": true,
@@ -3307,16 +3307,16 @@
 							"defUid": 8,
 							"px": [480,128],
 							"fieldInstances": [
-								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "knight", "__tile": null, "defUid": 49, "realEditorValues": [{
+								{ "__identifier": "entity_type", "__type": "LocalEnum.entity_type", "__value": "slume", "__tile": null, "defUid": 49, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["knight"]
+									"params": ["slume"]
 								}] },
 								{ "__identifier": "trigger_on_load", "__type": "Bool", "__value": true, "__tile": null, "defUid": 9, "realEditorValues": [] },
 								{ "__identifier": "property_overrides_json", "__type": "String", "__value": null, "__tile": null, "defUid": 12, "realEditorValues": [] },
-								{ "__identifier": "max_uses", "__type": "Int", "__value": null, "__tile": null, "defUid": 50, "realEditorValues": [] },
-								{ "__identifier": "is_passive", "__type": "Bool", "__value": true, "__tile": null, "defUid": 119, "realEditorValues": [{
+								{ "__identifier": "max_uses", "__type": "Int", "__value": 1, "__tile": null, "defUid": 50, "realEditorValues": [] },
+								{ "__identifier": "is_passive", "__type": "Bool", "__value": false, "__tile": null, "defUid": 119, "realEditorValues": [{
 									"id": "V_Bool",
-									"params": [ true ]
+									"params": [ false ]
 								}] }
 							],
 							"__worldX": 1120,

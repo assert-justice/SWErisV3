@@ -18,8 +18,10 @@ public abstract class SwMapEntity: SwEntity
         if(Props.Data is not PriDict dict) {ErEngine.LogWarning("you done goofed"); return;}
         dict.Merge(saveData);
     }
-    public virtual void Unload()
+    protected virtual void Save(){}
+    public void Unload()
     {
+        Save();
         SwData.SaveData.TrySet(DataPath, Props.Data);
         QueueFree();
     }
