@@ -15,7 +15,7 @@ public class SwPlayerControls : SwComponent
     public override void Ready()
     {
         base.Ready();
-        InputDevice.SetProfileAll(SwData.Settings.Get("input_binds"));
+        // InputDevice.SetProfileAll(SwData.Settings.Get("input_binds"));
     }
     public override void Update(double dt)
     {

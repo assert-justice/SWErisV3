@@ -72,8 +72,10 @@ public class SwGame
     public readonly SwLookup EntityLookup = new();
     private readonly Queue<SwEntity> NewEntities = [];
     private readonly Queue<SwEntity> FreedEntitiesQueue = [];
-    public SwGame(SwMapData mapData, int numPlayers)
+    public SwGame(SwMapData mapData, PriNode launchProps)
     {
+        if(!launchProps.TryGet("num_players", out int numPlayers)) numPlayers = 1;
+        bool skipKb = launchProps.TryGet("skip_kb", out bool b) && b;
         PhysicsWorld = new(new(8,8), mapData.TileData.TileSize);
         Map = new(this, mapData)
         {
@@ -90,12 +92,45 @@ public class SwGame
         // add players
         Huds = new SwHud[numPlayers];
         var playerProps = SwData.Prototypes.Get("entities/player");
+        // Todo: make assigning input devices better
+        var inputBinds = SwData.Settings.Get("input_binds");
+        List<(int type, int gamepadIdx)> inputBinders = [];
+        if(numPlayers == 1) inputBinders.Add((0,0));
+        else
+        {
+            int count = numPlayers;
+            if(!skipKb)
+            {
+                inputBinders.Add((1,0));
+                count--;
+            }
+            for (int idx = 0; idx < count; idx++)
+            {
+                inputBinders.Add((2,idx));
+            }
+        }
+        double playerWidth = 48;
+        double startX = CameraTarget.X - numPlayers * playerWidth / 2 + playerWidth / 2;
         for (int idx = 0; idx < numPlayers; idx++)
         {
             var player = AddEntity<SwPlayer>(playerProps);
             player.PlayerIdx = idx;
             player.Camera = Cameras[0];
-            player.Position = CameraTarget;
+            player.Position = new(startX + playerWidth * idx, CameraTarget.Y);
+            var (type,gamepadIdx) = inputBinders[idx];
+            switch (type)
+            {
+                case 0:
+                player.Controls.InputDevice.SetProfileAll(inputBinds);
+                break;
+                case 1:
+                player.Controls.InputDevice.SetProfileKbm(inputBinds);
+                break;
+                case 2:
+                player.Controls.InputDevice.SetProfileGamepad(inputBinds, gamepadIdx);
+                break;
+            }
+            // if(idx < inputBinders.Count) inputBinders[idx](player, inputBinds);
             int hudX = SwApp.INTERNAL_WIDTH / 2 * idx;
             if(!SwHud.TryLoad(new(hudX, 0), out var hud)){}
             Huds[idx] = hud;

@@ -2,6 +2,7 @@
 using Eris.App;
 using Eris.Renderer;
 using ErisMath;
+using Prion.Node;
 using SpoonWitch.Command;
 using SpoonWitch.Data;
 using SpoonWitch.Game;
@@ -45,7 +46,7 @@ public class SwApp : IErApp
     public void Init()
     {
         CommandQueue.AddHandler("quit", (_)=>ErEngine.Quit());
-        CommandQueue.AddHandler("launch", (_)=>Launch());
+        CommandQueue.AddHandler("launch", Launch);
         CommandQueue.AddHandler("pause", (_)=>Pause());
         CommandQueue.AddHandler("unpause", (_)=>UnPause());
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
@@ -68,7 +69,7 @@ public class SwApp : IErApp
         MenuHolder = menuHolder;
         return true;
     }
-    private void Launch()
+    private void Launch(PriNode command)
     {
         UnPause();
         if(Game is not null)
@@ -86,7 +87,7 @@ public class SwApp : IErApp
             return;
         }
         SwData.LoadGame(0);
-        Game = new(mapData, 1);
+        Game = new(mapData, command);
     }
     private void Pause()
     {

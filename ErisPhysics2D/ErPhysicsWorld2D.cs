@@ -261,7 +261,9 @@ public class ErPhysicsWorld2D
                 if(IntSet.Contains(body.Id)) continue;
                 IntSet.Add(body.Id);
                 if(body.Id == id) continue;
-                if((body.Mask & mask) != 0) yield return body.Rect;
+                if((body.Mask & mask) == 0) continue;
+                if(!body.Rect.Overlaps(rect)) continue;
+                yield return body.Rect;
             }
         }
     }
