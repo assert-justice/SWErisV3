@@ -6,9 +6,9 @@ using SpoonWitch.Data;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Utils;
 
-namespace SpoonWitch.Game.Entity;
+namespace SpoonWitch.Game.Entity.MapEntity;
 
-public class SwPickup : SwEntity
+public class SwPickup : SwMapEntity
 {
     private SwAreaComponent Area = null!;
     private ErTexture? Texture;
@@ -19,7 +19,7 @@ public class SwPickup : SwEntity
     {
         AddHandler("pickup_set_rem", SetRem);
     }
-    protected override void SetProps(PriNode props)
+    public override void SetProps(PriNode props)
     {
         base.SetProps(props);
         if(Props.TryGet("count", out int i)) Count = i;
@@ -33,9 +33,9 @@ public class SwPickup : SwEntity
         Area = new(this, "area", mask, SwPrion.GetVec2(Props.Data, "width_px", "height_px", new ErVec2(32,32)), enabled: true, onBodyEnter: OnEnter);
         RegisterComponent(Area);
     }
-    protected override void DrawImpl(SwEntity nextState)
+    protected override void Draw()
     {
-        base.DrawImpl(nextState);
+        base.Draw();
         if(Texture is null) return;
         var center = Texture.Size * 0.5;
         for (int idx = 0; idx < Count; idx++)
@@ -69,7 +69,7 @@ public class SwPickup : SwEntity
             }
             entity.AddCommand(command);
         }
-        if(Props.TryGet("on_enter_global", out command)) SwApp.CommandStore.AddCommand(command);
+        if(Props.TryGet("on_enter_global", out command)) SwApp.CommandQueue.AddCommand(command);
         Uses++;
         if(MaxUses > 0 && Uses >= MaxUses)
         {

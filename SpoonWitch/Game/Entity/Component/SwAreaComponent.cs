@@ -6,54 +6,64 @@ using SpoonWitch.Game.Map.Collision;
 
 namespace SpoonWitch.Game.Entity.Component;
 
-public class SwAreaComponent(SwEntity parent, 
-    string name, uint mask, ErVec2 size, ErVec2? offset = null, bool enabled = false,
-    Action<SwEntity>? onBodyEnter = null, Action<SwEntity>? onBodyExit = null) : SwComponent(parent, name)
+public class SwAreaComponent: SwComponent
+// (SwEntity parent, 
+//     string name, uint mask, ErVec2 size, ErVec2? offset = null, bool enabled = false,
+//     Action<SwEntity>? onBodyEnter = null, Action<SwEntity>? onBodyExit = null) : SwComponent(parent, name)
 {
-    private SwColliderArea Area = new() { };
-    private int _Id;
-    public int Id => _Id;
+    private readonly SwColliderArea Area;
     private bool WasEnabled = false;
-    public bool Enabled = enabled;
-    public uint Mask = mask;
-    public ErVec2 Offset = offset ?? ErVec2.Zero;
-    public ErVec2 Size = size;
-    public Action<SwEntity>? OnBodyEnter{private get; set;} = onBodyEnter;
-    public Action<SwEntity>? OnBodyExit{private get; set;} = onBodyExit;
+    public bool Enabled;
+    public uint Mask;
+    public ErVec2 Offset;
+    public ErVec2 Size;
+
+    public SwAreaComponent(SwEntity parent, string name, uint mask, ErVec2 size, ErVec2? offset = null, bool enabled = false,
+        Action<SwEntity>? onBodyEnter = null, Action<SwEntity>? onBodyExit = null) : base(parent, name)
+    {
+        Enabled = enabled;
+        Mask = mask;
+        Offset = offset ?? ErVec2.Zero;
+        Size = size;
+        OnBodyEnter = onBodyEnter;
+        OnBodyExit = onBodyExit;
+        Area = new(SwApp.GetNextId(), parent.Id);
+    }
+
+    public Action<SwEntity>? OnBodyEnter{private get; set;}
+    public Action<SwEntity>? OnBodyExit{private get; set;}
     public override void Ready()
     {
         base.Ready();
-        _Id = SwApp.GetNextId();
         Area.OnBodyEnterFn = OnEnter;
         Area.OnBodyExitFn = OnExit;
     }
-    public override void Update()
+    public override void Update(double dt)
     {
-        base.Update();
+        base.Update(dt);
         if(Enabled != WasEnabled)
         {
             WasEnabled = Enabled;
-            if (!Enabled) SwGame.GetMap().PhysicsWorld.RemoveArea(_Id);
+            if (!Enabled) Parent.Game.PhysicsWorld.RemoveArea(Area.Id);
         }
         if(!Enabled) return;
         Area.Position = Parent.Position + Offset - Size*0.5;
         Area.Size = Size;
         Area.Mask = Mask;
-        Area.ParentId = Parent.Id;
-        SwGame.GetMap().PhysicsWorld.SetArea(_Id, Area);
+        Parent.Game.PhysicsWorld.AddArea(Area);
     }
-    private void OnEnter(SwColliderArea area, int bodyId, ErColliderBody body)
+    private void OnEnter(SwColliderArea area, ErColliderBody body)
     {
         if(OnBodyEnter is null) return;
         if(body is not SwColliderBody b) return;
-        if(!SwGame.Game.EntityLookup.TryGet<SwEntity>(body.ParentId.ToString(), out var entity)) return;
+        if(!Parent.Game.EntityLookup.TryGet<SwEntity>(b.ParentId.ToString(), out var entity)) return;
         OnBodyEnter(entity);
     }
-    private void OnExit(SwColliderArea area, int bodyId, ErColliderBody body)
+    private void OnExit(SwColliderArea area, ErColliderBody body)
     {
         if(OnBodyExit is null) return;
         if(body is not SwColliderBody b) return;
-        if(!SwGame.Game.EntityLookup.TryGet<SwEntity>(body.ParentId.ToString(), out var entity)) return;
+        if(!Parent.Game.EntityLookup.TryGet<SwEntity>(b.ParentId.ToString(), out var entity)) return;
         OnBodyExit(entity);
     }
     // public override void Read(SwByteStream byteStream)
@@ -79,6 +89,6 @@ public class SwAreaComponent(SwEntity parent,
     public override void Cleanup()
     {
         base.Cleanup();
-        SwGame.GetMap().PhysicsWorld.RemoveArea(_Id);
+        Parent.Game.PhysicsWorld.RemoveArea(Area.Id);
     }
 }

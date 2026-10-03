@@ -1,44 +1,48 @@
-[
-    {
-        "name": "empty",
-        "move_speed_mul": 0
-    },
-    {
-        "name": "water",
-        "source": "tilesets/sea_tileset.png",
-        "is_walkable": true,
-        "move_speed_mul": 0,
-        "animated": true,
-        "fps": 4
-    },
-    {
-        "name": "sand",
-        "source": "tilesets/beach_tileset.png",
-        "move_speed_mul": 0.5
-    },
-    {
-        "name": "dirt",
-        "source": "tilesets/demo_dirt_tiles.png",
-        "is_arable": true
-    },
-    {
-        "name": "grass",
-        "source": "tilesets/grassland_tileset.png",
-        "is_arable": true
-    },
-    {
-        "name": "wood",
-        "source": "tilesets/floor_wooden_tileset.png"
-    },
-    {
-        "name": "wall",
-        "source": "tilesets/wall_tileset.png",
-        "is_walkable": true,
-        "is_opaque": true
-    },
-    {
-        "name": "blocker",
-        "is_walkable": true,
-        "is_opaque": true
-    }
-]
+{
+    "tile_size": {"x": 32, "y": 32},
+    "entries": 
+    [
+        {
+            "name": "empty",
+            "move_speed_mul": 0
+        },
+        {
+            "name": "water",
+            "source": "tilesets/sea_tileset.png",
+            "blocks_nav": true,
+            "move_speed_mul": 0,
+            "animated": true,
+            "fps": 4
+        },
+        {
+            "name": "sand",
+            "source": "tilesets/beach_tileset.png",
+            "move_speed_mul": 0.5
+        },
+        {
+            "name": "dirt",
+            "source": "tilesets/demo_dirt_tiles.png",
+            "arable": 0.5
+        },
+        {
+            "name": "grass",
+            "source": "tilesets/grassland_tileset.png",
+            "arable": 0.5
+        },
+        {
+            "name": "wood",
+            "source": "tilesets/floor_wooden_tileset.png"
+        },
+        {
+            "name": "wall",
+            "source": "tilesets/wall_tileset.png",
+            "blocks_nav": true,
+            "is_opaque": true
+        },
+        {
+            "name": "blocker",
+            "blocks_nav": true,
+            "is_opaque": true
+        }
+    ]
+}

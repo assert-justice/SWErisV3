@@ -19,11 +19,11 @@ public abstract class SwComponent(SwEntity parent, string name)
     {
         //
     }
-    public virtual void Update()
+    public virtual void Update(double dt)
     {
         //
     }
-    public virtual void Draw(SwComponent nextState)
+    public virtual void Draw()
     {
         //
     }

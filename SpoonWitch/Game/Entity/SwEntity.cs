@@ -2,6 +2,7 @@ using Eris;
 using ErisMath;
 using Prion.Db;
 using Prion.Node;
+using SpoonWitch.Command;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Rendering;
 using SpoonWitch.Utils;
@@ -11,41 +12,43 @@ namespace SpoonWitch.Game.Entity;
 public abstract class SwEntity
 {
     private readonly Dictionary<(Type,string), SwComponent> ComponentLookup = [];
+    private readonly List<(string verb, Action<PriNode> handler)> GlobalHandlers = [];
     private IEnumerable<SwComponent> Components => ComponentLookup.Values;
+    public SwGame Game{get; private set;} = null!;
     public PriDb Props{get; private set;} = new(new PriDict());
     public virtual int RenderLayer => 1;
     public int Id{get; private set;}
     public ErVec2 Position;
     public bool Visible = true;
     public bool IsFreeQueued{get; private set;}
-    protected virtual int NumClocks => 0;
-    protected readonly double[] Clocks;
-    private readonly Queue<PriNode> CommandQueue = [];
-    private readonly Dictionary<string,Action<PriNode>> Handlers = [];
-    private readonly Dictionary<string,Action<PriNode>> GlobalHandlers = [];
-    public SwEntity()
-    {
-        Clocks = new double[NumClocks];
-        Array.Fill(Clocks, 0);
-    }
+    private readonly SwCommandQueue CommandQueue = new();
+    private readonly List<SwClock> Clocks = [];
     protected void AddHandler(string verb, Action<PriNode> action)
     {
-        if(!Handlers.TryAdd(verb, action)) ErEngine.LogWarning("tried to add duplicate handler: ", verb);
+        CommandQueue.AddHandler(verb, action);
     }
     protected void AddGlobalHandler(string verb, Action<PriNode> action)
     {
-        if(!GlobalHandlers.TryAdd(verb, action)) ErEngine.LogWarning("tried to add duplicate global: ", verb);
+        SwApp.CommandQueue.AddHandler(verb, action);
+        GlobalHandlers.Add((verb,action));
     }
     public void AddCommand(PriNode command)
     {
-        CommandQueue.Enqueue(command);
+        CommandQueue.AddCommand(command);
+    }
+    public SwClock AddClock(double duration = 1, bool startRunning = false)
+    {
+        SwClock clock = new();
+        clock.SetDuration(duration);
+        Clocks.Add(clock);
+        return clock;
     }
     protected SwComponent RegisterComponent(SwComponent component)
     {
         if(!ComponentLookup.TryAdd((component.GetType(), component.Name), component)) ErEngine.LogError("Failed to register component of name '", component.Name, "' and type '", component.GetType(), "'.");
         return component;
     }
-    protected virtual void SetProps(PriNode props)
+    public virtual void SetProps(PriNode props)
     {
         Props = new(props);
         Position = SwPrion.GetVec2(Props.Data);
@@ -63,47 +66,35 @@ public abstract class SwEntity
     {
         IsFreeQueued = true;
     }
-    protected void HandleCommands()
+    public void GameUpdate(double dt)
     {
-        while(CommandQueue.TryDequeue(out var command))
+        CommandQueue.Process();
+        foreach (var clock in Clocks)
         {
-            if(!command.TryGet("verb", out string verb))
-            {
-                ErEngine.LogWarning("bad command, no verb");
-                return;
-            }
-            if(!Handlers.TryGetValue(verb, out var action)) continue;
-            action(command);
+            clock.Update(dt);
         }
-        foreach (var (verb, action) in GlobalHandlers)
-        {
-            foreach (var item in SwApp.CommandStore.GetCommands(verb))
-            {
-                action(item);
-            }
-        }
-    }
-    public virtual void Update()
-    {
-        HandleCommands();
+        Update(dt);
         foreach (var comp in Components)
         {
-            comp.Update();
+            comp.Update(dt);
         }
+        UpdateLate(dt);
     }
-    public void Draw(SwEntity nextState)
+    protected virtual void Update(double dt){}
+    protected virtual void UpdateLate(double dt){}
+    public void GameDraw()
     {
         if(!Visible) return;
-        SwGame.RenderLayer = RenderLayer;
-        DrawImpl(nextState);
+        Game.SetRenderLayer(RenderLayer);
+        Draw();
         foreach (var item in Components)
         {
-            item.Draw(item);
+            item.Draw();
         }
-        DrawImplLate(nextState);
+        DrawLate();
     }
-    protected virtual void DrawImpl(SwEntity nextState){}
-    protected virtual void DrawImplLate(SwEntity nextState){}
+    protected virtual void Draw(){}
+    protected virtual void DrawLate(){}
     public bool TryGetComponent<T>(string name, out T component) where T: SwComponent
     {
         component = null!;
@@ -116,7 +107,6 @@ public abstract class SwEntity
     {
         if(TryGetComponent(name, out T component)) return component;
         ErEngine.LogWarning("entity does not have a valid '", name, "' component");
-        // ErEngine.LogWarning()
         foreach (var item in ComponentLookup.Values)
         {
             ErEngine.Log(item.Name);
@@ -138,11 +128,18 @@ public abstract class SwEntity
         {
             item.Cleanup();
         }
+        foreach (var (verb,action) in GlobalHandlers)
+        {
+            SwApp.CommandQueue.RemoveHandler(verb, action);
+        }
     }
-    public static T GameLoad<T>(PriNode props) where T: SwEntity, new()
+    public static T GameLoad<T>(SwGame game, PriNode props) where T: SwEntity, new()
     {
-        T ent = new();
-        if(props.TryGet("id", out int id)) ent.Id = id;
+        T ent = new()
+        {
+            Game = game
+        };
+        if (props.TryGet("id", out int id)) ent.Id = id;
         else ent.Id = SwApp.GetNextId();
         ent.SetProps(props);
         ent.Init();

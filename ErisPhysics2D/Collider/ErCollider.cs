@@ -4,53 +4,74 @@ namespace ErisPhysics2D.Collider;
 
 public abstract class ErCollider
 {
-    public int ParentId;
-    public ErVec2 Position
-    {
-        get => _Position.Value;
-        set => _Position.Value = value;
-    }
-    public ErVec2 Size
-    {
-        get => _Size.Value;
-        set => _Size.Value = value;
-    }
-    public uint Mask
-    {
-        get => _Mask.Value;
-        set => _Mask.Value = value;
-    }
+    public readonly int Id;
+    public ErVec2 Position;
+    public ErVec2 Size;
     public ErRect2 Rect
     {
-        get => new(Position,Size);
+        get => new(Position, Size);
         set
         {
             Position = value.Position;
             Size = value.Size;
         }
     }
-    private readonly ErDirtyFlag<ErVec2> _Position;
-    private readonly ErDirtyFlag<ErVec2> _Size;
-    private readonly ErDirtyFlag<uint> _Mask;
-    internal virtual bool IsDirty => _Position.IsDirty || _Size.IsDirty || _Mask.IsDirty;
-    public ErCollider(ErVec2? position = null, ErVec2? size = null, uint mask = 0)
+    public uint Mask;
+    public ErCollider(int id)
     {
-        _Position = new(position ?? ErVec2.Zero);
-        _Size = new(size ?? ErVec2.Zero);
-        _Mask = new(mask);
+        Id = id;
     }
-    public virtual void Copy<T>(ref T value) where T: ErCollider
-    {
-        value.Position = Position;
-        value.Size = Size;
-        value.Mask = Mask;
-        value.ParentId = ParentId;
-    }
-    internal void Clean()
-    {
-        _Position.Clean();
-        _Size.Clean();
-        _Mask.Clean();
-    }
-    public virtual void OnRemove(){}
 }
+
+// public abstract class ErCollider
+// {
+//     public int ParentId;
+//     public ErVec2 Position
+//     {
+//         get => _Position.Value;
+//         set => _Position.Value = value;
+//     }
+//     public ErVec2 Size
+//     {
+//         get => _Size.Value;
+//         set => _Size.Value = value;
+//     }
+//     public uint Mask
+//     {
+//         get => _Mask.Value;
+//         set => _Mask.Value = value;
+//     }
+//     public ErRect2 Rect
+//     {
+//         get => new(Position,Size);
+//         set
+//         {
+//             Position = value.Position;
+//             Size = value.Size;
+//         }
+//     }
+//     private readonly ErDirtyFlag<ErVec2> _Position;
+//     private readonly ErDirtyFlag<ErVec2> _Size;
+//     private readonly ErDirtyFlag<uint> _Mask;
+//     internal virtual bool IsDirty => _Position.IsDirty || _Size.IsDirty || _Mask.IsDirty;
+//     public ErCollider(ErVec2? position = null, ErVec2? size = null, uint mask = 0)
+//     {
+//         _Position = new(position ?? ErVec2.Zero);
+//         _Size = new(size ?? ErVec2.Zero);
+//         _Mask = new(mask);
+//     }
+//     public virtual void Copy<T>(ref T value) where T: ErCollider
+//     {
+//         value.Position = Position;
+//         value.Size = Size;
+//         value.Mask = Mask;
+//         value.ParentId = ParentId;
+//     }
+//     internal void Clean()
+//     {
+//         _Position.Clean();
+//         _Size.Clean();
+//         _Mask.Clean();
+//     }
+//     public virtual void OnRemove(){}
+// }

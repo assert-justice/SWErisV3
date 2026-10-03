@@ -114,7 +114,7 @@ public class SwSprite(string name)
     {
         PalletIdx = palletIdx;
     }
-    public void Update()
+    public void Update(double dt)
     {
         if(Animations.Count == 0) return;
         if(CurrentAnimIdx < 0 || CurrentAnimIdx >= Animations.Count)
@@ -122,14 +122,14 @@ public class SwSprite(string name)
             ErEngine.LogWarning("bad anim idx: ", CurrentAnimIdx);
             return;
         }
-        SwAnimationState.Advance(ref AnimationState, SwGame.DeltaTime, CurrentAnimation.NumFrames);
+        SwAnimationState.Advance(ref AnimationState, dt, CurrentAnimation.NumFrames);
     }
     public void Draw(ErVec2 position)
     {
         if(!Visible) return;
         if(Animations.Count == 0) return;
         AnimationState.Copy(ref NextAnimationState);
-        SwAnimationState.Advance(ref NextAnimationState, SwGame.FrameDuration, CurrentAnimation.NumFrames);
+        // SwAnimationState.Advance(ref NextAnimationState, SwGame.FrameDuration, CurrentAnimation.NumFrames);
         if(!CurrentAnimation.TryGetFrame(out var frame, NextAnimationState.FrameIdx))
         {
             ErEngine.LogError("bad frame idx ", NextAnimationState.FrameIdx, " for anim ", CurrentAnimation.Name);
@@ -192,10 +192,11 @@ public class SwSprite(string name)
                 if(!item.TryAs(out string animName)) ErEngine.LogWarning("bad anim blacklist entry");
                 blacklist.Add(animName);
             }
-            foreach (var item in aseImporter.GetAnimationNames())
+            foreach (var animName in aseImporter.GetAnimationNames())
             {
-                if(blacklist.Contains(item)) continue;
-                animations.Add(aseImporter.GetAnimation(item)!.Value);
+                if(blacklist.Contains(animName)) continue;
+                var anim = aseImporter.GetAnimation(animName)!.Value;
+                animations.Add(anim);
             }
         }
         foreach (var item in animations)

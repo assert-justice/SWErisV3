@@ -24,9 +24,9 @@
     },
     "dodge":{
         "dodge_speed_mul": 1.5,
-        "dodge_duration": 0.625,
         "dodge_invuln_delay": 0.2,
         "dodge_invuln_duration": 0.4,
+        "dodge_cancel_window": 0.225,
         "dodge_cooldown": 0.25,
         "dodge_stamina_cost": 20
     },
@@ -72,10 +72,15 @@
         }
     ],
     "dust_particles":{
+        "offset": {"x": 0, "y": 9},
+        "speed": 30,
+        "amount": 80,
+        "use_local_coordinates": false,
+        "lifetime": 0.625,
+        "one_shot": true,
         "ase_data":{
             "name": "dust_1",
-            "filepath": "../../../particles/particles.json",
-            "offset": {"x": 0, "y": 9}
+            "filepath": "../../../particles/particles.json"
         }
     }
 }

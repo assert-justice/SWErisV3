@@ -36,6 +36,7 @@ public static class ErEngine
     public static double FrameTimeRemaining{get; private set;}
     public static double LastFrameTime{get; private set;}
     public static double CurrentTime{get; private set;}
+    public static double TimeStarted{get; private set;}
     private static bool Init(IErApp app)
     {
         List<Action> initList = [
@@ -70,22 +71,23 @@ public static class ErEngine
     {
         IsRunning = true;
         if(!Init(app)) return;
-        LastFrameTime = GetCurrentTime();
-        DeltaTime = 1 / (double)Tickrate;
+        TimeStarted = GetCurrentTime();
+        LastFrameTime = TimeStarted;
+        DeltaTime = 1.0 / Tickrate;
         while (IsRunning)
         {
-            double newTime = GetCurrentTime();
-            FrameDuration = newTime - LastFrameTime;
-            LastFrameTime = newTime;
-            FrameTimeRemaining += FrameDuration;
-            while(FrameTimeRemaining >= DeltaTime)
-            {
+            // double newTime = GetCurrentTime();
+            // FrameDuration = newTime - LastFrameTime;
+            // LastFrameTime = newTime;
+            // FrameTimeRemaining += FrameDuration;
+            // while(FrameTimeRemaining >= DeltaTime)
+            // {
                 CurrentTime = GetCurrentTime();
                 Input.Poll();
                 app.Update();
                 AudioApp.Update();
-                FrameTimeRemaining -= DeltaTime;
-            }
+                // FrameTimeRemaining -= DeltaTime;
+            // }
             Renderer.BeginRender();
             app.Draw();
             Renderer.EndRender();

@@ -1,4 +1,9 @@
 {
+    "window":{
+        "mode": "windowed",
+        "w": 1920,
+        "h": 1080
+    },
     "volume":{
         "main": 1,
         "music": 1,
@@ -10,14 +15,7 @@
         "damage_received": 1,
         "game_speed": 1
     },
-    "gamepad":{
-        "auto_charge": true,
-        "reticle_force_visible": false
-    },
-    "kbm":{
-        "kb_aiming": true,
-        "reticle_force_visible": true
-    },
+    "input_binds": "default_input_settings.json",
     "debug":{
         "debug": false
     }

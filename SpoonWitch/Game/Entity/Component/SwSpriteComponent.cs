@@ -6,26 +6,21 @@ using SpoonWitch.Rendering;
 
 namespace SpoonWitch.Game.Entity.Component;
 
-public class SwSpriteComponent(SwEntity parent, SwSprite sprite) : SwComponent(parent, sprite.Name)
+public class SwSpriteComponent : SwComponent
 {
-    public readonly SwSprite Sprite = sprite;
-    public override void Update()
+    public readonly SwSprite Sprite;
+    public SwSpriteComponent(SwEntity parent, SwSprite sprite) : base(parent, sprite.Name)
     {
-        base.Update();
-        Sprite.Update();
+        Sprite = sprite;
     }
-    public override void Draw(SwComponent nextState)
+    public override void Update(double dt)
     {
-        base.Draw(nextState);
-        var pos = ErMath.Lerp(Parent.Position, nextState.Parent.Position, SwGame.FrameWeight);
-        Sprite.Draw(pos);
+        base.Update(dt);
+        Sprite.Update(dt);
     }
-    public override void Read(SwByteStream byteStream)
+    public override void Draw()
     {
-        base.Read(byteStream);
-    }
-    public override void Write(SwByteStream byteStream)
-    {
-        base.Write(byteStream);
+        base.Draw();
+        Sprite.Draw(Parent.Position);
     }
 }

@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ErisMath\ErisMath.csproj" />
+    <ProjectReference Include="..\Eris\Eris.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

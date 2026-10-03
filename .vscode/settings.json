@@ -2,6 +2,9 @@
     "cSpell.words": [
         "autoplay",
         "Cooldown",
+        "deadzone",
+        "gamepads",
+        "Huds",
         "hurtbox",
         "Invuln",
         "knockback",
@@ -12,6 +15,8 @@
         "Respawn",
         "Scancode",
         "slume",
+        "Tilemap",
+        "Tilemask",
         "Trunc"
     ]
 }

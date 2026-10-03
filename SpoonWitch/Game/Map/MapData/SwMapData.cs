@@ -1,104 +1,209 @@
 using Eris;
 using ErisMath;
 using Prion.Node;
+using SpoonWitch.Game.Map.Foliage;
 using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Map.MapData;
 
-public class SwMapData
+public readonly struct SwMapData
 {
-    public string Iid{get; init;} = string.Empty;
-    public SwTileData[] TileData{get; init;} = [];
-    public ErVec2I TileSize{get; private set;}
-    public ErVec2I SectorSizeTiles{get; private set;}
-    public ErVec2I SectorSizePx{get; private set;}
-    public int NumTileLayers{get; private set;}
-    public readonly Dictionary<ErVec2I, SwSectorData> Sectors = [];
-    public readonly Dictionary<string, SwRoomData> Rooms = [];
-    public readonly Dictionary<string, SwMapObjectData> Objects = [];
-    private SwMapData(){}
-    private bool TryAddTileLayerLdtk(int layerIdx, SwRoomData roomData, PriNode layerData)
+    public string Iid{get; init;}
+    public SwTileData TileData{get; init;}
+    public SwFoliageData FoliageData{get; init;}
+    public ErVec2I SectorSizeTiles{get; init;}
+    public string[] EntityLayerNames{get; init;}
+    public int NumTileLayers{get; init;}
+    public SwMapObjectData DefaultCheckpoint{get; init;}
+    public SwRoomData[] Rooms{get; init;}
+    public SwMapObjectData[] Objects{get; init;}
+    public PriNode ToPri()
     {
-        if(!layerData.TryGet("gridTiles", out PriList tiles)) return false;
-        foreach (var tile in tiles.Values)
+        PriDict res = [];
+        res.TrySet("iid", Iid);
+        res.TrySet("tile_data", TileData.ToPri());
+        res.TrySet("foliage_data", FoliageData.ToPri());
+        SwPrion.TrySetVec2I(res, "sector_size_tiles", SectorSizeTiles);
+        PriList entityLayerNames = [];
+        foreach(var name in EntityLayerNames)
         {
-            var px = tile.Get("px");
-            px.TryGet(0, out int x);
-            px.TryGet(1, out int y);
-            tile.Get("src").TryGet(0, out int tileIdx);
-            tileIdx /= 32;
-            ErVec2I posPx = new ErVec2I(x,y) + roomData.RectPx.Position;
-            var tileCoord = posPx / TileSize;
-            var sectorCoord = posPx / SectorSizePx;
-            if(!Sectors.TryGetValue(sectorCoord, out var sectorData)) return ErEngine.LogWarning("bad sector coord: ", sectorCoord);
-            sectorData.SetTile(layerIdx, tileCoord, tileIdx);
+            entityLayerNames.Add(new PriString(name));
         }
-        return true;
+        res.Add("entity_layer_names", entityLayerNames);
+        res.TrySet("num_tile_layers", NumTileLayers);
+        PriList rooms = [];
+        res.Add("rooms", rooms);
+        foreach (var room in Rooms)
+        {
+            rooms.Add(room.ToPri());
+        }
+        PriList objects = [];
+        res.Add("objects", objects);
+        foreach (var obj in Objects)
+        {
+            objects.Add(obj.ToPri());
+        }
+        res.Add("default_checkpoint", DefaultCheckpoint.ToPri());
+        return res;
     }
-    public static bool TryFromLdtkData(out SwMapData mapData, SwTileData[] tileData, PriNode data)
+    public static bool TryFromData(out SwMapData mapData, PriNode data)
     {
-        mapData = default!;
-        if(!data.TryGet("iid", out string id)) return ErEngine.LogWarning("map missing id");
+        mapData = default;
+        if(!data.TryGet("iid", out string iid)) return false;
+        if(!SwTileData.TryFromData(out var tileData, data.Get("tile_data"))) return false;
+        if(!SwFoliageData.TryFromData(out var foliageData, data.Get("foliage_data"))) return false;
+        if(!SwPrion.TryGetVec2I(out var sectorSizeTiles, data.Get("sector_size_tiles"))) return false;
+        if(!data.TryGet("entity_layer_names", out PriList entityLayerNames)) return false;
+        string[] entLayerNames = new string[entityLayerNames.Count];
+        for (int idx = 0; idx < entLayerNames.Length; idx++)
+        {
+            if(!entityLayerNames.Data[idx].TryAs(out string layerName)) return false;
+            entLayerNames[idx] = layerName;
+        }
+        if(!data.TryGet("num_tile_layers", out int numTileLayers)) return false;
+        if(!data.TryGet("rooms", out PriList roomList)) return false;
+        SwRoomData[] rooms = new SwRoomData[roomList.Count];
+        for (int idx = 0; idx < rooms.Length; idx++)
+        {
+            if(!SwRoomData.TryFromData(out var roomData, roomList.Data[idx])) return false;
+            rooms[idx] = roomData;
+        }
+        if(!data.TryGet("objects", out PriList objectList)) return false;
+        SwMapObjectData[] objects = new SwMapObjectData[objectList.Count];
+        for (int idx = 0; idx < objects.Length; idx++)
+        {
+            if(!SwMapObjectData.TryFromData(out var mapObjectData, objectList.Data[idx])) return false;
+            objects[idx] = mapObjectData;
+        }
+        if(!SwMapObjectData.TryFromData(out var defaultCheckpoint, data.Get("default_checkpoint"))) return false;
         mapData = new()
         {
-            Iid = id,
+            Iid = iid,
             TileData = tileData,
-            TileSize = data.TryGet("defaultGridSize", out int tileWidth) ? new(tileWidth, tileWidth) : new(32,32),
-            SectorSizePx = SwPrion.GetVec2I(data, "worldGridWidth", "worldGridHeight", new(640, 320)),
+            FoliageData = foliageData,
+            SectorSizeTiles = sectorSizeTiles,
+            EntityLayerNames = entLayerNames,
+            NumTileLayers = numTileLayers,
+            Rooms = rooms,
+            Objects = objects,
+            DefaultCheckpoint = defaultCheckpoint,
         };
-        mapData.SectorSizeTiles = mapData.SectorSizePx / mapData.TileSize;
+        return true;
+    }
+    public static bool TryConvertLdtkData(out PriNode mapDataPri, PriNode ldtkData)
+    {
+        mapDataPri = PriNull.Null;
+        if(!SwTileData.TryFromData(out var tileData, ldtkData.Get("tile_data"))) return false;
+        if(!SwFoliageData.TryFromData(out var foliageData, ldtkData.Get("foliage_data"))) return false;
+        if(!ldtkData.TryGet("ldtk_data", out PriDict data)) return ErEngine.LogWarning("missing ldtk_data");
+        if(!data.TryGet("iid", out string mapIid)) return ErEngine.LogWarning("map missing id");
+        PriDict res = [];
+        res.TrySet("iid", mapIid);
+        res.TrySet("tile_data", tileData.ToPri());
+        res.TrySet("foliage_data", foliageData.ToPri());
+        ErVec2I sectorSizePx = SwPrion.GetVec2I(data, "worldGridWidth", "worldGridHeight", new(640, 320));
+        SwPrion.TrySetVec2I(res, "sector_size_tiles", sectorSizePx / tileData.TileSize);
         if(!data.TryGet("defs", out PriDict defs)) return ErEngine.LogWarning("map missing defs");
         if(!defs.TryGet("layers", out PriList layers)) return ErEngine.LogWarning("map missing layers");
         int numTileLayers = 0;
+        PriList entityLayerNames = [];
+        res.Add("entity_layer_names", entityLayerNames);
         foreach (var layerData in layers.Values)
         {
             if(!layerData.TryGet("type", out string layerType)) return ErEngine.LogWarning("map layer missing type");
             else if(layerType == "Tiles") numTileLayers++;
+            else if(layerType == "Entities") entityLayerNames.Add(layerData.Get("identifier"));
         }
-        mapData.NumTileLayers = numTileLayers;
-        // parse levels/rooms
-        if(!data.TryGet("levels", out PriList rooms)) return ErEngine.LogWarning("map missing levels");
-        foreach (var roomDataLdtk in rooms.Values)
+        res.TrySet("num_tile_layers", numTileLayers);
+        PriList rooms = [];
+        res.Add("rooms", rooms);
+        PriList objects = [];
+        res.Add("objects", objects);
+        if(!data.TryGet("levels", out PriList levels)) return ErEngine.LogWarning("map missing levels");
+        SwMapTileSpan.Builder builder = new();
+        foreach (var levelData in levels.Values)
         {
-            if(!roomDataLdtk.TryGet("iid", out string roomId)) return ErEngine.LogWarning("map level missing id");
-            var rectPx = SwPrion.GetRect2I(roomDataLdtk, "worldX", "worldY", "pxWid", "pxHei");
-            SwRoomData roomData = new()
+            PriDict roomData = [];
+            rooms.Add(roomData);
+            if(!levelData.TryGet("iid", out string levelId)) return ErEngine.LogWarning("map level missing id");
+            roomData.TrySet("iid", levelId);
+            PriDict fields = [];
+            foreach (var item in levelData.Get("fieldInstances").Values)
             {
-                Iid = roomId,
-                RectPx = rectPx,
-                RectTiles = rectPx / mapData.TileSize,
-                RectSectors = rectPx / mapData.SectorSizePx,
-            };
-            if(!mapData.Rooms.TryAdd(roomData.Iid, roomData)) return ErEngine.LogWarning("duplicate room id: ", roomData.Iid);
-            foreach (var sectorCoord in roomData.RectSectors.GetInnerCoords())
+                if(!item.TryGet("__identifier", out string key)) continue;
+                if(key == "display_name") roomData.Add("name", item.Get("__value"));
+                else fields.Add(key, item.Get("__value"));
+            }
+            var levelRectPx = SwPrion.GetRect2I(levelData, "worldX", "worldY", "pxWid", "pxHei");
+            var levelRectSectors = levelRectPx / sectorSizePx;
+            SwPrion.TrySetRect2I(roomData, "rect_sectors", levelRectSectors);
+            PriList roomObjectIds = [];
+            roomData.Add("object_ids", roomObjectIds);
+            PriList roomTileSpans = [];
+            roomData.Add("tile_spans", roomTileSpans);
+            PriList neighbors = [];
+            roomData.Add("adj_room_ids", neighbors);
+            if(fields.Count > 0) roomData.Add("fields", fields);
+            foreach (var item in levelData.Get("__neighbours").Values)
             {
-                SwSectorData sectorData = new(sectorCoord, mapData.SectorSizeTiles, mapData.NumTileLayers);
-                if(!mapData.Sectors.TryAdd(sectorCoord, sectorData)) return ErEngine.LogWarning("duplicate sector coord : ", sectorCoord);
+                neighbors.Add(item.Get("levelIid"));
             }
             int tileLayerIdx = 0;
-            foreach (var layer in roomDataLdtk.Get("layerInstances").Values)
+            
+            foreach (var layer in levelData.Get("layerInstances").Values)
             {
+                if(!layer.TryGet("__identifier", out string layerName)) layerName = string.Empty;
                 if(!layer.TryGet("__type", out string layerType)) return ErEngine.LogWarning("map room layer missing type");
                 switch (layerType)
                 {
                     case "Entities":
-                        foreach (var item in layer.Get("entityInstances").Values)
+                        foreach (var entityData in layer.Get("entityInstances").Values)
                         {
-                            if(!SwMapObjectData.TryFromLdtkData(out var mapObjectData, mapData.TileSize, item)) {ErEngine.LogWarning("failed to parse map object"); continue;}
-                            if(!mapData.Objects.TryAdd(mapObjectData.Iid, mapObjectData)){ErEngine.LogWarning("duplicate map object ids"); continue;}
-                            roomData.ObjectIds.Add(mapObjectData.Iid);
+                            if(!SwMapObjectData.TryConvertLdtkData(out var mapObjectDataPri, entityData, tileData.TileSize, layerName))
+                            {
+                                ErEngine.LogWarning("failed to parse map object"); 
+                                continue;
+                            }
+                            if(mapObjectDataPri.TryGet("class", out string className) 
+                                && className == "checkpoint"
+                                && mapObjectDataPri.Get("fields").TryGet("default", out bool isDefault)
+                                && isDefault)
+                            {
+                                if(res.TryGet("default_checkpoint", out PriDict _)) ErEngine.LogWarning("multiple default checkpoints");
+                                else res.TrySet("default_checkpoint", mapObjectDataPri);
+                            }
+                            objects.Add(mapObjectDataPri);
+                            roomObjectIds.Add(mapObjectDataPri.Get("iid"));
                         }
                         break;
                     case "Tiles":
-                        if(!mapData.TryAddTileLayerLdtk(tileLayerIdx, roomData, layer)) return ErEngine.LogWarning("bad tile layer");
+                        // List<SwMapTileSpan> tileSpans = [];
+                        if(!layer.TryGet("gridTiles", out PriList tiles)) {ErEngine.LogWarning("no tiles"); continue;}
+                        foreach (var tile in tiles.Values)
+                        {
+                            var px = tile.Get("px");
+                            px.TryGet(0, out int x);
+                            px.TryGet(1, out int y);
+                            tile.Get("src").TryGet(0, out int tileId);
+                            tileId /= 32;
+                            ErVec2I posPx = new ErVec2I(x,y) + levelRectPx.Position;
+                            var tileCoord = posPx / tileData.TileSize;
+                            builder.Add(tileLayerIdx, tileCoord, tileId);
+                        }
                         tileLayerIdx++;
                         break;
                     default:
-                        ErEngine.LogWarning("map layer unsupported type: ", layerType);
-                        break;
-                };
+                        ErEngine.LogWarning("unsupported layer type: ", layerType);
+                        continue;
+                }
+            }
+            foreach (var span in builder.Drain())
+            {
+                roomTileSpans.Add(span.ToPri());
             }
         }
-        return mapData is not null;
+        if(!res.TryGet("default_checkpoint", out PriDict _)) return ErEngine.LogWarning("no default checkpoint");
+        mapDataPri = res;
+        return true;
     }
 }

@@ -14,23 +14,30 @@ public class SwProjectile : SwEntity
     // private SwAnimation? Animation;
     private SwParticleComponent? ImpactParticles;
     // private SwParticles2D? FlyingParticles;
-    private uint CollisionMask = 0;
+    private uint HurtboxMask = 0;
+    private ErVec2 Size;
     public ErVec2 Velocity;
     public bool Piercing = false;
     private bool IsAlive = true;
     public override int RenderLayer => 3;
     private SwAreaComponent Hurtbox = null!;
-    protected override void SetProps(PriNode props)
+    public override void SetProps(PriNode props)
     {
         base.SetProps(props);
-        if(Props.TryGet("mask", out uint u)) CollisionMask = u;
+        if(Props.TryGet("hurtbox_mask", out uint u)) HurtboxMask = u;
+        Size = SwPrion.GetVec2(Props.Get("size"));
+        if(Hurtbox is not null)
+        {
+            Hurtbox.Mask = HurtboxMask;
+            Hurtbox.Size = Size;
+        }
         if(Props.TryGet("piercing", out bool b)) Piercing = b;
         Velocity = SwPrion.GetVec2(Props.Get("velocity"));
     }
     public override void Init()
     {
         base.Init();
-        Hurtbox = new(this, "hurtbox", 4, new(14,14), enabled:true, onBodyEnter: OnEnterHurtbox);
+        Hurtbox = new(this, "hurtbox", HurtboxMask, Size, enabled:true, onBodyEnter: OnEnterHurtbox);
         RegisterComponent(Hurtbox);
         TryGetBody();
         if(Props.TryGet("impact_particles", out PriDict pData))
@@ -70,28 +77,28 @@ public class SwProjectile : SwEntity
         Hurtbox.Enabled = false;
         ImpactParticles?.Particles.Emitting = true;
     }
-    public override void Update()
+    protected override void Update(double dt)
     {
-        base.Update();
+        base.Update(dt);
         if (!IsAlive)
         {
             if(ImpactParticles is null || ImpactParticles.Particles.LiveParticles == 0) QueueFree();
             return;
         }
-        Position += Velocity * SwGame.DeltaTime;
-        var tileCoord = SwGame.Map.PhysicsWorld.PointToTileCoord(Position);
-        int tileId = SwGame.Map.GetTopTile(tileCoord);
-        if(tileId < 0) return;
-        var tileData = SwGame.TileData[tileId];
-        if((tileData.CollisionMask & CollisionMask) != 0) Impact();
+        Position += Velocity * dt;
+        uint tileMask = Game.PhysicsWorld.GetTileMaskAtPoint(Position);
+        uint overlap = (uint)SwCollisionMask.BlocksNav & tileMask;
+        if(overlap != 0)
+        {
+            Impact();
+        }
     }
-    protected override void DrawImpl(SwEntity nextState)
+    protected override void Draw()
     {
-        base.DrawImpl(nextState);
+        base.Draw();
         if(IsAlive && Texture is not null)
         {
-            var pos = ErMath.Lerp(Position, nextState.Position, SwGame.FrameWeight) - Texture.Size * 0.5;
-            Texture.Draw(pos);
+            Texture.Draw(Position);
         }
     }
     private void OnEnterHurtbox(SwEntity entity)

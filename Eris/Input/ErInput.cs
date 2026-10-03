@@ -1,3 +1,4 @@
+using System.Text;
 using ErisMath;
 using SDL3;
 
@@ -6,18 +7,19 @@ namespace Eris.Input;
 public class ErInput
 {
     private bool[] KeyboardState = [];
-    private readonly Dictionary<uint, nint> DeviceLookup = [];
-    private uint[] Devices = [];
+    private readonly Dictionary<uint, ErGamepad> GamepadLookup = [];
+    private readonly List<ErGamepad?> Gamepads = [];
     private SDL.MouseButtonFlags MouseButtonFlags;
     private ErVec2 MousePosition;
     public double GlobalAxisDeadzone{get; set;} = 0.1;
-    // private SDL.Event LastEvent;
-    public enum ErisInputDeviceKind
+    public Action<int> OnGamepadConnect = idx => ErEngine.Log("gamepad ", idx, " connected");
+    public Action<int> OnGamepadDisconnect = idx => ErEngine.Log("gamepad ", idx, " disconnected");
+    public enum DeviceKind
     {
         Kbm,
         Gamepad,
     }
-    public ErisInputDeviceKind LastEventDevice{get; private set;}
+    public DeviceKind LastEventDevice{get; private set;}
     private static double NormalizeShort(short val)
     {
         return (double)val / 32767;
@@ -27,14 +29,6 @@ public class ErInput
         while (SDL.PollEvent(out var e))
         {
             SDL.EventType eventType = (SDL.EventType)e.Type;
-            if(eventType != SDL.EventType.GamepadAxisMotion)
-            {
-                // Note: Gamepad axis motions are not recorded if they fall below the global deadzone
-                // If they are above the deadzone they are added back in below
-                // Todo: figure out if I need to handle joysticks too
-                // Todo: obviously need to handle controller disconnections
-                // LastEvent = e;
-            }
             switch (eventType)
             {
                 case SDL.EventType.Quit:
@@ -45,18 +39,19 @@ public class ErInput
                 case SDL.EventType.MouseButtonDown:
                 case SDL.EventType.MouseButtonUp:
                 case SDL.EventType.MouseMotion:
-                    LastEventDevice = ErisInputDeviceKind.Kbm;
+                    LastEventDevice = DeviceKind.Kbm;
                     break;
                 case SDL.EventType.GamepadButtonDown:
                 case SDL.EventType.GamepadButtonUp:
-                    LastEventDevice = ErisInputDeviceKind.Gamepad;
+                    LastEventDevice = DeviceKind.Gamepad;
                     break;
                 case SDL.EventType.GamepadAxisMotion:
                     double val = NormalizeShort(e.GAxis.Value);
+                    // Note: Gamepad axis motions are not recorded if they fall below the global deadzone
+                    // If they are above the deadzone they are added back in below
                     if(Math.Abs(val) > GlobalAxisDeadzone)
                     {
-                        LastEventDevice = ErisInputDeviceKind.Gamepad;
-                        // LastEvent = e;
+                        LastEventDevice = DeviceKind.Gamepad;
                     }
                     break;
                 default:
@@ -75,69 +70,155 @@ public class ErInput
         MouseButtonFlags = SDL.GetMouseState(out float mouseX, out float mouseY);
         MousePosition = new(mouseX, mouseY);
         // Note: Gamepad baloney
-        uint[] gamepads = SDL.GetGamepads(out _) ?? [];
-        HashSet<uint> connected = [..DeviceLookup.Keys];
-        foreach (var id in gamepads)
+        HandleGamepadConnections();
+        foreach (var gamepad in GamepadLookup.Values)
         {
-            if (connected.Remove(id)) continue;
-            nint gamepadId = SDL.OpenGamepad(id);
-            DeviceLookup.Add(id, gamepadId);
+            gamepad.Poll();
         }
-        foreach (var id in connected)
-        {
-            SDL.CloseGamepad(DeviceLookup[id]);
-        }
-        Devices = gamepads;
+    }
+    public bool HandleKeyDown(SDL.Scancode keyCode)
+    {
+        bool res = KeyboardState[(int)keyCode];
+        if(res) KeyboardState[(int)keyCode] = false;
+        return res;
     }
     public bool GetKeyDown(SDL.Scancode keyCode)
     {
-        return KeyboardState[(int)keyCode];
+        bool res = KeyboardState[(int)keyCode];
+        return res;
     }
     public ErVec2 GetMousePosition()
     {
         return MousePosition;
     }
+    public bool HandleMouseButtonDown(SDL.MouseButtonFlags mouseButton)
+    {
+        bool res = (int)(MouseButtonFlags & mouseButton) != 0;
+        if(res)
+        {
+            MouseButtonFlags &= ~mouseButton;
+        }
+        return res;
+    }
     public bool GetMouseButtonDown(SDL.MouseButtonFlags mouseButton)
     {
-        return (int)(MouseButtonFlags & mouseButton) != 0;
+        bool res = (int)(MouseButtonFlags & mouseButton) != 0;
+        return res;
     }
-    private bool TryGetGamepadId(int deviceId, out nint sdlId)
+    public bool TryGetGamepad(int gamepadIdx, out ErGamepad gamepad)
     {
-        sdlId = default;
-        if(deviceId < 0 || deviceId >= Devices.Length) return false;
-        if(!DeviceLookup.TryGetValue(Devices[deviceId], out sdlId)) return false;
+        gamepad = default!;
+        if(gamepadIdx < 0 || gamepadIdx >= Gamepads.Count) return false;
+        var gp = Gamepads[gamepadIdx];
+        if(gp is null) return false;
+        gamepad = gp;
         return true;
     }
-    public bool GetGamepadButtonDown(SDL.GamepadButton button, int deviceId = -1)
+    public IEnumerable<(int gamepadIdx, ErGamepad gamepad)> GetAllGamepads()
     {
-        if(deviceId < 0) return GetAllGamepadButtonDown(button);
-        if(!TryGetGamepadId(deviceId, out nint sdlId)) return false;
-        return SDL.GetGamepadButton(sdlId, button);
-    }
-    public bool GetAllGamepadButtonDown(SDL.GamepadButton button)
-    {
-        foreach (nint ptr in DeviceLookup.Values)
+        for (int idx = 0; idx < Gamepads.Count; idx++)
         {
-            if(SDL.GetGamepadButton(ptr, button)) return true;
+            var gp = Gamepads[idx];
+            if(gp is null) continue;
+            yield return (idx, gp);
+        }
+    }
+    public bool GetGamepadButtonDown(SDL.GamepadButton button, int gamepadIdx)
+    {
+        foreach (var gp in GetGamepads(gamepadIdx))
+        {
+            if(gp.GetGamepadButtonDown(button)) return true;
         }
         return false;
     }
-    public double GetGamepadAxis(SDL.GamepadAxis axis, int deviceId = -1)
+    public bool HandleGamepadButtonDown(SDL.GamepadButton button, int gamepadIdx)
     {
-        if(deviceId < 0) return GetAllGamepadAxis(axis);
-        if(!TryGetGamepadId(deviceId, out nint sdlId)) return 0;
-        double val = SDL.GetGamepadAxis(sdlId, axis);
-        // Note: A short? Really!?
-        return val / 32767;
-    }
-    public double GetAllGamepadAxis(SDL.GamepadAxis axis)
-    {
-        double val = 0;
-        foreach (nint ptr in DeviceLookup.Values)
+        bool res = false;
+        foreach (var item in GetGamepads(gamepadIdx))
         {
-            short temp = SDL.GetGamepadAxis(ptr, axis);
-            val += temp;
+            if(item.GetGamepadButtonDown(button)) res = true;
         }
-        return val / 32767;
+        return res;
+    }
+    public double GetGamepadAxis(SDL.GamepadAxis axis, int gamepadIdx)
+    {
+        double res = 0;
+        foreach (var item in GetGamepads(gamepadIdx))
+        {
+            res += item.GetGamepadAxis(axis);
+        }
+        return Math.Clamp(res, -1, 1);
+    }
+    public double HandleGamepadAxis(SDL.GamepadAxis axis, int gamepadIdx)
+    {
+        double res = 0;
+        foreach (var item in GetGamepads(gamepadIdx))
+        {
+            res += item.GetGamepadAxis(axis);
+        }
+        return Math.Clamp(res, -1, 1);
+    }
+    private IEnumerable<ErGamepad> GetGamepads(int gamepadIdx)
+    {
+        if(gamepadIdx == -1)
+        {
+            foreach (var gp in Gamepads)
+            {
+                if(gp is not null) yield return gp;
+            }
+        }
+        else if(TryGetGamepad(gamepadIdx, out var gamepad)) yield return gamepad;
+    }
+    private void HandleGamepadConnections()
+    {
+        uint[] gamepads = SDL.GetGamepads(out _) ?? [];
+        if(GamepadsOk(gamepads)) return;
+        HashSet<uint> connected = [..GamepadLookup.Keys];
+        foreach (var id in gamepads)
+        {
+            if (connected.Remove(id)) continue;
+            AddGamepad(id);
+        }
+        foreach (var id in connected)
+        {
+            RemoveGamepad(id);
+        }
+    }
+    private int AddGamepad(uint sdlId)
+    {
+        nint handle = SDL.OpenGamepad(sdlId);
+        ErGamepad gamepad = new(handle, sdlId);
+        GamepadLookup.Add(gamepad.SdlId, gamepad);
+        for (int idx = 0; idx < Gamepads.Count; idx++)
+        {
+            if(Gamepads[idx] is not null) continue;
+            Gamepads[idx] = gamepad;
+            OnGamepadConnect(idx);
+            return idx;
+        }
+        Gamepads.Add(gamepad);
+        int gamepadIdx = Gamepads.Count-1;
+        OnGamepadConnect(gamepadIdx);
+        return gamepadIdx;
+    }
+    private int RemoveGamepad(uint sdlId)
+    {
+        var gamepad = GamepadLookup[sdlId];
+        GamepadLookup.Remove(sdlId);
+        int gamepadIdx = Gamepads.IndexOf(gamepad);
+        OnGamepadDisconnect(gamepadIdx);
+
+        Gamepads[gamepadIdx] = null;
+        SDL.CloseGamepad(gamepad.Handle);
+        return gamepadIdx;
+    }
+    private bool GamepadsOk(uint[] gamepadIds)
+    {
+        if(GamepadLookup.Count != gamepadIds.Length) return false;
+        for (int idx = 0; idx < gamepadIds.Length; idx++)
+        {
+            if(!GamepadLookup.ContainsKey(gamepadIds[idx])) return false;
+        }
+        return true;
     }
 }

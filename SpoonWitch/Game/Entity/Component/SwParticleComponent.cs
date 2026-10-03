@@ -7,20 +7,21 @@ namespace SpoonWitch.Game.Entity.Component;
 
 public class SwParticleComponent : SwComponent
 {
-    public SwParticles2D Particles{get; private set;} = null!;
     public SwParticleComponent(SwEntity parent, string name, SwParticles2D particles) : base(parent, name)
     {
         Particles = particles;
     }
-    public override void Update()
+
+    public SwParticles2D Particles{get; private set;} = null!;
+    public override void Update(double dt)
     {
-        base.Update();
+        base.Update(dt);
         Particles.Origin = Parent.Position;
-        Particles.Update(SwGame.DeltaTime);
+        Particles.Update(dt);
     }
-    public override void Draw(SwComponent nextState)
+    public override void Draw()
     {
-        base.Draw(nextState);
-        Particles.Draw(SwGame.FrameDuration * SwGame.FrameWeight);
+        base.Draw();
+        Particles.Draw(0);
     }
 }

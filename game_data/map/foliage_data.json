@@ -1,0 +1,10 @@
+{
+    "tile_size": {"x": 8, "y": 8},
+    "entries":[
+        {
+            "name": "grass",
+            "source": "props/grass_tufts.png",
+            "frame_size": {"x": 7, "y": 7}
+        }
+    ]
+}

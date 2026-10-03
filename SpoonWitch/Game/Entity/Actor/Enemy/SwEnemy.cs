@@ -7,7 +7,7 @@ namespace SpoonWitch.Game.Entity.Actor.Enemy;
 
 public abstract class SwEnemy: SwActor
 {
-    public override uint Mask => (uint)(IsAlive ? 5 : 0);
+    public override SwCollisionMask Mask => IsAlive ? SwCollisionMask.Enemy : SwCollisionMask.None;
     public override int RenderLayer => 2;
     public bool IsPassive;
     public ErVec2 TargetPosition;
@@ -16,19 +16,21 @@ public abstract class SwEnemy: SwActor
     {
         AddGlobalHandler("get_mad", (_)=>GetMad());
     }
-    protected override void SetProps(PriNode props)
+    public override void SetProps(PriNode props)
     {
         base.SetProps(props);
         IsPassive = Props.TryGet("is_passive", out bool isPassive) && isPassive;
     }
     public bool CanSeePoint(ErVec2 point)
     {
-        if(SwApp.Debug) return !SwGame.Map.PhysicsWorld.RaycastDebug(2, Position, point);
-        else return !SwGame.Map.PhysicsWorld.Raycast(2, Position, point);
+        return false;
+        // if(SwApp.Debug) return !SwGame.Map.PhysicsWorld.RaycastDebug(2, Position, point);
+        // else return !SwGame.Map.PhysicsWorld.Raycast(2, Position, point);
     }
     public bool CanSeePlayer()
     {
-        return CanSeePoint(SwGame.PlayerPos);
+        // return CanSeePoint(SwGame.PlayerPos);
+        return false;
     }
     public void MoveToTarget(double speed)
     {
@@ -39,9 +41,9 @@ public abstract class SwEnemy: SwActor
     {
         return (TargetPosition - Position).GetLength();
     }
-    public override void Update()
+    protected override void Update(double dt)
     {
-        base.Update();
+        base.Update(dt);
         if(Velocity.IsNonzero()) FacingIdx = (byte)ErMath.RoundAngleToInt(Velocity.GetAngle(), 4);
     }
     public virtual void GetMad()

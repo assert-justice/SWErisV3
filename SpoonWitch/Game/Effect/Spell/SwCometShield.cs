@@ -15,19 +15,19 @@ public class SwCometShield(SwActor parent): SwSpell
     public double Radius = 32;
     public double Speed = 100;
     public override double ManaCost => 50;
-    public override void Begin()
-    {
-        base.Begin();
-        double angle = 0;
-        for (int idx = 0; idx < NumProjectiles; idx++)
-        {
-            var props = SwData.Prototypes.Get("projectiles/comet").DeepCopy();
-            var projectile = SwGame.Game.LoadEntity<SwProjectile>(props);
-            Projectiles.Add(projectile);
-            angle += ErMath.TAU / NumProjectiles;
-            ProjectileHelp(projectile, angle);
-        }
-    }
+    // public override void Begin()
+    // {
+    //     base.Begin();
+    //     double angle = 0;
+    //     for (int idx = 0; idx < NumProjectiles; idx++)
+    //     {
+    //         var props = SwData.Prototypes.Get("projectiles/comet").DeepCopy();
+    //         var projectile = SwGame.Game.LoadEntity<SwProjectile>(props);
+    //         Projectiles.Add(projectile);
+    //         angle += ErMath.TAU / NumProjectiles;
+    //         ProjectileHelp(projectile, angle);
+    //     }
+    // }
     private void ProjectileHelp(SwProjectile projectile)
     {
         ProjectileHelp(projectile, (projectile.Position - Parent.Position).GetAngle());
