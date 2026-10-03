@@ -154,23 +154,28 @@ public class SwGame
         }
         FreeEntities();
         // Handle player room transitions
+        // Todo: make this better
         HashSet<string> roomsRequested = [];
+        List<(string playerId, string roomId)> temp = [];
         foreach (var player in EntityLookup.GetValues<SwPlayer>())
         {
             var targetPoint = player.Position + player.Velocity * dt;
-            if (MaxCameraDistance(targetPoint) > 16)
+            if (MaxCameraDistance(targetPoint) > 8)
             {
                 player.Velocity = ErVec2.Zero;
                 targetPoint = player.Position;
             }
-            if(Map.TryGetRoomId(targetPoint, out string roomId)) roomsRequested.Add(roomId);
+            if(!Map.TryGetRoomId(targetPoint, out string roomId)) continue;
+            roomsRequested.Add(roomId);
+            temp.Add((player.Id.ToString(), roomId));
         }
-        // if more than one room is requested, cancel the velocity of all players
+        // if more than one room is requested, cancel the velocity of all players trying to leave the current room
         if(roomsRequested.Count > 1)
         {
-            foreach (var player in EntityLookup.GetValues<SwPlayer>())
+            foreach (var (playerId,roomId) in temp)
             {
-                player.Velocity = ErVec2.Zero;
+                if(roomId == (Map.CurrentRoom?.Data.Iid ?? string.Empty))continue;
+                if(EntityLookup.TryGet<SwPlayer>(playerId, out var player)) player.Velocity = ErVec2.Zero;
             }
         }
         // Update hud
