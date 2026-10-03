@@ -1,5 +1,4 @@
 using ErisMath;
-using Prion.Node;
 using SDL3;
 
 namespace Eris.Input.Virtual;
@@ -20,7 +19,7 @@ public class ErVAxis2 : ErBaseInput
     public readonly List<SDL.GamepadButton> YPosGamepadButtons = [];
     public readonly List<SDL.GamepadButton> YNegGamepadButtons = [];
     public readonly List<SDL.GamepadAxis> YGamepadAxes = [];
-    public ErVec2 Vector;// => GetVector();
+    public ErVec2 Vector;
     public int GamepadIdx = -2;
     public double Deadzone = 0.2;
     public ErVAxis2(string name) : base(name)
@@ -120,50 +119,3 @@ public class ErVAxis2 : ErBaseInput
         return new(x, y);
     }
 }
-
-// public class ErVAxis2{
-//     private readonly int GamepadId = -1;
-//     public readonly double Deadzone = 0.2;
-//     public ErVec2 Vector{get; private set;}
-//     public ErVAxis2(){}
-//     public ErVAxis2(PriNode data)
-//     {
-//         if(data.Get("deadzone").TryAs(out double d)) Deadzone = d;
-//         var x = data.Get("x");
-//         var y = data.Get("y");
-//         XPosKeys = [..ErInputProfile.GetEnumArray<SDL.Scancode>(x.Get("pos_keys"))];
-//         XNegKeys = [..ErInputProfile.GetEnumArray<SDL.Scancode>(x.Get("neg_keys"))];
-//         XPosMouseButtons = [..ErInputProfile.GetEnumArray<SDL.MouseButtonFlags>(x.Get("pos_mouse_buttons"))];
-//         XNegMouseButtons = [..ErInputProfile.GetEnumArray<SDL.MouseButtonFlags>(x.Get("neg_mouse_buttons"))];
-//         YPosKeys = [..ErInputProfile.GetEnumArray<SDL.Scancode>(y.Get("pos_keys"))];
-//         YNegKeys = [..ErInputProfile.GetEnumArray<SDL.Scancode>(y.Get("neg_keys"))];
-//         YPosMouseButtons = [..ErInputProfile.GetEnumArray<SDL.MouseButtonFlags>(y.Get("pos_mouse_buttons"))];
-//         YNegMouseButtons = [..ErInputProfile.GetEnumArray<SDL.MouseButtonFlags>(y.Get("neg_mouse_buttons"))];
-//         XPosGamepadButtons = [..ErInputProfile.GetEnumArray<SDL.GamepadButton>(x.Get("pos_gamepad_buttons"))];
-//         XNegGamepadButtons = [..ErInputProfile.GetEnumArray<SDL.GamepadButton>(x.Get("neg_gamepad_buttons"))];
-//         XGamepadAxes = [..ErInputProfile.GetEnumArray<SDL.GamepadAxis>(x.Get("gamepad_axes"))];
-//         YPosGamepadButtons = [..ErInputProfile.GetEnumArray<SDL.GamepadButton>(y.Get("pos_gamepad_buttons"))];
-//         YNegGamepadButtons = [..ErInputProfile.GetEnumArray<SDL.GamepadButton>(y.Get("neg_gamepad_buttons"))];
-//         YGamepadAxes = [..ErInputProfile.GetEnumArray<SDL.GamepadAxis>(y.Get("gamepad_axes"))];
-//         // if (device.UseKeyboard)
-//         // {
-//         // }
-//         // if (device.UseGamepad)
-//         // {
-//         // }
-//     }
-//     private ErVec2 Filter(ErVec2 vector)
-//     {
-//         double lenSq = vector.GetLengthSquared();
-//         if(lenSq > 1) return vector.Normalized();
-//         if(lenSq < Deadzone * Deadzone) return ErVec2.Zero;
-//         double length = Math.Sqrt(lenSq) - Deadzone;
-//         length /= 1 - Deadzone;
-//         return vector.Normalized() * length;
-//     }
-//     public ErVec2 Poll(ErInputDevice device)
-//     {
-//         Vector = Filter(GetState(device));
-//         return Vector;
-//     }
-// }

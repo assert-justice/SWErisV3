@@ -1,4 +1,3 @@
-using ErisMath;
 using SpoonWitch.Data;
 using SpoonWitch.Game.Entity.Projectile;
 using SpoonWitch.Utils;

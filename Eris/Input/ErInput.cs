@@ -91,15 +91,6 @@ public class ErInput
     {
         return MousePosition;
     }
-    public bool HandleMouseButtonDown(SDL.MouseButtonFlags mouseButton)
-    {
-        bool res = (int)(MouseButtonFlags & mouseButton) != 0;
-        if(res)
-        {
-            MouseButtonFlags &= ~mouseButton;
-        }
-        return res;
-    }
     public bool GetMouseButtonDown(SDL.MouseButtonFlags mouseButton)
     {
         bool res = (int)(MouseButtonFlags & mouseButton) != 0;
@@ -131,25 +122,7 @@ public class ErInput
         }
         return false;
     }
-    public bool HandleGamepadButtonDown(SDL.GamepadButton button, int gamepadIdx)
-    {
-        bool res = false;
-        foreach (var item in GetGamepads(gamepadIdx))
-        {
-            if(item.GetGamepadButtonDown(button)) res = true;
-        }
-        return res;
-    }
     public double GetGamepadAxis(SDL.GamepadAxis axis, int gamepadIdx)
-    {
-        double res = 0;
-        foreach (var item in GetGamepads(gamepadIdx))
-        {
-            res += item.GetGamepadAxis(axis);
-        }
-        return Math.Clamp(res, -1, 1);
-    }
-    public double HandleGamepadAxis(SDL.GamepadAxis axis, int gamepadIdx)
     {
         double res = 0;
         foreach (var item in GetGamepads(gamepadIdx))
