@@ -9,6 +9,7 @@ namespace SpoonWitch.Game.Entity.MapEntity;
 public class SwTrigger : SwMapEntity
 {
     private SwAreaComponent Area = null!;
+    public SwCollisionMask Mask;
     public int Activations
     {
         get => Props.TryGet("activations", out int activations) ? activations : 0;
@@ -20,13 +21,17 @@ public class SwTrigger : SwMapEntity
     public override void SetProps(PriNode props)
     {
         base.SetProps(props);
+        if(Props.TryGet("mask", out uint mask)) Mask = (SwCollisionMask)mask;
+        if(Area is not null)
+        {
+            Area.Mask = mask;
+            Area.Size = Size;
+        }
     }
     public override void Init()
     {
         base.Init();
-        var size = SwPrion.GetVec2(Props.Data.Get("rect_px"), "w", "h", new ErVec2(32,32));
-        if(!Props.TryGet("mask", out uint mask)) mask = (uint)SwCollisionMask.PlayerTeam;
-        Area = new(this, "area", mask, size, enabled: IsEnabled(), onBodyEnter: OnEnter);
+        Area = new(this, "area", (uint)Mask, Size, enabled: IsEnabled(), onBodyEnter: OnEnter);
         RegisterComponent(Area);
     }
     private bool IsEnabled()

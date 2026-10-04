@@ -1,0 +1,28 @@
+{
+    "cycle":{
+        "delay": 0.25,
+        "time_enabled": 0.25,
+        "cooldown": 0.5,
+        "start_active": true
+    },
+    "hurtbox":{
+        "mask": 4,
+        "damage":{
+            "verb": "damage",
+            "entries":[
+                {
+                    "type": "Fire",
+                    "value": 55
+                }
+            ]
+        }
+    },
+    "sprites":[
+        {
+            "name": "sprite",
+            "ase_animations": {
+                "filepath": "fwoosher.json"
+            }
+        }
+    ]
+}

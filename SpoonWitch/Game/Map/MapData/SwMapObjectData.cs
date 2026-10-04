@@ -18,7 +18,8 @@ public readonly struct SwMapObjectData
     {
         PriDict res = [];
         res.Merge(ToPri());
-        res.Merge(SwData.Prototypes.Get($"map_objects/{Class}"));
+        var prototype = SwData.Prototypes.Get($"map_entities/{Class}");
+        res.Merge(prototype);
         return res;
     }
     public PriNode ToPri()
