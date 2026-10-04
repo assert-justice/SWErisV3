@@ -29,11 +29,6 @@ public class SwFwoosher: SwMapEntity
     {
         base.SetProps(props);
         if(Props.TryGet("mask", out uint mask)) Mask = (SwCollisionMask)mask;
-        if(Hurtbox is not null)
-        {
-            Hurtbox.Mask = mask;
-            Hurtbox.Size = Size;
-        }
         var cycle = Props.Get("cycle");
         if(cycle.TryGet("delay", out double d)) Delay = d;
         if(cycle.TryGet("time_enabled", out d)) TimeEnabled = d;
@@ -44,20 +39,15 @@ public class SwFwoosher: SwMapEntity
     public override void Init()
     {
         base.Init();
-        // Area = new(this, "area", (uint)Mask, Size, onBodyEnter: OnEnter);
-        // RegisterComponent(Area);
         LoadSprites("sprites");
         if(!SwHurtboxComponent.TryFromData(out Hurtbox, this, Props.Get("hurtbox"))) ErEngine.LogWarning("bad hurtbox");
         else
         {
-            Hurtbox.Size = Size;
-            Hurtbox.Mask = (uint)Mask;
             RegisterComponent(Hurtbox);
         }
         Sprite = GetComponent<SwSpriteComponent>("sprite")!;
         Sprite.Sprite.Visible = false;
         Sprite.Sprite.Centered = false;
-        // if(!SwSpriteComponent.TryFromData(out SpriteComponent, this, Props.))
         SetActive(StartActive);
     }
     protected override void Update(double dt)
@@ -73,10 +63,12 @@ public class SwFwoosher: SwMapEntity
             case 1:
                 Clock.Start(TimeEnabled);
                 // Enable
+                SetEnabled(true);
                 break;
             case 2:
                 Clock.Start(Cooldown);
                 // Disable
+                SetEnabled(false);
                 break;
         }
         Phase = (Phase + 1) % NumPhases;
@@ -101,11 +93,6 @@ public class SwFwoosher: SwMapEntity
     private void SetEnabled(bool isEnabled)
     {
         Hurtbox.Enabled = isEnabled;
-        if (!isEnabled)
-        {
-            // set animation
-            return;
-        }
-        // set animation
+        Sprite.Sprite.Play(isEnabled ? "fwoosh" : "default");
     }
 }

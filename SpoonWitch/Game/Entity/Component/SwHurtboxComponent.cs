@@ -18,8 +18,8 @@ public class SwHurtboxComponent : SwAreaComponent
         if(!data.TryGet("name", out string name)) name = "hurtbox";
         hurtboxComponent = new(parent, name);
         if(SwPrion.TryGetVec2(out var size, data.Get("size"))) hurtboxComponent.Size = size; 
-        if(!data.TryGet("mask", out uint u)) hurtboxComponent.Mask = u;
-        if(!data.TryGet("is_enabled", out bool b)) hurtboxComponent.Enabled = b;
+        if(data.TryGet("mask", out uint u)) hurtboxComponent.Mask = u;
+        if(data.TryGet("is_enabled", out bool b)) hurtboxComponent.Enabled = b;
         if(!SwDamage.TryFromPri(data.Get("damage"), out var _)) return ErEngine.LogWarning("hurtbox failed to parse damage");
         return true;
     }

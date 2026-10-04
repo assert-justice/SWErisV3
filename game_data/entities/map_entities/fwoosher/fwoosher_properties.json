@@ -1,7 +1,7 @@
 {
     "cycle":{
-        "delay": 0.25,
-        "time_enabled": 0.25,
+        "delay": 0.0,
+        "time_enabled": 0.5,
         "cooldown": 0.5,
         "start_active": true
     },

@@ -3421,22 +3421,6 @@
 							],
 							"__worldX": 928,
 							"__worldY": 128
-						},
-						{
-							"__identifier": "fwoosher",
-							"__grid": [68,12],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 123, "x": 32, "y": 0, "w": 32, "h": 32 },
-							"__smartColor": "#FEAE34",
-							"iid": "d2559850-bde0-11f1-b56b-6f1c6bec6a32",
-							"width": 128,
-							"height": 128,
-							"defUid": 122,
-							"px": [544,96],
-							"fieldInstances": [],
-							"__worldX": 1184,
-							"__worldY": 96
 						}
 					]
 				},
