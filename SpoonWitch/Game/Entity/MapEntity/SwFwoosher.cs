@@ -43,6 +43,7 @@ public class SwFwoosher: SwMapEntity
         if(!SwHurtboxComponent.TryFromData(out Hurtbox, this, Props.Get("hurtbox"))) ErEngine.LogWarning("bad hurtbox");
         else
         {
+            Hurtbox.Size = Size;
             RegisterComponent(Hurtbox);
         }
         Sprite = GetComponent<SwSpriteComponent>("sprite")!;

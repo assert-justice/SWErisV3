@@ -21,7 +21,7 @@ public class SwTrigger : SwMapEntity
     public override void SetProps(PriNode props)
     {
         base.SetProps(props);
-        if(Props.TryGet("mask", out uint mask)) Mask = (SwCollisionMask)mask;
+        if(Props.TryGet("fields/mask", out uint mask)) Mask = (SwCollisionMask)mask;
         if(Area is not null)
         {
             Area.Mask = mask;

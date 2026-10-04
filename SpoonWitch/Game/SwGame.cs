@@ -249,13 +249,14 @@ public class SwGame
             SetRenderLayer(0);
             // draw map
             Map.Draw();
-            if(SwData.Settings.TryGet("debug/debug", out bool b) && b) PhysicsWorld.DebugDraw();
             // draw entities
             foreach (var entity in EntityLookup.GetAllValues<SwEntity>())
             {
                 entity.GameDraw();
             }
             // draw fade
+            SetRenderLayer(RenderTextures.Length -1);
+            if(SwData.Settings.TryGet("debug/debug", out bool b) && b) PhysicsWorld.DebugDraw();
             // pop render layer
             ErEngine.Renderer.PopViewport();
             // draw render layers

@@ -21,6 +21,7 @@ public class SwHurtboxComponent : SwAreaComponent
         if(data.TryGet("mask", out uint u)) hurtboxComponent.Mask = u;
         if(data.TryGet("is_enabled", out bool b)) hurtboxComponent.Enabled = b;
         if(!SwDamage.TryFromPri(data.Get("damage"), out var _)) return ErEngine.LogWarning("hurtbox failed to parse damage");
+        hurtboxComponent.DamageCommand = data.Get("damage");
         return true;
     }
     private void OnEnter(SwEntity entity)
