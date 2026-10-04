@@ -42,31 +42,31 @@ public class SwPlayerInput: ErInputDevice
     public ErVec2 LastAim{get; private set;} = ErVec2.Down;
     public ErVec2 LastFacing{get; private set;} = ErVec2.Down;
     public int LastFacingIdx => ErMath.RoundAngleToInt(LastFacing.GetAngle(), 4);
-    public bool AttackJustPressed => Attack?.JustPressed ?? false;
-    public bool FireJustPressed => Fire?.JustPressed ?? false;
+    public bool AttackJustDown => Attack?.JustDown ?? false;
+    public bool FireJustDown => Fire?.JustDown ?? false;
     public bool IsCharging => GetIsCharging();
-    public bool DodgeJustPressed => Dodge?.JustPressed ?? false;
-    public bool UseJustPressed => Use?.JustPressed ?? false;
-    public bool HealJustPressed => Heal?.JustPressed ?? false;
-    public bool QuaffJustPressed => Quaff?.JustPressed ?? false;
-    public bool LastPotionJustPressed => LastPotion?.JustPressed ?? false;
-    public bool NextPotionJustPressed => NextPotion?.JustPressed ?? false;
-    public bool CastJustPressed => Cast?.JustPressed ?? false;
-    public bool LastSpellJustPressed => LastSpell?.JustPressed ?? false;
-    public bool NextSpellJustPressed => NextSpell?.JustPressed ?? false;
-    public bool PauseJustPressed => Pause?.JustPressed ?? false;
-    public bool UiCancelJustPressed => UiCancel?.JustPressed ?? false;
-    public bool UiConfirmJustPressed => UiConfirm?.JustPressed ?? false;
-    public bool UiUpJustPressed => UiUp?.JustPressed ?? false;
-    public bool UiDownJustPressed => UiDown?.JustPressed ?? false;
-    public bool UiLeftJustPressed => UiLeft?.JustPressed ?? false;
-    public bool UiRightJustPressed => UiRight?.JustPressed ?? false;
+    public bool DodgeJustDown => Dodge?.JustDown ?? false;
+    public bool UseJustDown => Use?.JustDown ?? false;
+    public bool HealJustDown => Heal?.JustDown ?? false;
+    public bool QuaffJustDown => Quaff?.JustDown ?? false;
+    public bool LastPotionJustDown => LastPotion?.JustDown ?? false;
+    public bool NextPotionJustDown => NextPotion?.JustDown ?? false;
+    public bool CastJustDown => Cast?.JustDown ?? false;
+    public bool LastSpellJustDown => LastSpell?.JustDown ?? false;
+    public bool NextSpellJustDown => NextSpell?.JustDown ?? false;
+    public bool PauseJustDown => Pause?.JustDown ?? false;
+    public bool UiCancelJustDown => UiCancel?.JustDown ?? false;
+    public bool UiConfirmJustDown => UiConfirm?.JustDown ?? false;
+    public bool UiUpJustDown => UiUp?.JustDown ?? false;
+    public bool UiDownJustDown => UiDown?.JustDown ?? false;
+    public bool UiLeftJustDown => UiLeft?.JustDown ?? false;
+    public bool UiRightJustDown => UiRight?.JustDown ?? false;
     public ErVec2 PlayerScreenPosition;
     public ErVec2 ReticlePosition{get; private set;}
     public bool IsReticleVisible{get; private set;}
     private bool GetIsCharging()
     {
-        if(Charge is not null && Charge.Pressed) return true;
+        if(Charge is not null && Charge.Down) return true;
         if(DeviceKind == ErInput.DeviceKind.Gamepad && AutoCharge && Aim.IsNonzero()) return true;
         return false;
     }
@@ -118,7 +118,7 @@ public class SwPlayerInput: ErInputDevice
             else if(mnz) LastFacing = LastMove;
         }
     }
-    public void SetProfile(PriNode profile)
+    public void SetProfileAll(PriNode profile)
     {
         UseMostRecentDevice = true;
         var gamepad = profile.Get("gamepad");

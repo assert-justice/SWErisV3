@@ -137,7 +137,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
     public override void Update(double dt)
     {
         base.Update(dt);
-        if(Controls.PauseJustPressed) SwApp.CommandQueue.AddCommandVerb("pause");
+        if(Controls.PauseJustDown) SwApp.CommandQueue.AddCommandVerb("pause");
         ReticleSprite.Visible = Controls.IsReticleVisible;
         ReticleSprite.Offset = Controls.ReticlePosition;
         if(Entity.Stamina < Entity.MaxStamina && !Entity.StaminaRegenClock.IsRunning)
@@ -283,16 +283,16 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
             SetBodyHandedAnim(animIdx, 2, Controls.LastFacingIdx);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed;
-            if(CanAttack() && Controls.AttackJustPressed) StateMachine.SetState("attack");
+            if(CanAttack() && Controls.AttackJustDown) StateMachine.SetState("attack");
             else if(Controls.IsCharging && Inventory.GetCount("sling_ammo") > 0) StateMachine.SetState("charging");
-            else if(CanDodge() && Controls.DodgeJustPressed) StateMachine.SetState("dodging");
-            else if(Entity.CurrentSpell is not null && !Entity.CurrentSpell.IsActive && CanCast() && Controls.CastJustPressed)
+            else if(CanDodge() && Controls.DodgeJustDown) StateMachine.SetState("dodging");
+            else if(Entity.CurrentSpell is not null && !Entity.CurrentSpell.IsActive && CanCast() && Controls.CastJustDown)
             {
                 Entity.CurrentSpell.Begin();
                 Entity.Mana -= Entity.CurrentSpell.ManaCost;
             }
-            else if(Entity.CurrentSpell is not null && Entity.CurrentSpell.IsActive && Controls.CastJustPressed){}
-            else if(ErEngine.Input.HandleKeyDown(SDL3.SDL.Scancode.T)) StateMachine.SetState("dancing");
+            else if(Entity.CurrentSpell is not null && Entity.CurrentSpell.IsActive && Controls.CastJustDown){}
+            else if(ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.T)) StateMachine.SetState("dancing");
         }
     }
     public class Attack: SwPlayerState
@@ -331,93 +331,6 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             SpoonHurtbox.Enabled = true;
         }
     }
-    // public class Charging: SwPlayerState
-    // {
-    //     public override string Name => "charging";
-    //     private const int NumThresholds = 3;
-    //     private int Threshold = 0;
-    //     public override void BeginState(string lastState)
-    //     {
-    //         base.BeginState(lastState);
-    //         SlingSprite.Visible = true;
-    //         SlingSprite.Play("charging");
-    //         ReticleSprite.Play(ReticleAnimations[0]);
-    //         Entity.SlingChargeClock.Start(Entity.SlingChargeTime / NumThresholds);
-    //         Threshold = 0;
-    //     }
-    //     public override void Update(double dt)
-    //     {
-    //         base.Update(dt);
-    //         int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
-
-    //         SetBodyHandedAnim(animIdx, 1, Controls.LastFacingIdx);
-    //         Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.SlowedSpeedMul;
-    //         if (!Controls.IsCharging)
-    //         {
-    //             SlingSprite.Visible = false;
-    //             SlingSprite.Stop();
-    //             ReticleSprite.Play("still");
-    //             StateMachine.SetState("default");
-    //             return;
-    //         }
-    //         if (!Entity.SlingChargeClock.IsRunning)
-    //         {
-    //             if(Threshold == NumThresholds) StateMachine.SetState("charged");
-    //             else
-    //             {
-    //                 Threshold++;
-    //                 // Todo: set reticle sprite
-    //                 Entity.SlingChargeClock.Restart();
-    //             }
-    //         }
-    //     }
-    // }
-    // public class Charged: SwPlayerState
-    // {
-    //     public override string Name => "charged";
-    //     public override void BeginState(string lastState)
-    //     {
-    //         base.BeginState(lastState);
-    //         SlingSprite.Play("charged");
-    //     }
-    //     private bool CanFire()
-    //     {
-    //         if(!Controls.FireJustPressed) return false;
-    //         if(!Controls.Aim.IsNonzero()) return false;
-    //         return true;
-    //     }
-    //     private void Fire()
-    //     {
-    //         Entity.Ammo--;
-    //         var sling = Entity.Props.Get("sling");
-    //         if(!Entity.Props.TryGet("sling/projectile", out string slingProto)) return;
-    //         var props = SwData.Prototypes.Get($"projectiles/{slingProto}");
-    //         SwPrion.TrySetVec2(props, "velocity", Controls.Aim * Entity.SlingBulletSpeed);
-    //         SwPrion.TrySetVec2(props, Entity.Position);
-    //         props.TrySet("damage", sling.Get("sling_damage"));
-    //         Entity.Game.AddEntity<SwProjectile>(props);
-    //     }
-    //     public override void Update(double dt)
-    //     {
-    //         base.Update(dt);
-    //         int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
-    //         SetBodyHandedAnim(animIdx, 1, Controls.LastFacingIdx);
-    //         Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.SlowedSpeedMul;
-    //         if (!Controls.IsCharging) StateMachine.SetState("default");
-    //         else if (CanFire())
-    //         {
-    //             Fire();
-    //             StateMachine.SetState("default");
-    //         }
-    //     }
-    //     public override void EndState(string nextState)
-    //     {
-    //         base.EndState(nextState);
-    //         SlingSprite.Visible = false;
-    //         SlingSprite.Stop();
-    //         ReticleSprite.Play("still");
-    //     }
-    // }
     public class ItemGet: SwPlayerState
     {
         public override string Name => "item_get";
@@ -430,7 +343,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         public override void Update(double dt)
         {
             base.Update(dt);
-            if(Controls.DodgeJustPressed) StateMachine.SetState("default");
+            if(Controls.DodgeJustDown) StateMachine.SetState("default");
         }
         public override void EndState(string nextState)
         {
@@ -450,7 +363,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         public override void Update(double dt)
         {
             base.Update(dt);
-            if(Controls.DodgeJustPressed) StateMachine.SetState("default");
+            if(Controls.DodgeJustDown) StateMachine.SetState("default");
         }
     }
     public static SwStateMachine<SwPlayer> GetStateMachine(SwPlayer parent, string name)

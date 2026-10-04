@@ -10,20 +10,14 @@ public class ErVButton : ErBaseInput
     public readonly List<SDL.GamepadAxis> GamepadAxesLow = [];
     public readonly List<SDL.GamepadAxis> GamepadAxesHigh = [];
     public double Buffer = 0;
-    public bool Pressed => GetPressed();
-    public bool JustPressed => GetJustPressed();
+    public bool Down => GetDown();
+    public bool JustDown => GetJustDown();
     public int GamepadIdx = -2;
     public double Deadzone = ErEngine.Input.GlobalAxisDeadzone;
-    private bool State = false;
-    private bool LastState = false;
     public ErVButton(string name) : base(name)
     {
     }
-    public override void Poll()
-    {
-        LastState = State;
-        State = GetState();
-    }
+    public override void Poll(){}
     public override void Clear()
     {
         Keys.Clear();
@@ -32,12 +26,12 @@ public class ErVButton : ErBaseInput
         GamepadAxesHigh.Clear();
         GamepadAxesLow.Clear();
     }
-    private bool GetState()
+    private bool GetDown()
     {
         bool res = false;
         foreach (var key in Keys)
         {
-            if (ErEngine.Input.GetKeyDown(key)) res = true;
+            if(ErEngine.Input.GetKeyDown(key)) res = true;
         }
         foreach (var mb in MouseButtons)
         {
@@ -49,20 +43,37 @@ public class ErVButton : ErBaseInput
         }
         foreach (var axis in GamepadAxesLow)
         {
-            if(ErEngine.Input.GetGamepadAxis(axis, GamepadIdx) < -Deadzone) res = true;
+            if(ErEngine.Input.GetGamepadAxisLow(axis, GamepadIdx)) res = true;
         }
         foreach (var axis in GamepadAxesHigh)
         {
-            if(ErEngine.Input.GetGamepadAxis(axis, GamepadIdx) > Deadzone) res = true;
+            if(ErEngine.Input.GetGamepadAxisHigh(axis, GamepadIdx)) res = true;
         }
         return res;
     }
-    private bool GetPressed()
+    private bool GetJustDown()
     {
-        return State;
-    }
-    private bool GetJustPressed()
-    {
-        return State && !LastState;
+        bool res = false;
+        foreach (var key in Keys)
+        {
+            if(ErEngine.Input.GetKeyJustDown(key, Buffer)) res = true;
+        }
+        foreach (var mb in MouseButtons)
+        {
+            if(ErEngine.Input.GetMouseButtonJustDown(mb, Buffer)) res = true;
+        }
+        foreach (var button in GamepadButtons)
+        {
+            if(ErEngine.Input.GetGamepadButtonJustDown(button, GamepadIdx, Buffer)) res = true;
+        }
+        foreach (var axis in GamepadAxesLow)
+        {
+            if(ErEngine.Input.GetGamepadAxisJustLow(axis, GamepadIdx, Buffer)) res = true;
+        }
+        foreach (var axis in GamepadAxesHigh)
+        {
+            if(ErEngine.Input.GetGamepadAxisJustHigh(axis, GamepadIdx, Buffer)) res = true;
+        }
+        return res;
     }
 }

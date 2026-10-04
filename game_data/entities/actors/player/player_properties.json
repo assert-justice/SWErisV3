@@ -1,6 +1,6 @@
 {
     "anim_data": "player_anim_data.json",
-    "size":{"x": 28, "y": 28},
+    "size":{"x": 20, "y": 20},
     "health":{
         "health": 100,
         "max_health": 100,
@@ -40,6 +40,8 @@
                 }
             ]
         },
+        "spoon_hurtbox_mask": 8,
+        "spoon_hurtbox_size": {"x":32,"y":32},
         "spoon_swing_duration":0.625,
         "spoon_hurt_window_delay": 0.125,
         "spoon_hurt_window_end": 0.25,

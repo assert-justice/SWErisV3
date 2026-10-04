@@ -32,6 +32,11 @@ public class SwPlayerCharging: SwPlayerState
             StateMachine.SetState("default");
             return;
         }
+        if(CanDodge() && Controls.DodgeJustDown)
+        {
+            StateMachine.SetState("dodging");
+            return;
+        }
         if (Entity.SlingChargeClock.IsRunning) return;
         if(Phase == NumPhases) StateMachine.SetState("charged");
         else
@@ -53,7 +58,6 @@ public class SwPlayerCharged: SwPlayerState
     private bool CanFire()
     {
         if(!Controls.Aim.IsNonzero()) return false;
-        if(!Controls.FireJustPressed) return false;
         return true;
     }
     private void Fire()
@@ -74,7 +78,12 @@ public class SwPlayerCharged: SwPlayerState
         SetBodyHandedAnim(animIdx, 1, Controls.LastFacingIdx);
         Entity.Velocity = Controls.Move * Entity.BaseSpeed * Entity.SlowedSpeedMul;
         if (!Controls.IsCharging) StateMachine.SetState("default");
-        else if (CanFire())
+        else if(CanDodge() && Controls.DodgeJustDown)
+        {
+            StateMachine.SetState("dodging");
+            return;
+        }
+        else if (CanFire() && Controls.FireJustDown)
         {
             Fire();
             StateMachine.SetState("default");

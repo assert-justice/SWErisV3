@@ -16,12 +16,23 @@
                 },
                 {
                     "type": "button",
-                    "text": "New Game",
+                    "text": "1 Player",
                     "font_size": 16,
                     "font_color": "#ffffff",
                     "font_color_focus": "#ff0000",
                     "on_click_command":{
                         "verb": "launch"
+                    }
+                },
+                {
+                    "type": "button",
+                    "text": "2 Player",
+                    "font_size": 16,
+                    "font_color": "#ffffff",
+                    "font_color_focus": "#ff0000",
+                    "on_click_command":{
+                        "verb": "launch",
+                        "num_players": 2
                     }
                 },
                 {
@@ -129,6 +140,7 @@
                     "font_size": 16,
                     "font_color": "#ffffff",
                     "font_color_focus": "#ff0000",
+                    "visible": false,
                     "on_click_command":{
                         "verb": "launch"
                     }

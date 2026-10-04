@@ -18,7 +18,17 @@ public class SwPlayer: SwActor
 {
     public override SwCollisionMask Mask => IsAlive ? SwCollisionMask.Player : SwCollisionMask.None;
     public override int RenderLayer => 3;
-    public int PlayerIdx;
+    private int _PlayerIdx;
+    public int PlayerIdx
+    {
+        get => _PlayerIdx;
+        set
+        {
+            _PlayerIdx = value;
+            GetComponent<SwSpriteComponent>("body")?.Sprite.SetPallet(value);
+            GetComponent<SwSpriteComponent>("hat")?.Sprite.SetPallet(value);
+        }
+    }
     public SwCamera Camera = null!;
     // Health
     // Note: Health and MaxHealth defined in SwActor
@@ -84,7 +94,7 @@ public class SwPlayer: SwActor
     public SwSpell? CurrentSpell;
     public SwStateMachine<SwPlayer>? StateMachine{get; private set;}
     public ErTexture? PickupTexture;
-    private SwPlayerControls Controls = null!;
+    public SwPlayerControls Controls{get; private set;} = null!;
     // private bool GotMad = false;
     public SwPlayer()
     {
@@ -133,6 +143,11 @@ public class SwPlayer: SwActor
         if(Props.TryGet("spoon/hurt_duration", out d)) SpoonHurtDuration = d;
         if(Props.TryGet("spoon/spoon_recovery_time", out d)) SpoonRecoveryTime = d;
         if(Props.TryGet("spoon/spoon_stamina_cost", out d)) SpoonStaminaCost = d;
+        if(TryGetComponent("spoon_hurtbox", out SwAreaComponent spoonHurtbox))
+        {
+            if(Props.TryGet("spoon/spoon_hurtbox_mask", out uint mask)) spoonHurtbox.Mask = mask;
+            if(SwPrion.TryGetVec2(out var size, Props.Get("spoon/spoon_hurtbox_size"))) spoonHurtbox.Size = size;
+        }
         // Sling
         // Note: Likewise, SlingDamage stays in props
         if(Props.TryGet("sling/sling_bullet_speed", out d)) SlingBulletSpeed = d;
@@ -151,7 +166,9 @@ public class SwPlayer: SwActor
         if(!SwParticles2D.TryFromData(out var particles, Props.Get("dust_particles"))) ErEngine.LogWarning("unable to read player dust particles");
         else RegisterComponent(new SwParticleComponent(this, "dust_particles", particles));
         LoadSprites("anim_data/sprites");
-        var SpoonHurtbox = new SwAreaComponent(this, "spoon_hurtbox", 4, new(32, 32), onBodyEnter: OnEnterSpoonHurtbox);
+        if(!Props.TryGet("spoon/spoon_hurtbox_mask", out uint mask)) mask = 8;
+        var hurtboxSize = SwPrion.GetVec2(Props.Get("spoon/spoon_hurtbox_size"));
+        var SpoonHurtbox = new SwAreaComponent(this, "spoon_hurtbox", mask, hurtboxSize, onBodyEnter: OnEnterSpoonHurtbox);
         RegisterComponent(SpoonHurtbox);
         StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);

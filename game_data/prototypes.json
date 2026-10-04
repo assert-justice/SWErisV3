@@ -26,7 +26,9 @@
         "slume": "entities/actors/slume/slume_properties.json",
         "knight": "entities/actors/knight/knight_properties.json"
     },
-    "map_objects":{},
+    "map_entities":{
+        "fwoosher": "entities/map_entities/fwoosher/fwoosher_properties.json"
+    },
     "projectiles":{
         "sling":{
             "hurtbox_mask": 8,

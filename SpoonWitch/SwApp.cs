@@ -2,6 +2,7 @@
 using Eris.App;
 using Eris.Renderer;
 using ErisMath;
+using Prion.Node;
 using SpoonWitch.Command;
 using SpoonWitch.Data;
 using SpoonWitch.Game;
@@ -45,7 +46,7 @@ public class SwApp : IErApp
     public void Init()
     {
         CommandQueue.AddHandler("quit", (_)=>ErEngine.Quit());
-        CommandQueue.AddHandler("launch", (_)=>Launch());
+        CommandQueue.AddHandler("launch", Launch);
         CommandQueue.AddHandler("pause", (_)=>Pause());
         CommandQueue.AddHandler("unpause", (_)=>UnPause());
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
@@ -54,7 +55,7 @@ public class SwApp : IErApp
             ErEngine.LogError("initialization failed");
             return;
         }
-        MenuInput.SetProfile(SwData.Settings.Get("input_binds"));
+        MenuInput.SetProfileAll(SwData.Settings.Get("input_binds"));
     }
     private bool TryInit()
     {
@@ -68,7 +69,7 @@ public class SwApp : IErApp
         MenuHolder = menuHolder;
         return true;
     }
-    private void Launch()
+    private void Launch(PriNode command)
     {
         UnPause();
         if(Game is not null)
@@ -86,7 +87,7 @@ public class SwApp : IErApp
             return;
         }
         SwData.LoadGame(0);
-        Game = new(mapData, 1);
+        Game = new(mapData, command);
     }
     private void Pause()
     {
@@ -130,12 +131,12 @@ public class SwApp : IErApp
     private void PollMenu()
     {
         MenuInput.Poll();
-        if(MenuInput.UiCancelJustPressed) MenuHolder.Cancel();
-        if(MenuInput.UiConfirmJustPressed) MenuHolder.Confirm();
-        if(MenuInput.UiUpJustPressed) MenuHolder.Up();
-        if(MenuInput.UiDownJustPressed) MenuHolder.Down();
-        if(MenuInput.UiLeftJustPressed) MenuHolder.Left();
-        if(MenuInput.UiRightJustPressed) MenuHolder.Right();
+        if(MenuInput.UiCancelJustDown) MenuHolder.Cancel();
+        if(MenuInput.UiConfirmJustDown) MenuHolder.Confirm();
+        if(MenuInput.UiUpJustDown) MenuHolder.Up();
+        if(MenuInput.UiDownJustDown) MenuHolder.Down();
+        if(MenuInput.UiLeftJustDown) MenuHolder.Left();
+        if(MenuInput.UiRightJustDown) MenuHolder.Right();
     }
     public static int GetNextId()
     {
