@@ -6,36 +6,33 @@ namespace SpoonWitch.Ik;
 
 public class SwIkLimb
 {
-    protected readonly List<ErVec2> Segments = [];
+    private readonly List<ErVec2> Joints = [];
+    private readonly List<ErVec2> JointsReversed = [];
+    private readonly List<ErVec2> Offsets = [];
     public ErVec2 Origin;
-    private ErVec2 _Target;
-    public ErVec2 Target
-    {
-        get => _Target;
-        set
-        {
-            IsAtTarget = false;
-            _Target = value;
-        }
-    }
+    public ErVec2 Target;
     public double Speed = 100;
     public int NumSteps = 1;
-    public bool IsAtTarget{get; private set;} = true;
+    public ErVec2 Tip => Joints.Count == 0 ? ErVec2.Zero : Joints[^1];
+    public bool IsAtTarget => !(Tip - Target).IsNonzero();
     public SwIkLimb(){}
     public SwIkLimb(IList<double> distances, ErVec2? origin = null, ErVec2? target = null)
     {
         Origin = origin ?? ErVec2.Zero;
-        _Target = target ?? new ErVec2(distances.Sum(), 0);
-        ErVec2 dir = (_Target - Origin).Normalized();
-        Segments = new(distances.Count);
+        Target = target ?? new ErVec2(distances.Sum(), 0);
+        ErVec2 dir = (Target - Origin).Normalized();
+        Joints = new(distances.Count + 1);
+        ErVec2 joint = ErVec2.Zero;
+        Joints.Add(joint);
         foreach (var d in distances)
         {
-            Segments.Add(dir * d);
+            joint += dir * d;
+            Joints.Add(joint);
         }
     }
     public void Update(double deltaTime)
     {
-        if(Segments.Count < 1) return;
+        if(Joints.Count < 2) return;
         double dt = deltaTime / NumSteps;
         for (int idx = 0; idx < NumSteps; idx++)
         {
@@ -45,68 +42,51 @@ public class SwIkLimb
     public virtual void Draw(double frameTime){}
     public void DebugDraw()
     {
-        if(Segments.Count < 1) return;
-        var pos = Origin;
-        ErVec2 nextPos;
-        foreach (var segment in Segments)
+        if(Joints.Count < 2) return;
+        for (int idx = 0; idx < Joints.Count - 1; idx++)
         {
-            nextPos = pos + segment;
-            ErEngine.Renderer.DrawLine(pos, nextPos, ErColor.Blue);
-            pos = nextPos;
+            ErEngine.Renderer.DrawLine(Joints[idx] + Origin, Joints[idx+1] + Origin, ErColor.Blue);
         }
     }
     private void Step(double deltaTime)
     {
-        var tip = ErVec2.Zero;
-        foreach (var seg in Segments)
-        {
-            tip += seg;
-        }
-        var diff = _Target - tip;
+        Offsets.Clear();
+        var root = Joints[0];
+        var tip = Joints[^1];
+        var diff = Target - tip;
         double speed = Speed * deltaTime;
         if(diff.GetLength() < speed)
         {
-            tip = _Target;
-            IsAtTarget = true;
+            tip = Target;
         }
         else
         {
             tip += diff.Normalized() * speed;
         }
-        var pass1 = Pass(Segments, tip, ErVec2.Zero);
-        var pass2 = Pass(pass1, ErVec2.Zero, tip);
-        for (int idx = 0; idx < pass2.Count; idx++)
-        {
-            Segments[idx] = pass2[idx];
-        }
+        Pass(Joints, in JointsReversed, tip);
+        Pass(JointsReversed, in Joints, root);
     }
-    private List<ErVec2> Pass(List<ErVec2> segments, ErVec2 target, ErVec2 root)
+    private void Pass(List<ErVec2> joints, in List<ErVec2> reversedJoints, ErVec2 target)
     {
-        List<ErVec2> tips = [];
-        List<ErVec2> backwards = [];
-        ErVec2 prevTip = root;
-        ErVec2 currentTarget = target;
-        foreach (var item in segments)
+        reversedJoints.Clear();
+        Offsets.Clear();
+        // calculate the offsets
+        ErVec2 lastJoint = joints[0];
+        for (int idx = 1; idx < joints.Count; idx++)
         {
-            var tip = prevTip + item;
-            prevTip = tip;
-            tips.Add(tip);
+            var offset = joints[idx] - lastJoint;
+            Offsets.Add(offset);
+            lastJoint = joints[idx];
         }
-        ErVec2 d;
-        double l;
-        ErVec2 v;
-        for(int idx = tips.Count - 2; idx > -1; idx--)
+        // loop backwards over the joints
+        for (int idx = joints.Count - 2; idx > -1; idx--)
         {
-            d = (tips[idx] - currentTarget).Normalized();
-            l = segments[idx+1].GetLength();
-            v = d*l;
-            backwards.Add(v);
-            currentTarget += v;
+            reversedJoints.Add(target);
+            ErVec2 basePos = joints[idx];
+            ErVec2 dir = (basePos - target).Normalized();
+            double len = Offsets[idx].GetLength();
+            target += dir * len;
         }
-        d = (root - currentTarget).Normalized();
-        l = segments[0].GetLength();
-        v = d*l;
-        backwards.Add(v);
-        return backwards;
+        reversedJoints.Add(target);
     }
 }
