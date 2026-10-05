@@ -43,9 +43,28 @@ public class SwIkLimb
     public void DebugDraw()
     {
         if(Joints.Count < 2) return;
+        // foreach (var item in Joints)
+        // {
+        //     ErEngine.Renderer.DrawCircle(item + Origin, 4, 16, ErColor.Blue);
+            // ErEngine.Renderer.DrawArc(item + Origin, 4, 0, ErMath.HALF_PI, 2, ErColor.Blue);
+            // ErEngine.Renderer.DrawRect(ErRect2.Centered(item+Origin, new(4,4)), ErColor.Blue);
+        // }
         for (int idx = 0; idx < Joints.Count - 1; idx++)
         {
-            ErEngine.Renderer.DrawLine(Joints[idx] + Origin, Joints[idx+1] + Origin, ErColor.Blue);
+            ErVec2 a = Joints[idx] + Origin;
+            ErVec2 b = Joints[idx+1] + Origin;
+            var diff = b - a;
+            ErVec2 tangent = new(-diff.Y,diff.X);
+            ErVec2 c = b + tangent;
+            ErVec2 d = c - diff;
+            ErVec2[] points = [a,b,c,d];
+            ErEngine.Renderer.DrawQuads(points, ErColor.Blue);
+            // ErEngine.Renderer.DrawLine(a, b, ErColor.Blue);
+            // ErEngine.Renderer.DrawLine(b, c, ErColor.Blue);
+            // ErEngine.Renderer.DrawLine(c, d, ErColor.Blue);
+            // ErEngine.Renderer.DrawLine(d, a, ErColor.Blue);
+            // ErEngine.Renderer.DrawLine(Joints[idx] + Origin, Joints[idx+1] + Origin, ErColor.Blue);
+            // ErEngine.Renderer.DrawLine(Joints[idx] + Origin, Joints[idx] + tangent + Origin, ErColor.Blue);
         }
     }
     private void Step(double deltaTime)

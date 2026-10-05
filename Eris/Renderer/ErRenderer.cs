@@ -9,6 +9,8 @@ public class ErRenderer
     public readonly ErFontManager FontManager = new();
     private nint Window;
     private ErColor ClearColor = ErColor.Black;
+    private SDL.Vertex[] Vertices = [];
+    private readonly List<ErVec2> Points = [];
     public string WindowName{get; private set;} = "Eris Engine";
     public ErVec2I WindowSize{get; private set;} = new(800, 600);
     public SDL.WindowFlags WindowFlags{get; private set;}
@@ -134,5 +136,85 @@ public class ErRenderer
         byte a = (byte)(alpha * 255);
         SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, a);
         SDL.RenderLine(Handle, (float)start.X, (float)start.Y, (float)end.X, (float)end.Y);
+    }
+    public void DrawTriangles(IList<ErVec2> points, ErColor color)
+    {
+        Points.Clear();
+        for (int idx = 0; idx < points.Count - 3; idx += 3)
+        {
+            Points.Add(points[idx]-ViewportTransform.Position);
+            Points.Add(points[idx+1]-ViewportTransform.Position);
+            Points.Add(points[idx+2]-ViewportTransform.Position);
+        }
+        UpdatePoints(color);
+        SDL.RenderGeometry(Handle, 0, Vertices, Points.Count, 0, 0);
+    }
+    public void DrawQuads(IList<ErVec2> points, ErColor color)
+    {
+        Points.Clear();
+        for (int idx = 0; idx <= points.Count - 4; idx += 4)
+        {
+            var a = points[idx]-ViewportTransform.Position;
+            var b = points[idx+1]-ViewportTransform.Position;
+            var c = points[idx+2]-ViewportTransform.Position;
+            var d = points[idx+3]-ViewportTransform.Position;
+            Points.Add(a);
+            Points.Add(b);
+            Points.Add(c);
+            Points.Add(c);
+            Points.Add(d);
+            Points.Add(a);
+        }
+        UpdatePoints(color);
+        SDL.RenderGeometry(Handle, 0, Vertices, Points.Count, 0, 0);
+    }
+    public void DrawCircle(ErVec2 center, double radius, int numSides, ErColor color, double angle = 0)
+    {
+        Points.Clear();
+        center -= ViewportTransform.Position;
+        double da = ErMath.TAU / numSides;
+        ErVec2 lastPoint = ErVec2.FromAngle(angle) * radius + center;
+        for (int idx = 0; idx < numSides; idx++)
+        {
+            Points.Add(lastPoint);
+            Points.Add(center);
+            angle += da;
+            lastPoint = ErVec2.FromAngle(angle) * radius + center;
+            Points.Add(lastPoint);
+        }
+        UpdatePoints(color);
+        SDL.RenderGeometry(Handle, 0, Vertices, Points.Count, 0, 0);
+    }
+    public void DrawArc(ErVec2 center, double radius, double startAngle, double endAngle, int numSides, ErColor color)
+    {
+        if(numSides <= 0) return;
+        Points.Clear();
+        center -= ViewportTransform.Position;
+        double da = (endAngle - startAngle) / numSides;
+        double angle = startAngle;
+        ErVec2 lastPoint = ErVec2.FromAngle(angle) * radius + center;
+        for (int idx = 0; idx < numSides; idx++)
+        {
+            Points.Add(lastPoint);
+            Points.Add(center);
+            angle += da;
+            lastPoint = ErVec2.FromAngle(angle) * radius + center;
+            Points.Add(lastPoint);
+        }
+        UpdatePoints(color);
+        SDL.RenderGeometry(Handle, 0, Vertices, Points.Count, 0, 0);
+    }
+    private void UpdatePoints(ErColor color)
+    {
+        var sColor = color.ToSdlFColor();
+        if(Points.Count > Vertices.Length) Vertices = new SDL.Vertex[Points.Count];
+        for (int idx = 0; idx < Points.Count; idx++)
+        {
+            Vertices[idx] = new()
+            {
+                Position = Points[idx].ToSdlPoint(),
+                Color = sColor,
+            };
+        }
     }
 }
