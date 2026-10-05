@@ -58,7 +58,7 @@ public class ErPhysicsWorld2D
     private IEnumerable<ErVec2I> GetCellCoordsTouchingRect(ErRect2 rect)
     {
         var tl = PointToCellCoord(rect.Position);
-        var br = PointToCellCoord(rect.Position+rect.Size);
+        var br = PointToCellCoord(rect.Position+rect.Size) + ErVec2I.One;
         for (int xi = tl.X; xi <= br.X; xi++)
         {
             for(int yi = tl.Y; yi <= br.Y; yi++)
@@ -105,7 +105,9 @@ public class ErPhysicsWorld2D
         area.ClearBodies();
         Areas.Remove(areaId);
         // remove from adj cells
-        foreach (var cellCoord in GetCellCoordsTouchingRect(area.Rect))
+        // pad the area rect because the area might have moved? I dunno, it's dumb
+        var rect = ErRect2.Centered(area.Rect.Center, area.Rect.Size * 2);
+        foreach (var cellCoord in GetCellCoordsTouchingRect(rect))
         {
             if(Grid.TryGet(cellCoord, out var cell)) cell.Areas.Remove(area.Id);
         }
@@ -242,7 +244,7 @@ public class ErPhysicsWorld2D
     private IEnumerable<ErRect2> GetColliders(int id, uint mask, ErRect2 rect)
     {
         var tl = PointToTileCoord(rect.Position);
-        var br = PointToTileCoord(rect.Position + rect.Size);
+        var br = PointToTileCoord(rect.Position + rect.Size) + ErVec2I.One;
         for (int xi = tl.X; xi <= br.X; xi++)
         {
             for(int yi = tl.Y; yi <= br.Y; yi++)
@@ -303,6 +305,7 @@ public class ErPhysicsWorld2D
             }
             foreach (var item in cell.Areas.Values)
             {
+                // if(!Areas.ContainsKey(item.Id)) throw new("fuck off");
                 if(item.OverlappingCount > 0) ErEngine.Renderer.DrawRect(item.Rect, ErColor.Red, filled: false);
                 else ErEngine.Renderer.DrawRect(item.Rect, ErColor.Blue, filled: false);
             }
