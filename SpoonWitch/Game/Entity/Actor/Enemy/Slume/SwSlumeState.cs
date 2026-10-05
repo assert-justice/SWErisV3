@@ -1,5 +1,6 @@
 using Eris;
 using ErisMath;
+using SpoonWitch.Game.Entity.Actor.Player;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
 using SpoonWitch.Rendering;
@@ -49,25 +50,45 @@ public abstract class SwSlumeState: SwState<SwSlume>
     private class Chasing : SwSlumeState
     {
         public override string Name => "chasing";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            if(Entity.TryGetClosestEntity<SwPlayer>(out var entity))
+            {
+                Entity.TargetEntity = entity;
+            }
+        }
         public override void Update(double dt)
         {
             base.Update(dt);
-            // Entity.TargetPosition = SwGame.PlayerPos;
-            if(!Entity.CanSeePlayer())StateMachine.SetState("seeking");
-            Entity.MoveToTarget(Entity.BaseSpeed);
+            var target = Entity.TargetEntity;
+            if(target is null || !Entity.CanSeePoint(target.Position))StateMachine.SetState("seeking");
+            else
+            {
+                Entity.MoveToPoint(target.Position, Entity.BaseSpeed);
+                // Note: we are also setting the target position because if we lose sight of the target, the seek state will use it
+                Entity.TargetPosition = target.Position;
+            }
             PlayBodyAnim();
         }
     }
     private class Fleeing : SwSlumeState
     {
         public override string Name => "fleeing";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            if(Entity.TryGetClosestEntity<SwPlayer>(out var entity))
+            {
+                Entity.TargetEntity = entity;
+            }
+        }
         public override void Update(double dt)
         {
             base.Update(dt);
-            // Entity.TargetPosition = SwGame.PlayerPos;
-            // if(!Entity.CanSeePlayer())StateMachine.SetState("wandering");
-            // Note: flee from target
-            Entity.MoveToTarget(-Entity.BaseSpeed);
+            var target = Entity.TargetEntity;
+            if(target is null || !Entity.CanSeePoint(target.Position))StateMachine.SetDefaultState();
+            else Entity.MoveToPoint(target.Position, -Entity.BaseSpeed);
             PlayBodyAnim();
         }
     }
@@ -77,14 +98,21 @@ public abstract class SwSlumeState: SwState<SwSlume>
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
-            Entity.TimeoutClock.Start(1);
+            Entity.TimeoutClock.Start(Entity.SeekGiveUpTime);
+        }
+        private bool ShouldGiveUp()
+        {
+            if(!Entity.Velocity.IsNonzero()) return true;
+            if(!Entity.TimeoutClock.IsRunning) return true;
+            if(Entity.IsPointWithinRadius(Entity.TargetPosition, 16)) return true;
+            return false;
         }
         public override void Update(double dt)
         {
             base.Update(dt);
-            if(Entity.CanSeePlayer())StateMachine.SetState("chasing");
-            else if(!Entity.TimeoutClock.IsRunning) StateMachine.SetState("wandering");
-            Entity.MoveToTarget(Entity.BaseSpeed);
+            if(Entity.CanSeeAnyPlayer())StateMachine.SetState("chasing");
+            else if(ShouldGiveUp()) StateMachine.SetState("wandering");
+            else Entity.MoveToTarget(Entity.BaseSpeed);
             PlayBodyAnim();
         }
     }
@@ -120,7 +148,7 @@ public abstract class SwSlumeState: SwState<SwSlume>
         public override void Update(double dt)
         {
             base.Update(dt);
-            if(Entity.CanSeePlayer())StateMachine.SetState("chasing");
+            if(Entity.CanSeeAnyPlayer())StateMachine.SetState("chasing");
             else if(Entity.TimeoutClock.IsRunning)
             {
                 Entity.MoveToTarget(Entity.BaseSpeed * Entity.WanderSpeedMul);
@@ -165,8 +193,9 @@ public abstract class SwSlumeState: SwState<SwSlume>
             double speed = Entity.Velocity.GetLength();
             if(speed > ErMath.EPSILON) Entity.Velocity = Entity.Velocity.Normalized() * speed * 0.95;
             if(Entity.IsKnockback) return;
-            if(Entity.IsAlive) StateMachine.SetDefaultState();
-            else StateMachine.SetState("dead");
+            if(!Entity.IsAlive) StateMachine.SetState("dead");
+            else if(Entity.Health < Entity.MaxHealth * Entity.FleeThreshold) StateMachine.SetState("fleeing");
+            else StateMachine.SetDefaultState();
         }
     }
     public static SwStateMachine<SwSlume> GetStateMachine(SwSlume parent, string name)

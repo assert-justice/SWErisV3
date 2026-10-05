@@ -108,7 +108,7 @@ public abstract class SwKnightState: SwState<SwKnight>
         public override void Update(double dt)
         {
             base.Update(dt);
-            if(Entity.CanSeePlayer())StateMachine.SetState("chasing");
+            if(Entity.CanSeeAnyPlayer())StateMachine.SetState("chasing");
             else if(NeedsNewTarget()) SetNewWander();
             else Entity.TimeoutClock -= dt;
             Entity.MoveToTarget(Entity.BaseSpeed * Entity.WanderSpeedMul);
@@ -140,7 +140,7 @@ public abstract class SwKnightState: SwState<SwKnight>
         public override void Update(double dt)
         {
             base.Update(dt);
-            if (!Entity.CanSeePlayer())
+            if (!Entity.CanSeeAnyPlayer())
             {
                 StateMachine.SetState("seeking");
                 return;

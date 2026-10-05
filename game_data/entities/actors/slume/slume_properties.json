@@ -1,6 +1,10 @@
 {
     "anim_data": "slume_anim_data.json",
     "size":{"x": 16, "y": 16},
+    "state_machine":{
+        "flee_threshold": 0.5,
+        "seek_give_up_time": 1
+    },
     "health":{
         "health": 100,
         "max_health": 100
@@ -11,7 +15,7 @@
     },
     "hurtbox": {
         "size": {"x": 18, "y": 18},
-        "mask": 2
+        "mask": 4
     },
     "damage":{
         "verb": "damage",

@@ -12,6 +12,8 @@ public class SwSlume : SwEnemy
     public SwClock TimeoutClock;
     private SwStateMachine<SwSlume> StateMachine = null!;
     public double WanderSpeedMul = 0.5;
+    public double FleeThreshold = 0.5;
+    public double SeekGiveUpTime = 1;
     public SwSlume()
     {
         TimeoutClock = AddClock();
@@ -20,12 +22,14 @@ public class SwSlume : SwEnemy
     {
         base.SetProps(props);
         if(Props.TryGet("speed/wander_speed_mul", out double d)) WanderSpeedMul = d;
+        if(Props.TryGet("state_machine/flee_threshold", out d)) FleeThreshold = d;
+        if(Props.TryGet("state_machine/seek_give_up_time", out d)) SeekGiveUpTime = d;
     }
     public override void Init()
     {
         base.Init();
         LoadSprites("anim_data/sprites");
-        if(!Props.TryGet("hurtbox/mask", out uint mask)) mask = 2;
+        if(!Props.TryGet("hurtbox/mask", out uint mask)) mask = (uint)SwCollisionMask.PlayerTeam;
         var hurtboxSize = SwPrion.GetVec2(Props.Get("hurtbox/size"), defaultVec: new(18, 18));
         SwAreaComponent hurtbox = new(this, "hurtbox", mask, hurtboxSize, onBodyEnter: OnEnterHurtbox);
         RegisterComponent(hurtbox);

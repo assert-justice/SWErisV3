@@ -12,6 +12,7 @@ public abstract class SwEnemy: SwActor
     public override int RenderLayer => 2;
     public bool IsPassive;
     public ErVec2 TargetPosition;
+    public SwEntity? TargetEntity;
     public byte FacingIdx;
     public SwEnemy()
     {
@@ -24,20 +25,32 @@ public abstract class SwEnemy: SwActor
     }
     public bool CanSeePoint(ErVec2 point)
     {
-        return Game.PhysicsWorld.Raycast((uint)SwCollisionMask.IsOpaque, Position, point);
+        return !Game.PhysicsWorld.Raycast((uint)SwCollisionMask.IsOpaque, Position, point);
         // return false;
         // if(SwApp.Debug) return !SwGame.Map.PhysicsWorld.RaycastDebug(2, Position, point);
         // else return !SwGame.Map.PhysicsWorld.Raycast(2, Position, point);
     }
-    public bool CanSeePlayer()
+    public bool CanSeeAnyPlayer()
     {
-        // return CanSeePoint(SwGame.PlayerPos);
+        foreach (var _ in GetVisibleEntities<SwPlayer>())
+        {
+            return true;
+        }
         return false;
     }
     public void MoveToTarget(double speed)
     {
         var dir = TargetPosition - Position;
         Velocity = dir.Normalized() * speed;
+    }
+    public void MoveToPoint(ErVec2 point, double speed)
+    {
+        var dir = point - Position;
+        Velocity = dir.Normalized() * speed;
+    }
+    public bool IsPointWithinRadius(ErVec2 point, double radius)
+    {
+        return (Position - point).GetLengthSquared() < radius * radius;
     }
     public double DistanceToTarget()
     {
