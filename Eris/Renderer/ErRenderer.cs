@@ -115,39 +115,10 @@ public class ErRenderer
         SDL.SetRenderDrawColor(Handle, ClearColor.R, ClearColor.G, ClearColor.B, ClearColor.A);
         SDL.RenderClear(Handle);
     }
-    // public void FlushDebug()
-    // {
-    //     while (DebugDrawQueue.TryDequeue(out var fn))
-    //     {
-    //         fn();
-    //     }
-    // }
     public void SetClearColor(ErColor color)
     {
         ClearColor = color;
     }
-    // public void DebugDrawRect(ErColor color, ErRect2 rect, bool filled)
-    // {
-    //     void fn()
-    //     {
-    //         rect = rect.Translate(-ViewportTransform.Position);
-    //         SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, color.A);
-    //         if (filled)SDL.RenderFillRect(Handle, rect.ToSdlRect());
-    //         else SDL.RenderRect(Handle, rect.ToSdlRect());
-    //     }
-    //     DebugDrawQueue.Enqueue(fn);
-    // }
-    // public void DebugDrawLine(ErColor color, ErVec2 start, ErVec2 end)
-    // {
-    //     void fn()
-    //     {
-    //         start -= ViewportTransform.Position;
-    //         end -= ViewportTransform.Position;
-    //         SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, color.A);
-    //         SDL.RenderLine(Handle, (float)start.X, (float)start.Y, (float)end.X, (float)end.Y);
-    //     }
-    //     DebugDrawQueue.Enqueue(fn);
-    // }
     public void DrawRect(ErRect2 rect, ErColor color, double alpha = 1, bool filled = true)
     {
         rect = rect.Translate(-ViewportTransform.Position);
@@ -155,5 +126,13 @@ public class ErRenderer
         SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, a);
         if (filled)SDL.RenderFillRect(Handle, rect.ToSdlRect());
         else SDL.RenderRect(Handle, rect.ToSdlRect());
+    }
+    public void DrawLine(ErVec2 start, ErVec2 end, ErColor color, double alpha = 1)
+    {
+        start -= ViewportTransform.Position;
+        end -= ViewportTransform.Position;
+        byte a = (byte)(alpha * 255);
+        SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, a);
+        SDL.RenderLine(Handle, (float)start.X, (float)start.Y, (float)end.X, (float)end.Y);
     }
 }

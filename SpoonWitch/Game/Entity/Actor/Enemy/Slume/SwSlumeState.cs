@@ -194,6 +194,7 @@ public abstract class SwSlumeState: SwState<SwSlume>
             if(speed > ErMath.EPSILON) Entity.Velocity = Entity.Velocity.Normalized() * speed * 0.95;
             if(Entity.IsKnockback) return;
             if(!Entity.IsAlive) StateMachine.SetState("dead");
+            else if(Entity.IsPassive) StateMachine.SetDefaultState();
             else if(Entity.Health < Entity.MaxHealth * Entity.FleeThreshold) StateMachine.SetState("fleeing");
             else StateMachine.SetDefaultState();
         }

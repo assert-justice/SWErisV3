@@ -50,7 +50,6 @@ public class SwStateMachine<T>: SwComponent where T: SwEntity
     }
     public void SetDefaultState(string state)
     {
-        if(state == DefaultState) return;
         if (!StateLookup.ContainsKey(state))
         {
             ErEngine.LogError("attempted to set invalid default state '", state, "'.");

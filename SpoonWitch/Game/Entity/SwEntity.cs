@@ -43,7 +43,7 @@ public abstract class SwEntity
         Clocks.Add(clock);
         return clock;
     }
-    protected SwComponent RegisterComponent(SwComponent component)
+    protected T RegisterComponent<T>(T component) where T: SwComponent
     {
         if(!ComponentLookup.TryAdd((component.GetType(), component.Name), component)) ErEngine.LogError("Failed to register component of name '", component.Name, "' and type '", component.GetType(), "'.");
         return component;
