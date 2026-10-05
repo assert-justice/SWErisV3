@@ -11,13 +11,15 @@ public class SwStateMachine<T>: SwComponent where T: SwEntity
     private string NextState = string.Empty;
     private bool FirstUpdate = true;
     public SwState<T> CurrentState{get => States[CurrentStateIdx];}
+    public string DefaultState{get; private set;}
     public T Entity;
     public SwStateMachine(T parent, string name, IEnumerable<SwState<T>> states): base(parent, name)
     {
         Entity = parent;
         States = [..states];
         if(States.Length == 0) throw new Exception("passed empty array of states");
-        NextState = States[0].Name;
+        DefaultState = States[0].Name;
+        NextState = DefaultState;
         for (int idx = 0; idx < States.Length; idx++)
         {
             if(!StateLookup.TryAdd(States[idx].Name, idx)) throw new Exception($"duplicate state name '{States[idx]}'");
@@ -41,6 +43,21 @@ public class SwStateMachine<T>: SwComponent where T: SwEntity
             return;
         }
         NextState = state;
+    }
+    public void SetDefaultState()
+    {
+        SetState(DefaultState);
+    }
+    public void SetDefaultState(string state)
+    {
+        if(state == DefaultState) return;
+        if (!StateLookup.ContainsKey(state))
+        {
+            ErEngine.LogError("attempted to set invalid default state '", state, "'.");
+            return;
+        }
+        DefaultState = state;
+        SetDefaultState();
     }
     public override void Update(double dt)
     {

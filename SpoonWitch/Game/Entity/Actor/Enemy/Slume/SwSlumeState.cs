@@ -1,7 +1,5 @@
 using Eris;
-using Eris.Utils;
 using ErisMath;
-using SpoonWitch.ByteStream;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
 using SpoonWitch.Rendering;
@@ -167,7 +165,7 @@ public abstract class SwSlumeState: SwState<SwSlume>
             double speed = Entity.Velocity.GetLength();
             if(speed > ErMath.EPSILON) Entity.Velocity = Entity.Velocity.Normalized() * speed * 0.95;
             if(Entity.IsKnockback) return;
-            if(Entity.IsAlive) StateMachine.SetState(Entity.IsPassive ? "default" : "wandering");
+            if(Entity.IsAlive) StateMachine.SetDefaultState();
             else StateMachine.SetState("dead");
         }
     }

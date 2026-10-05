@@ -1,12 +1,8 @@
 using Eris;
-using ErisMath;
-using ErisPhysics2D.Collider;
 using Prion.Node;
-using SpoonWitch.ByteStream;
 using SpoonWitch.Game.Effect;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
-using SpoonWitch.Game.Map.Collision;
 using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Entity.Actor.Enemy.Slume;
@@ -39,7 +35,7 @@ public class SwSlume : SwEnemy
     public override void Ready()
     {
         base.Ready();
-        if(!IsPassive) StateMachine.SetState("wandering");
+        StateMachine.SetDefaultState(IsPassive ? "default" : "wandering");
     }
     protected override void Die()
     {
