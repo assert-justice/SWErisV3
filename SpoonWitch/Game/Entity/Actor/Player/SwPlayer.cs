@@ -108,7 +108,7 @@ public class SwPlayer: SwActor
     }
     private void OnEnterSpoonHurtbox(SwEntity entity)
     {
-        if(!Props.TryGet("spoon/spoon_damage", out PriNode spoonDamage)) return;
+        var spoonDamage = Props.Get("spoon/spoon_damage");
         entity.AddCommand(spoonDamage);
     }
     public override void SetProps(PriNode props)

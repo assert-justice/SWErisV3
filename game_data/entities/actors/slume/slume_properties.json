@@ -2,8 +2,8 @@
     "anim_data": "slume_anim_data.json",
     "size":{"x": 16, "y": 16},
     "health":{
-        "health": 300,
-        "max_health": 300
+        "health": 100,
+        "max_health": 100
     },
     "speed":{
         "base_speed": 50,

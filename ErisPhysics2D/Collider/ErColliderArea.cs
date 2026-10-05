@@ -1,3 +1,5 @@
+using Eris;
+
 namespace ErisPhysics2D.Collider;
 
 public abstract class ErColliderArea: ErCollider
@@ -5,14 +7,17 @@ public abstract class ErColliderArea: ErCollider
     private readonly Dictionary<int, ErColliderBody> _OverlappingBodies = [];
     protected IEnumerable<ErColliderBody> OverlappingBodies => _OverlappingBodies.Values;
     private readonly Queue<ErColliderBody> OldBodyQueue = [];
+    private int tick = 0;
 
-    protected ErColliderArea(int id) : base(id)
-    {
-    }
+    protected ErColliderArea(int id) : base(id){}
 
     public int OverlappingCount => _OverlappingBodies.Count;
     internal void ClearBodies()
     {
+        foreach (var body in OverlappingBodies)
+        {
+            OnBodyExit(body);
+        }
         _OverlappingBodies.Clear();
     }
     internal void AddBody(ErColliderBody body)
@@ -26,6 +31,7 @@ public abstract class ErColliderArea: ErCollider
         {
             if((body.Mask & Mask) == 0) continue;
             OldBodyQueue.Enqueue(body);
+            tick++;
             if(!_OverlappingBodies.Remove(body.Id)) OnBodyEnter(body);
         }
         // now the bodies we were colliding with have been removed from the overlapping set, all that remains is the bodies that exited. call on body exit for each

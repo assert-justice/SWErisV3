@@ -13,9 +13,13 @@ namespace SpoonWitch.Game.Entity.Actor.Enemy.Slume;
 
 public class SwSlume : SwEnemy
 {
-    public double TimeoutClock;
+    public SwClock TimeoutClock;
     private SwStateMachine<SwSlume> StateMachine = null!;
     public double WanderSpeedMul = 0.5;
+    public SwSlume()
+    {
+        TimeoutClock = AddClock();
+    }
     public override void SetProps(PriNode props)
     {
         base.SetProps(props);

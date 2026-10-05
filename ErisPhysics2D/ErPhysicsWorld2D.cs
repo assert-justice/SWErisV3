@@ -102,6 +102,7 @@ public class ErPhysicsWorld2D
     public bool RemoveArea(int areaId)
     {
         if(!Areas.TryGetValue(areaId, out var area)) return false;
+        area.ClearBodies();
         Areas.Remove(areaId);
         // remove from adj cells
         foreach (var cellCoord in GetCellCoordsTouchingRect(area.Rect))
