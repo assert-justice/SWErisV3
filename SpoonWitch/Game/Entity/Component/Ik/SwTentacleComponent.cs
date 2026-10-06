@@ -20,8 +20,14 @@ public class SwTentacleComponent: SwComponent
         public ErVec2 Above => GlobalPos + Up;
         public ErVec2 Below => Down + GlobalPos;
         public double Radius = 3;
-        public List<(ErVec2 pos, ErVec2 bud)> Spines = [];
+        public List<SwSpine> Spines = [];
         public static readonly ErColor Color = ErColor.Blue;// new(152,184,75);
+        public SwSpine AddSpine()
+        {
+            SwSpine spine = new(this);
+            Spines.Add(spine);
+            return spine;
+        }
         public void Update()
         {
             if(NextSegment is not null && LastSegment is not null)Direction = (NextSegment.Position - LastSegment.Position).Normalized();
@@ -48,25 +54,29 @@ public class SwTentacleComponent: SwComponent
             ErEngine.Renderer.DrawQuad(a,b,c,d,Color);
         }
     }
-    // private class SwSpine
-    // {
-    //     public required SwSegment Segment;
-    //     public ErVec2 Position;
-    //     public ErVec2 BudPosition;
-    //     public static readonly ErColor BudColor = new(151,58,77);
-    //     public static readonly ErVec2 BudSize = new(2,2);
-    //     public void Draw()
-    //     {
-    //         double angle = Segment.Direction.GetAngle(); // here we go again
-    //         ErVec2 pos = Position.Rotate(angle);
-    //         ErVec2 bud = BudPosition.Rotate(angle,pos);
-    //         ErEngine.Renderer.DrawLine(pos+Segment.GlobalPos, bud+Segment.GlobalPos, BudColor);
-    //         ErEngine.Renderer.DrawRect(ErRect2.Centered(bud+Segment.GlobalPos,BudSize),BudColor);
-    //     }
-    // }
+    private class SwSpine
+    {
+        public readonly SwSegment Segment;
+        public ErVec2 Position;
+        public ErVec2 BudPosition;
+        public static readonly ErColor BudColor = new(151,58,77);
+        public static readonly ErVec2 BudSize = new(2,2);
+        public SwSpine(SwSegment segment)
+        {
+            Segment = segment;
+        }
+        public void Draw()
+        {
+            double angle = Segment.Direction.GetAngle(); // here we go again
+            ErVec2 pos = Position.Rotate(angle);
+            ErVec2 bud = (BudPosition - Position).Rotate(angle) + pos;
+            ErEngine.Renderer.DrawLine(pos+Segment.GlobalPos, bud+Segment.GlobalPos, BudColor);
+            ErEngine.Renderer.DrawRect(ErRect2.Centered(bud+Segment.GlobalPos,BudSize),BudColor);
+        }
+    }
     private readonly List<SwSegment> Segments = [];
     private readonly List<ErVec2> Joints = [];
-    // private readonly List<SwSpine> Spines = [];
+    private readonly List<SwSpine> Spines = [];
     private ErVec2? Target;
     public SwTentacleComponent(SwEntity parent, string name) : base(parent, name)
     {
@@ -85,24 +95,41 @@ public class SwTentacleComponent: SwComponent
                 Segments[idx-1].NextSegment = segment;
             }
             Segments.Add(segment);
-            // pos += diff;
         }
-        // var lastSegment = Segments[^1];
-        // lastSegment.Spines.Add((ErVec2.Zero,ErVec2.One*4));
-        // lastSegment.Spines.Add((ErVec2.Zero,new ErVec2(4,-4)));
-        // ErVec2 p = ErVec2.Zero;
-        // for (int idx = 0; idx < 2; idx++)
-        // {
-        //     lastSegment.Spines.Add((p + ErVec2.Up,p + ErVec2.Up*2));
-        //     lastSegment.Spines.Add((p - ErVec2.Up,p - ErVec2.Up*2));
-        //     lastSegment.Spines.Add((p,p));
-        //     p+=ErVec2.Left*2;
-        // }
+        var lastSegment = Segments[^1];
+        AddSpine(lastSegment, ErVec2.Zero,ErVec2.One*4);
+        AddSpine(lastSegment, ErVec2.Zero,new ErVec2(4,-4));
+        ErVec2 p = ErVec2.Zero;
+        for (int idx = 0; idx < 2; idx++)
+        {
+            AddSpine(lastSegment, p + ErVec2.Up,p + ErVec2.Up*4);
+            AddSpine(lastSegment, p - ErVec2.Up,p - ErVec2.Up*4);
+            p+=ErVec2.Left*3;
+        }
     }
     public override void Update(double dt)
     {
         base.Update(dt);
         Step();
+    }
+    private SwSpine AddSpine(SwSegment segment)
+    {
+        SwSpine spine = segment.AddSpine();
+        Spines.Add(spine);
+        return spine;
+    }
+    private SwSpine AddSpine(SwSegment segment, ErVec2 pos, ErVec2 budPos)
+    {
+        SwSpine spine = segment.AddSpine();
+        Spines.Add(spine);
+        spine.Position = pos;
+        spine.BudPosition = budPos;
+        return spine;
+    }
+    public void AddSpine(int segmentIdx, ErVec2 pos, ErVec2 budPos)
+    {
+        SwSegment segment = Segments[segmentIdx];
+        AddSpine(segment, pos, budPos);
     }
     public void SetTarget(ErVec2 target)
     {
@@ -132,6 +159,10 @@ public class SwTentacleComponent: SwComponent
         for (int idx = 0; idx < Segments.Count; idx++)
         {
             Segments[idx].Draw();
+        }
+        foreach (var spine in Spines)
+        {
+            spine.Draw();
         }
     }
 }

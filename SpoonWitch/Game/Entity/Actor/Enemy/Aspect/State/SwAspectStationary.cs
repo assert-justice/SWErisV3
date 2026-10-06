@@ -9,7 +9,7 @@ public class SwAspectStationary : SwAspectState
     private ErVec2 RightArmTip;
     private ErVec2 LeftArmTarget;
     private ErVec2 LeftArmTip;
-    private readonly double ArmSpeed = 100;
+    private readonly double ArmSpeed = 20;
     public override void BeginState(string lastState)
     {
         base.BeginState(lastState);
