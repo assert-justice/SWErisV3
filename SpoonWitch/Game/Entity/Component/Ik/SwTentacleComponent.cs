@@ -77,7 +77,12 @@ public class SwTentacleComponent: SwComponent
     private readonly List<SwSegment> Segments = [];
     private readonly List<ErVec2> Joints = [];
     private readonly List<SwSpine> Spines = [];
-    private ErVec2? Target;
+    public ErVec2 Target;
+    public ErVec2 TipPos => Segments[^1].Position;
+    public bool IsAtTarget => !(Target - TipPos).IsNonzero();
+    public ErVec2 TipDir;
+    public double TipSpeed;
+    public double TipTurnRadius;
     public SwTentacleComponent(SwEntity parent, string name) : base(parent, name)
     {
         ErVec2 pos = ErVec2.Zero;
@@ -106,11 +111,12 @@ public class SwTentacleComponent: SwComponent
             AddSpine(lastSegment, p - ErVec2.Up,p - ErVec2.Up*4);
             p+=ErVec2.Left*3;
         }
+        Target = TipPos;
     }
     public override void Update(double dt)
     {
         base.Update(dt);
-        Step();
+        Step(dt);
     }
     private SwSpine AddSpine(SwSegment segment)
     {
@@ -131,19 +137,19 @@ public class SwTentacleComponent: SwComponent
         SwSegment segment = Segments[segmentIdx];
         AddSpine(segment, pos, budPos);
     }
-    public void SetTarget(ErVec2 target)
+    private void Step(double dt)
     {
-        Target = target;
-    }
-    private void Step()
-    {
-        if(Target is null) return;
+        if(IsAtTarget) return;
+        ErVec2 diff = Target - TipPos;
+        double len = diff.GetLength();
+        double speed = TipSpeed * dt;
+        ErVec2 target = len < speed ? Target : TipPos + diff.Normalized() * speed; 
         Joints.Clear();
         for (int idx = 0; idx < Segments.Count; idx++)
         {
             Joints.Add(Segments[idx].Position);
         }
-        SwFabrik.Step(Joints, Target.Value, ErVec2.Zero);
+        SwFabrik.Step(Joints, target, ErVec2.Zero);
         for (int idx = 0; idx < Segments.Count; idx++)
         {
             Segments[idx].Position = Joints[idx];
