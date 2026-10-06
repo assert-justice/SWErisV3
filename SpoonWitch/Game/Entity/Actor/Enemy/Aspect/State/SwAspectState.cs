@@ -37,6 +37,7 @@ public abstract class SwAspectState: SwState<SwAspect>
             new SwAspectWake(),
             new SwAspectDead(),
             new SwAspectStationary(),
+            new SwAspectWandering(),
         ]);
     }
 }

@@ -14,7 +14,7 @@ public class SwTentacleComponent: SwComponent
         public SwSegment? NextSegment;
         public ErVec2 Position;
         public ErVec2 Direction = ErVec2.Right;
-        public ErVec2 GlobalPos => Position + Parent.Parent.Position;
+        public ErVec2 GlobalPos => Position + Parent.GlobalPos;
         public ErVec2 Up => new ErVec2(Direction.Y,-Direction.X) * Radius;
         public ErVec2 Down => new ErVec2(-Direction.Y,Direction.X) * Radius;
         public ErVec2 Above => GlobalPos + Up;
@@ -83,6 +83,10 @@ public class SwTentacleComponent: SwComponent
     public ErVec2 TipDir;
     public double TipSpeed;
     public double TipTurnRadius;
+    public ErVec2 Offset;
+    public bool IsVisible = false;
+    public bool IsActive = false;
+    public ErVec2 GlobalPos => Parent.Position + Offset;
     public SwTentacleComponent(SwEntity parent, string name) : base(parent, name)
     {
         ErVec2 pos = ErVec2.Zero;
@@ -139,7 +143,7 @@ public class SwTentacleComponent: SwComponent
     }
     private void Step(double dt)
     {
-        if(IsAtTarget) return;
+        if(!IsActive) return;
         ErVec2 diff = Target - TipPos;
         double len = diff.GetLength();
         double speed = TipSpeed * dt;
@@ -147,12 +151,12 @@ public class SwTentacleComponent: SwComponent
         Joints.Clear();
         for (int idx = 0; idx < Segments.Count; idx++)
         {
-            Joints.Add(Segments[idx].Position);
+            Joints.Add(Segments[idx].Position + GlobalPos);
         }
-        SwFabrik.Step(Joints, target, ErVec2.Zero);
+        SwFabrik.Step(Joints, target+GlobalPos, GlobalPos);
         for (int idx = 0; idx < Segments.Count; idx++)
         {
-            Segments[idx].Position = Joints[idx];
+            Segments[idx].Position = Joints[idx] - GlobalPos;
         }
         for (int idx = 0; idx < Segments.Count; idx++)
         {
@@ -162,6 +166,7 @@ public class SwTentacleComponent: SwComponent
     public override void Draw()
     {
         base.Draw();
+        if(!IsVisible) return;
         for (int idx = 0; idx < Segments.Count; idx++)
         {
             Segments[idx].Draw();
