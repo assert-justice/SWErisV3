@@ -5980,7 +5980,10 @@
 							"defUid": 13,
 							"px": [224,288],
 							"fieldInstances": [
-								{ "__identifier": "on_enter_json", "__type": "String", "__value": null, "__tile": null, "defUid": 17, "realEditorValues": [null] },
+								{ "__identifier": "on_enter_json", "__type": "String", "__value": "\"boss_wake\"", "__tile": null, "defUid": 17, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["\"boss_wake\""]
+								}] },
 								{ "__identifier": "mask", "__type": "Int", "__value": 4, "__tile": null, "defUid": 92, "realEditorValues": [] },
 								{ "__identifier": "is_command_global", "__type": "Bool", "__value": true, "__tile": null, "defUid": 93, "realEditorValues": [] },
 								{ "__identifier": "max_activations", "__type": "Int", "__value": 1, "__tile": null, "defUid": 121, "realEditorValues": [] }

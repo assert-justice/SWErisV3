@@ -7,12 +7,14 @@ public class SwAspectStationary : SwAspectState
     public override string Name => "stationary";
     private ErVec2 RightArmTarget;
     private ErVec2 RightArmTip;
-    private readonly double ArmSpeed = 20;
+    private ErVec2 LeftArmTarget;
+    private ErVec2 LeftArmTip;
+    private readonly double ArmSpeed = 100;
     public override void BeginState(string lastState)
     {
         base.BeginState(lastState);
         BodySprite.Play("phase1_idle");
-        RightArmTarget = GetRandomPos();
+        // RightArmTarget = GetRandomPos();
     }
     private ErVec2 GetRandomPos()
     {
@@ -35,7 +37,22 @@ public class SwAspectStationary : SwAspectState
         }
         else
         {
-            RightArmTarget = GetRandomPos();
+            RightArmTarget = GetRandomPos() + new ErVec2(48,-32);
+        }
+        diff = LeftArmTarget - LeftArmTip;
+        if(diff.IsNonzero())
+        {
+            var len = diff.GetLength();
+            if(len<ArmSpeed*dt) LeftArmTip = LeftArmTarget;
+            else
+            {
+                LeftArmTip += diff.Normalized() * dt * ArmSpeed;
+                LeftArm.SetTarget(LeftArmTip);
+            }
+        }
+        else
+        {
+            LeftArmTarget = GetRandomPos() + new ErVec2(-48,-32);
         }
     }
 }

@@ -22,11 +22,13 @@ public abstract class SwAspectState: SwState<SwAspect>
     */
     protected SwSprite BodySprite = null!;
     protected SwTentacleComponent RightArm = null!;
+    protected SwTentacleComponent LeftArm = null!;
     public override void Ready()
     {
         base.Ready();
         BodySprite = Entity.GetComponent<SwSpriteComponent>("body")?.Sprite!;
         RightArm = Entity.GetComponent<SwTentacleComponent>("right_arm")!;
+        LeftArm = Entity.GetComponent<SwTentacleComponent>("left_arm")!;
     }
     public static SwStateMachine<SwAspect> GetStateMachine(SwAspect parent, string name)
     {
