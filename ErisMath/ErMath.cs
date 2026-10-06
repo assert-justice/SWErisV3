@@ -6,6 +6,10 @@ public static class ErMath
     public const double PI = Math.PI;
     public const double TAU = Math.PI * 2;
     public const double HALF_PI = Math.PI / 2;
+    public static bool IsApproxEqual(double a, double b)
+    {
+        return Math.Abs(a-b) < EPSILON;
+    }
     public static double DegToRad(double degrees)
     {
         return degrees / 360 * TAU;

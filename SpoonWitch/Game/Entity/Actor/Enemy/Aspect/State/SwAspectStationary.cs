@@ -11,16 +11,23 @@ public class SwAspectStationary : SwAspectState
         base.BeginState(lastState);
         BodySprite.Play("phase1_idle");
         LeftArm.TipSpeed = Entity.BaseArmSpeed;
-        LeftArm.IsActive = true;
-        LeftArm.IsVisible = true;
+        LeftArm.Activate();
         RightArm.TipSpeed = Entity.BaseArmSpeed;
-        RightArm.IsActive = true;
-        RightArm.IsVisible = true;
+        RightArm.Activate();
     }
     public override void Update(double dt)
     {
         base.Update(dt);
-        if(LeftArm.IsAtTarget) LeftArm.Target = SwRandom.GetRandomPointOnCircle(new ErVec2(-64,-32),48);
-        if(RightArm.IsAtTarget) RightArm.Target = SwRandom.GetRandomPointOnCircle(new ErVec2(64,-32),48);
+        ErVec2 target;
+        if (LeftArm.IsAtTarget)
+        {
+            target = Entity.Position + SwRandom.GetRandomPointOnCircle(new ErVec2(-64,-32),48);
+            LeftArm.SetTarget(target);
+        }
+        if (RightArm.IsAtTarget)
+        {
+            target = Entity.Position + SwRandom.GetRandomPointOnCircle(new ErVec2(64,-32),48);
+            RightArm.SetTarget(target);
+        }
     }
 }

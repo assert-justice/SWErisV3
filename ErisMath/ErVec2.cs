@@ -54,14 +54,7 @@ public readonly struct ErVec2: IEquatable<ErVec2>
     }
     public double GetAngleTo(ErVec2 vec2)
     {
-        // dot(a,b) = len(a) * len(b) * cos(theta)
-        // theta = acos(dot(a,b)/(len(a)*len(b)))
-        // return Math::atan2(cross(p_vector2), dot(p_vector2));
         return Math.Atan2(Cross(vec2),Dot(vec2));
-        // double lenA = GetLength();
-        // double lenB = vec2.GetLength();
-        // double dot = Dot(vec2);
-        // return Math.Acos(dot / (lenA * lenB));
     }
     public double Cross(ErVec2 vec2)
     {
@@ -71,11 +64,30 @@ public readonly struct ErVec2: IEquatable<ErVec2>
     {
         return GetLengthSquared() > ErMath.EPSILON;
     }
+    public bool IsApproxZero()
+    {
+        return GetLengthSquared() < ErMath.EPSILON;
+    }
+    public bool IsNormalized()
+    {
+        return ErMath.IsApproxEqual(GetLengthSquared(),1);
+    }
     public ErVec2 Normalized()
     {
-        double lenSq = GetLengthSquared();
-        if(lenSq > ErMath.EPSILON) return this / Math.Sqrt(lenSq);
+        return Normalized(GetLength());
+        // double lenSq = GetLengthSquared();
+        // if(lenSq > ErMath.EPSILON) return this / Math.Sqrt(lenSq);
+        // else return Zero;
+    }
+    private ErVec2 Normalized(double length)
+    {
+        if(length > ErMath.EPSILON) return this / length;
         else return Zero;
+    }
+    public (ErVec2 direction, double length) GetDirLen()
+    {
+        double len = GetLength();
+        return(Normalized(len),len);
     }
     public ErVec2 Rotate(double angle)
     {

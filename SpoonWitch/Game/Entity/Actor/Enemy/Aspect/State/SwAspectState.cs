@@ -1,5 +1,6 @@
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.Ik;
+using SpoonWitch.Game.Entity.Component.Ik.Tentacle;
 using SpoonWitch.Game.Entity.Component.State;
 using SpoonWitch.Rendering;
 

@@ -2,6 +2,7 @@ using Eris;
 using Prion.Node;
 using SpoonWitch.Game.Entity.Actor.Enemy.Aspect.State;
 using SpoonWitch.Game.Entity.Component.Ik;
+using SpoonWitch.Game.Entity.Component.Ik.Tentacle;
 using SpoonWitch.Game.Entity.Component.State;
 using SpoonWitch.Utils;
 
@@ -27,7 +28,7 @@ public class SwAspect: SwEnemy
     {
         base.Init();
         StateMachine = RegisterComponent(SwAspectState.GetStateMachine(this, "state_machine"));
-        StateMachine.SetDefaultState("wandering");
+        StateMachine.SetDefaultState("stationary");
         RegisterComponent(new SwTentacleComponent(this, "right_arm"));
         RegisterComponent(new SwTentacleComponent(this, "left_arm"));
         LoadSprites("anim_data/sprites");

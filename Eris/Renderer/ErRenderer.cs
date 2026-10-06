@@ -137,6 +137,15 @@ public class ErRenderer
         SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, a);
         SDL.RenderLine(Handle, (float)start.X, (float)start.Y, (float)end.X, (float)end.Y);
     }
+    public void DrawTriangle(ErVec2 a, ErVec2 b, ErVec2 c, ErColor color)
+    {
+        Points.Clear();
+        Points.Add(a-ViewportTransform.Position);
+        Points.Add(b-ViewportTransform.Position);
+        Points.Add(c-ViewportTransform.Position);
+        UpdatePoints(color);
+        SDL.RenderGeometry(Handle, 0, Vertices, Points.Count, 0, 0);
+    }
     public void DrawTriangles(IList<ErVec2> points, ErColor color)
     {
         Points.Clear();

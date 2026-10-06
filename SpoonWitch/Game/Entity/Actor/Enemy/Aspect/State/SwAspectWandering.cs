@@ -22,8 +22,17 @@ public class SwAspectWandering : SwAspectState
     public override void Update(double dt)
     {
         base.Update(dt);
-        if(LeftArm.IsAtTarget) LeftArm.Target = SwRandom.GetRandomPointOnCircle(new ErVec2(-64,-32),48);
-        if(RightArm.IsAtTarget) RightArm.Target = SwRandom.GetRandomPointOnCircle(new ErVec2(64,-32),48);
+        ErVec2 target;
+        if (LeftArm.IsAtTarget)
+        {
+            target = SwRandom.GetRandomPointOnCircle(new ErVec2(-64,-32),48);
+            LeftArm.SetTarget(target);
+        }
+        if (RightArm.IsAtTarget)
+        {
+            target = SwRandom.GetRandomPointOnCircle(new ErVec2(64,-32),48);
+            RightArm.SetTarget(target);
+        }
         if(Entity.TimeoutClock.IsRunning)
         {
             Entity.MoveToTarget(Entity.BaseSpeed * Entity.WanderSpeedMul);
