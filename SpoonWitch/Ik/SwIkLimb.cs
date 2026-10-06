@@ -6,7 +6,7 @@ namespace SpoonWitch.Ik;
 
 public class SwIkLimb
 {
-    private readonly List<ErVec2> Joints = [];
+    public readonly List<ErVec2> Joints = [];
     private readonly List<ErVec2> JointsReversed = [];
     private readonly List<ErVec2> Offsets = [];
     public ErVec2 Origin;
@@ -14,8 +14,16 @@ public class SwIkLimb
     public double Speed = 100;
     public int NumSteps = 1;
     public ErVec2 Tip => Joints.Count == 0 ? ErVec2.Zero : Joints[^1];
+    public int NumJoints => Joints.Count;
     public bool IsAtTarget => !(Tip - Target).IsNonzero();
     public SwIkLimb(){}
+    public SwIkLimb(IList<ErVec2> joints, ErVec2? origin = null, ErVec2? target = null)
+    {
+        if(joints.Count < 2) throw new("not enough joints");
+        Origin = origin ?? ErVec2.Zero;
+        Target = target ?? joints[^1];
+        Joints = [..joints];
+    }
     public SwIkLimb(IList<double> distances, ErVec2? origin = null, ErVec2? target = null)
     {
         Origin = origin ?? ErVec2.Zero;
@@ -39,16 +47,10 @@ public class SwIkLimb
             Step(dt);
         }
     }
-    public virtual void Draw(double frameTime){}
+    // public virtual void Draw(double frameTime){}
     public void DebugDraw()
     {
         if(Joints.Count < 2) return;
-        // foreach (var item in Joints)
-        // {
-        //     ErEngine.Renderer.DrawCircle(item + Origin, 4, 16, ErColor.Blue);
-            // ErEngine.Renderer.DrawArc(item + Origin, 4, 0, ErMath.HALF_PI, 2, ErColor.Blue);
-            // ErEngine.Renderer.DrawRect(ErRect2.Centered(item+Origin, new(4,4)), ErColor.Blue);
-        // }
         for (int idx = 0; idx < Joints.Count - 1; idx++)
         {
             ErVec2 a = Joints[idx] + Origin;
@@ -57,8 +59,9 @@ public class SwIkLimb
             ErVec2 tangent = new(-diff.Y,diff.X);
             ErVec2 c = b + tangent;
             ErVec2 d = c - diff;
-            ErVec2[] points = [a,b,c,d];
-            ErEngine.Renderer.DrawQuads(points, ErColor.Blue);
+            ErEngine.Renderer.DrawQuad(a, b, c, d, ErColor.Blue);
+            // ErVec2[] points = [a,b,c,d];
+            // ErEngine.Renderer.DrawQuads(points, ErColor.Blue);
             // ErEngine.Renderer.DrawLine(a, b, ErColor.Blue);
             // ErEngine.Renderer.DrawLine(b, c, ErColor.Blue);
             // ErEngine.Renderer.DrawLine(c, d, ErColor.Blue);

@@ -5,7 +5,7 @@ namespace SpoonWitch.Game.Entity.Component;
 
 public class SwIkLimbComponent : SwComponent
 {
-    public SwIkLimb Limb{get; private set;} = new();
+    public SwIkLimb Limb{get; protected set;} = new();
     public ErVec2 Offset;
     public SwIkLimbComponent(SwEntity parent, string name) : base(parent, name)
     {
@@ -20,9 +20,9 @@ public class SwIkLimbComponent : SwComponent
         Limb.Origin = Parent.Position + Offset;
         Limb.Update(dt);
     }
-    public override void Draw()
-    {
-        base.Draw();
-        Limb.DebugDraw();
-    }
+    // public override void Draw()
+    // {
+    //     base.Draw();
+    //     Limb.DebugDraw();
+    // }
 }

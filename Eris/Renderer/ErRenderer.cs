@@ -168,6 +168,29 @@ public class ErRenderer
         UpdatePoints(color);
         SDL.RenderGeometry(Handle, 0, Vertices, Points.Count, 0, 0);
     }
+    public void DrawQuad(ErVec2 a, ErVec2 b, ErVec2 c, ErVec2 d, ErColor color)
+    {
+        a -= ViewportTransform.Position;
+        b -= ViewportTransform.Position;
+        c -= ViewportTransform.Position;
+        d -= ViewportTransform.Position;
+        Points.Clear();
+        Points.Add(a);
+        Points.Add(b);
+        Points.Add(c);
+        Points.Add(c);
+        Points.Add(d);
+        Points.Add(a);
+        UpdatePoints(color);
+        SDL.RenderGeometry(Handle, 0, Vertices, Points.Count, 0, 0);
+    }
+    public void DrawQuadLines(ErVec2 a, ErVec2 b, ErVec2 c, ErVec2 d, ErColor color)
+    {
+        DrawLine(a,b,color);
+        DrawLine(b,c,color);
+        DrawLine(c,d,color);
+        DrawLine(d,a,color);
+    }
     public void DrawCircle(ErVec2 center, double radius, int numSides, ErColor color, double angle = 0)
     {
         Points.Clear();
@@ -185,6 +208,23 @@ public class ErRenderer
         UpdatePoints(color);
         SDL.RenderGeometry(Handle, 0, Vertices, Points.Count, 0, 0);
     }
+    public void DrawCircleLines(ErVec2 center, double radius, int numSides, ErColor color, double angle = 0)
+    {
+        double da = ErMath.TAU / numSides;
+        ErVec2 lastPoint = ErVec2.FromAngle(angle) * radius + center;
+        for (int idx = 0; idx < numSides; idx++)
+        {
+            angle += da;
+            ErVec2 point = ErVec2.FromAngle(angle) * radius + center;
+            DrawLine(lastPoint, point, color);
+            lastPoint = point;
+        }
+    }
+    public void DrawPoint(ErVec2 point, ErColor color)
+    {
+        SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, color.A);
+        SDL.RenderPoint(Handle, (float)point.X, (float)point.Y);
+    }
     public void DrawArc(ErVec2 center, double radius, double startAngle, double endAngle, int numSides, ErColor color)
     {
         if(numSides <= 0) return;
@@ -200,6 +240,43 @@ public class ErRenderer
             angle += da;
             lastPoint = ErVec2.FromAngle(angle) * radius + center;
             Points.Add(lastPoint);
+        }
+        UpdatePoints(color);
+        SDL.RenderGeometry(Handle, 0, Vertices, Points.Count, 0, 0);
+    }
+    public void DrawArcLines(ErVec2 center, double radius, double startAngle, double endAngle, int numSides, ErColor color)
+    {
+        if(numSides <= 0) return;
+        Points.Clear();
+        double da = (endAngle - startAngle) / numSides;
+        double angle = startAngle;
+        ErVec2 lastPoint = ErVec2.FromAngle(angle) * radius + center;
+        for (int idx = 0; idx < numSides; idx++)
+        {
+            angle += da;
+            ErVec2 point = ErVec2.FromAngle(angle) * radius + center;
+            DrawLine(lastPoint, point, color);
+            lastPoint = point;
+        }
+        UpdatePoints(color);
+        SDL.RenderGeometry(Handle, 0, Vertices, Points.Count, 0, 0);
+    }
+    public void DrawFanLines(ErVec2 center, double startAngle, double endAngle, double startRadius, double endRadius, int numSides, ErColor color)
+    {
+        if(numSides <= 0) return;
+        Points.Clear();
+        double da = (endAngle - startAngle) / numSides;
+        double dr = (endRadius - startRadius) / numSides;
+        double angle = startAngle;
+        double radius = startRadius;
+        ErVec2 lastPoint = ErVec2.FromAngle(angle) * radius + center;
+        for (int idx = 0; idx < numSides; idx++)
+        {
+            angle += da;
+            radius += dr;
+            ErVec2 point = ErVec2.FromAngle(angle) * radius + center;
+            DrawLine(lastPoint, point, color);
+            lastPoint = point;
         }
         UpdatePoints(color);
         SDL.RenderGeometry(Handle, 0, Vertices, Points.Count, 0, 0);

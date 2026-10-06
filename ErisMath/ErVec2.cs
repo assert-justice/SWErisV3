@@ -52,6 +52,21 @@ public readonly struct ErVec2: IEquatable<ErVec2>
     {
         return ErMath.Atan2(Y, X);
     }
+    public double GetAngleTo(ErVec2 vec2)
+    {
+        // dot(a,b) = len(a) * len(b) * cos(theta)
+        // theta = acos(dot(a,b)/(len(a)*len(b)))
+        // return Math::atan2(cross(p_vector2), dot(p_vector2));
+        return Math.Atan2(Cross(vec2),Dot(vec2));
+        // double lenA = GetLength();
+        // double lenB = vec2.GetLength();
+        // double dot = Dot(vec2);
+        // return Math.Acos(dot / (lenA * lenB));
+    }
+    public double Cross(ErVec2 vec2)
+    {
+        return X * vec2.Y - Y * vec2.X;
+    }
     public bool IsNonzero()
     {
         return GetLengthSquared() > ErMath.EPSILON;
@@ -61,6 +76,24 @@ public readonly struct ErVec2: IEquatable<ErVec2>
         double lenSq = GetLengthSquared();
         if(lenSq > ErMath.EPSILON) return this / Math.Sqrt(lenSq);
         else return Zero;
+    }
+    public ErVec2 Rotate(double angle)
+    {
+        double a = GetAngle();
+        return FromAngle(a + angle) * GetLength();
+    }
+    public ErVec2 Rotate(double angle, ErVec2 center)
+    {
+        var vec = this - center;
+        return vec.Rotate(angle) + center;
+    }
+    public static double Dot(ErVec2 a, ErVec2 b)
+    {
+        return a.X * b.X + a.Y * b.Y;
+    }
+    public double Dot(ErVec2 a)
+    {
+        return Dot(this, a);
     }
     public ErVec2I FloorToInt()
     {
