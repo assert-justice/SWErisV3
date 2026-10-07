@@ -1,5 +1,6 @@
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.Ik;
+using SpoonWitch.Game.Entity.Component.Ik.AspectLegs;
 using SpoonWitch.Game.Entity.Component.Ik.Tentacle;
 using SpoonWitch.Game.Entity.Component.State;
 using SpoonWitch.Rendering;
@@ -24,12 +25,14 @@ public abstract class SwAspectState: SwState<SwAspect>
     protected SwSprite BodySprite = null!;
     protected SwTentacleComponent RightArm = null!;
     protected SwTentacleComponent LeftArm = null!;
+    protected SwAspectLegsComponent Legs = null!;
     public override void Ready()
     {
         base.Ready();
         BodySprite = Entity.GetComponent<SwSpriteComponent>("body")?.Sprite!;
         RightArm = Entity.GetComponent<SwTentacleComponent>("right_arm")!;
         LeftArm = Entity.GetComponent<SwTentacleComponent>("left_arm")!;
+        Legs = Entity.GetComponent<SwAspectLegsComponent>("legs")!;
     }
     public static SwStateMachine<SwAspect> GetStateMachine(SwAspect parent, string name)
     {
@@ -39,6 +42,7 @@ public abstract class SwAspectState: SwState<SwAspect>
             new SwAspectDead(),
             new SwAspectStationary(),
             new SwAspectWandering(),
+            new SwAspectUproot(),
         ]);
     }
 }

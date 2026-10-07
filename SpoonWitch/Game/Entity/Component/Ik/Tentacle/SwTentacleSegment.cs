@@ -5,7 +5,7 @@ using ErisMath;
 namespace SpoonWitch.Game.Entity.Component.Ik.Tentacle;
 public class SwTentacleSegment
 {
-    public required SwTentacleComponent Parent;
+    // public required SwTentacleComponent Parent;
     public SwTentacleSegment? LastSegment;
     public SwTentacleSegment? NextSegment;
     public ErVec2 Direction = ErVec2.Right;
@@ -14,6 +14,8 @@ public class SwTentacleSegment
     public ErVec2 Down => new(-Direction.Y,Direction.X);
     public ErVec2 Above => GlobalPos + Up * Radius;
     public ErVec2 Below => GlobalPos + Down * Radius;
+    public ErVec2 Start => -Direction * Length + GlobalPos;
+    public ErVec2 End => Direction * Length + GlobalPos;
     public double Radius = 3;
     public double Length;
     public List<SwTentacleSpine> Spines = [];
@@ -46,6 +48,7 @@ public class SwTentacleSegment
     }
     private void DrawLink(SwTentacleSegment segment)
     {
+        // ErEngine.Renderer.DrawLine(Start, End, Color);
         ErEngine.Renderer.DrawQuad(
             Above,
             segment.GlobalPos + Up * segment.Radius,

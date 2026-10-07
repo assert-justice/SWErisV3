@@ -14,6 +14,8 @@ public class SwAspectStationary : SwAspectState
         LeftArm.Activate();
         RightArm.TipSpeed = Entity.BaseArmSpeed;
         RightArm.Activate();
+        Legs.Activate();
+        Legs.Randomize();
     }
     public override void Update(double dt)
     {

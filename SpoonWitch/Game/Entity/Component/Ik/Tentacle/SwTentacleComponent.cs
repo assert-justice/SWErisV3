@@ -1,5 +1,4 @@
 using Eris;
-using Eris.Renderer;
 using ErisMath;
 using SpoonWitch.Ik;
 
@@ -32,18 +31,18 @@ public class SwTentacleComponent: SwComponent
         {
             SwTentacleSegment segment = new()
             {
-                Parent = this,
+                // Parent = this,
                 GlobalPos = pos,
                 Length = length,
-                Color = ErColor.Blue,
+                Color = new(152,184,75),
                 Radius = 2,
             };
             SwTentacleSegment outlineSegment = new()
             {
-                Parent = this,
+                // Parent = this,
                 GlobalPos = pos,
                 Length = length,
-                Color = ErColor.Black,
+                Color = new(59,99,28),
                 Radius = 3,
             };
             if(idx > 0)
@@ -107,8 +106,6 @@ public class SwTentacleComponent: SwComponent
         if(!IsActive) return;
         ErVec2 diff = Target - TipPos;
         var(dir,len) = GetTipDirLen(diff);
-        // ErVec2 dir = diff.Normalized();
-        // double len = diff.GetLength();
         double speed = TipSpeed * dt;
         if(len < speed)
         {
@@ -118,17 +115,6 @@ public class SwTentacleComponent: SwComponent
         }
         len = speed;
         ErVec2 target = TipPos + dir * len;
-        // get dot product from tip dir to target. if absolute dot product is too low
-        // max angle/distance is pi/turn radius
-        // max angle = distance * pi/turn radius
-        // dot(a,b) = len(a) * len(b) * cos(theta)
-        // double maxAngleDelta = len * ErMath.PI / TipTurnRadius;
-        // double dot = TipDir.Dot(dir);
-        // double angleDelta = Math.Acos(dot);
-        // double altAngleDelta = TipDir.GetAngleTo(dir);
-        // if the angle delta is too high, set the direction to 
-        //  a vector of length len
-        // ErEngine.Log("here");
         Step(target,GlobalPos);
     }
     public void SetTarget(ErVec2 target)
@@ -192,9 +178,6 @@ public class SwTentacleComponent: SwComponent
         for (int idx = 0; idx < Segments.Count; idx++)
         {
             OutlineSegments[idx].Draw();
-        }
-        for (int idx = 0; idx < Segments.Count; idx++)
-        {
             Segments[idx].Draw();
         }
         foreach (var spine in Spines)
