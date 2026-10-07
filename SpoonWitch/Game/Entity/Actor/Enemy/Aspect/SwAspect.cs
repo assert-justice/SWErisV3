@@ -28,13 +28,13 @@ public class SwAspect: SwEnemy
     {
         base.Init();
         StateMachine = RegisterComponent(SwAspectState.GetStateMachine(this, "state_machine"));
-        StateMachine.SetDefaultState("stationary");
+        StateMachine.SetDefaultState("asleep");
         RegisterComponent(new SwTentacleComponent(this, "right_arm"));
         RegisterComponent(new SwTentacleComponent(this, "left_arm"));
         LoadSprites("anim_data/sprites");
     }
     private void Wake(PriNode command)
     {
-        // StateMachine.SetState("wake");
+        StateMachine.SetState("wake");
     }
 }

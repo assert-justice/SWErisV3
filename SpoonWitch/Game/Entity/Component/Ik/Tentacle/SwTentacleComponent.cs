@@ -7,74 +7,8 @@ namespace SpoonWitch.Game.Entity.Component.Ik.Tentacle;
 
 public class SwTentacleComponent: SwComponent
 {
-    // private class SwSegment
-    // {
-    //     public required SwTentacleComponent Parent;
-    //     public SwSegment? LastSegment;
-    //     public SwSegment? NextSegment;
-    //     public ErVec2 Position;
-    //     public ErVec2 Direction = ErVec2.Right;
-    //     public ErVec2 GlobalPos => Position + Parent.GlobalPos;
-    //     public ErVec2 Up => new ErVec2(Direction.Y,-Direction.X) * Radius;
-    //     public ErVec2 Down => new ErVec2(-Direction.Y,Direction.X) * Radius;
-    //     public ErVec2 Above => GlobalPos + Up;
-    //     public ErVec2 Below => Down + GlobalPos;
-    //     public double Radius = 3;
-    //     public List<SwSpine> Spines = [];
-    //     public static readonly ErColor Color = ErColor.Blue;// new(152,184,75);
-    //     public SwSpine AddSpine()
-    //     {
-    //         SwSpine spine = new(this);
-    //         Spines.Add(spine);
-    //         return spine;
-    //     }
-    //     public void Update()
-    //     {
-    //         if(NextSegment is not null && LastSegment is not null)Direction = (NextSegment.Position - LastSegment.Position).Normalized();
-    //         else if(NextSegment is not null) Direction = (NextSegment.Position - Position).Normalized();
-    //         else if(LastSegment is not null) Direction = (Position - LastSegment.Position).Normalized();
-    //     }
-    //     public void Draw()
-    //     {
-    //         if(LastSegment is not null) DrawLink(LastSegment);
-    //         if(NextSegment is not null) DrawLink(NextSegment);
-    //         DrawTip();
-    //     }
-    //     public void DrawTip()
-    //     {
-    //         ErEngine.Renderer.DrawCircle(GlobalPos,Radius,12,Color);
-    //     }
-    //     private void DrawLink(SwSegment segment)
-    //     {
-    //         DrawQuad(GlobalPos,Above,segment.Above,segment.GlobalPos);
-    //         DrawQuad(GlobalPos,Below,segment.Below,segment.GlobalPos);
-    //     }
-    //     private void DrawQuad(ErVec2 a, ErVec2 b, ErVec2 c, ErVec2 d)
-    //     {
-    //         ErEngine.Renderer.DrawQuad(a,b,c,d,Color);
-    //     }
-    // }
-    // private class SwSpine
-    // {
-    //     public readonly SwSegment Segment;
-    //     public ErVec2 Position;
-    //     public ErVec2 BudPosition;
-    //     public static readonly ErColor BudColor = new(151,58,77);
-    //     public static readonly ErVec2 BudSize = new(2,2);
-    //     public SwSpine(SwSegment segment)
-    //     {
-    //         Segment = segment;
-    //     }
-    //     public void Draw()
-    //     {
-    //         double angle = Segment.Direction.GetAngle(); // here we go again
-    //         ErVec2 pos = Position.Rotate(angle);
-    //         ErVec2 bud = (BudPosition - Position).Rotate(angle) + pos;
-    //         ErEngine.Renderer.DrawLine(pos+Segment.GlobalPos, bud+Segment.GlobalPos, BudColor);
-    //         ErEngine.Renderer.DrawRect(ErRect2.Centered(bud+Segment.GlobalPos,BudSize),BudColor);
-    //     }
-    // }
     private readonly List<SwTentacleSegment> Segments = [];
+    private readonly List<SwTentacleSegment> OutlineSegments = [];
     private readonly List<SwTentacleSpine> Spines = [];
     private readonly List<ErVec2> Joints = [];
     public ErVec2 Target{get; private set;}
@@ -82,7 +16,7 @@ public class SwTentacleComponent: SwComponent
     public bool IsAtTarget => (TipPos-Target).IsApproxZero();
     public ErVec2 TipDir=> Segments[^1].Direction;
     public double TipSpeed;
-    public double TipTurnRadius;
+    public double TipTurnRadius = 10;
     public ErVec2 Offset{get; private set;}
     public bool IsVisible = false;
     public bool IsActive = false;
@@ -101,41 +35,100 @@ public class SwTentacleComponent: SwComponent
                 Parent = this,
                 GlobalPos = pos,
                 Length = length,
+                Color = ErColor.Blue,
+                Radius = 2,
+            };
+            SwTentacleSegment outlineSegment = new()
+            {
+                Parent = this,
+                GlobalPos = pos,
+                Length = length,
+                Color = ErColor.Black,
+                Radius = 3,
             };
             if(idx > 0)
             {
                 segment.LastSegment = Segments[idx-1];
                 Segments[idx-1].NextSegment = segment;
+                outlineSegment.LastSegment = OutlineSegments[idx-1];
+                OutlineSegments[idx-1].NextSegment = outlineSegment;
             }
             Segments.Add(segment);
+            OutlineSegments.Add(outlineSegment);
             pos += diff;
         }
         Target = TipPos;
-        var lastSegment = Segments[^1];
-        var spine = AddSpine(lastSegment);
+        var spineSeg = Segments[^1];
+        var spine = AddSpine(spineSeg);
         spine.Vector = ErVec2.One * 4;
-        spine = AddSpine(lastSegment);
+        spine = AddSpine(spineSeg);
         spine.Vector = new ErVec2(4,-4);
         ErVec2 p = ErVec2.Zero;
         for (int idx = 0; idx < 2; idx++)
         {
-            spine = AddSpine(lastSegment);
+            spine = AddSpine(spineSeg);
             spine.GlobalPos = p + ErVec2.Up;
             spine.Vector = ErVec2.Up * 4;
-            spine = AddSpine(lastSegment);
+            spine = AddSpine(spineSeg);
             spine.GlobalPos = p + ErVec2.Down;
             spine.Vector = ErVec2.Down * 4;
             p+=ErVec2.Left*3;
         }
+        p = ErVec2.Zero;
+        for (int i = 0; i < 5; i++)
+        {
+            spineSeg = Segments[^(1+i)];
+            spine = AddSpine(spineSeg);
+            spine.GlobalPos = p + ErVec2.Up;
+            spine.Vector = ErVec2.Up * 4;
+            spine = AddSpine(spineSeg);
+            spine.GlobalPos = p + ErVec2.Down;
+            spine.Vector = ErVec2.Down * 4;
+        }
+    }
+    private (ErVec2 direction, double length) GetTipDirLen(ErVec2 diff)
+    {
+        // Todo: take another pass at constraints
+        var (dir,len) = diff.GetDirLen();
+        // double maxAngleDelta = len * ErMath.PI / TipTurnRadius;
+        // // double dot = TipDir.Dot(dir);
+        // // double angleDelta = Math.Acos(dot);
+        // double angleDelta = TipDir.GetAngleTo(dir);
+        // if(Math.Abs(angleDelta) > maxAngleDelta)
+        // {
+        //     angleDelta = maxAngleDelta * Math.Sign(angleDelta);
+        //     dir = TipDir.Rotate(angleDelta);
+        // }
+        return (dir,len);
     }
     public override void Update(double dt)
     {
         base.Update(dt);
         if(!IsActive) return;
         ErVec2 diff = Target - TipPos;
-        double len = diff.GetLength();
+        var(dir,len) = GetTipDirLen(diff);
+        // ErVec2 dir = diff.Normalized();
+        // double len = diff.GetLength();
         double speed = TipSpeed * dt;
-        ErVec2 target = len < speed ? Target : TipPos + diff.Normalized() * speed;
+        if(len < speed)
+        {
+            // ignores turn radius, might revisit
+            Step(Target, GlobalPos);
+            return;
+        }
+        len = speed;
+        ErVec2 target = TipPos + dir * len;
+        // get dot product from tip dir to target. if absolute dot product is too low
+        // max angle/distance is pi/turn radius
+        // max angle = distance * pi/turn radius
+        // dot(a,b) = len(a) * len(b) * cos(theta)
+        // double maxAngleDelta = len * ErMath.PI / TipTurnRadius;
+        // double dot = TipDir.Dot(dir);
+        // double angleDelta = Math.Acos(dot);
+        // double altAngleDelta = TipDir.GetAngleTo(dir);
+        // if the angle delta is too high, set the direction to 
+        //  a vector of length len
+        // ErEngine.Log("here");
         Step(target,GlobalPos);
     }
     public void SetTarget(ErVec2 target)
@@ -184,16 +177,22 @@ public class SwTentacleComponent: SwComponent
         for (int idx = 0; idx < Segments.Count; idx++)
         {
             Segments[idx].GlobalPos = Joints[idx];
+            OutlineSegments[idx].GlobalPos = Joints[idx];
         }
         for (int idx = 0; idx < Segments.Count; idx++)
         {
             Segments[idx].Update();
+            OutlineSegments[idx].Update();
         }
     }
     public override void Draw()
     {
         base.Draw();
         if(!IsVisible) return;
+        for (int idx = 0; idx < Segments.Count; idx++)
+        {
+            OutlineSegments[idx].Draw();
+        }
         for (int idx = 0; idx < Segments.Count; idx++)
         {
             Segments[idx].Draw();

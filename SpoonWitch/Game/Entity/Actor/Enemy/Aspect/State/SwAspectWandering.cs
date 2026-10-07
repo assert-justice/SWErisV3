@@ -12,11 +12,9 @@ public class SwAspectWandering : SwAspectState
         base.BeginState(lastState);
         BodySprite.Play("phase2_idle");
         LeftArm.TipSpeed = Entity.BaseArmSpeed;
-        LeftArm.IsActive = true;
-        LeftArm.IsVisible = true;
+        LeftArm.Activate();
         RightArm.TipSpeed = Entity.BaseArmSpeed;
-        RightArm.IsActive = true;
-        RightArm.IsVisible = true;
+        RightArm.Activate();
         SetNewWander();
     }
     public override void Update(double dt)
@@ -25,12 +23,12 @@ public class SwAspectWandering : SwAspectState
         ErVec2 target;
         if (LeftArm.IsAtTarget)
         {
-            target = SwRandom.GetRandomPointOnCircle(new ErVec2(-64,-32),48);
+            target = Entity.Position + SwRandom.GetRandomPointOnCircle(new ErVec2(-64,-32),48);
             LeftArm.SetTarget(target);
         }
         if (RightArm.IsAtTarget)
         {
-            target = SwRandom.GetRandomPointOnCircle(new ErVec2(64,-32),48);
+            target = Entity.Position + SwRandom.GetRandomPointOnCircle(new ErVec2(64,-32),48);
             RightArm.SetTarget(target);
         }
         if(Entity.TimeoutClock.IsRunning)

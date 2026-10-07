@@ -17,7 +17,7 @@ public class SwTentacleSegment
     public double Radius = 3;
     public double Length;
     public List<SwTentacleSpine> Spines = [];
-    public static readonly ErColor Color = ErColor.Blue;// new(152,184,75);
+    public ErColor Color = ErColor.Blue;// new(152,184,75);
     public SwTentacleSpine AddNewSpine()
     {
         var spine = SwTentacleSpine.SegmentInitSpine(this);
