@@ -70,7 +70,7 @@ public class SwPlayer: SwActor
     public double SlingBulletSpeed = 600;
     public double SlingChargeTime = 0.75;
     public readonly SwClock SlingChargeClock;
-    public PriNode DiscoverCommand = PriNull.Null;
+    public PriNode TempCommand = PriNull.Null;
     // Inventory
     public readonly SwInventory Inventory = new();
     public int Ammo
@@ -104,6 +104,7 @@ public class SwPlayer: SwActor
         AddHandler("ent_offer_item", EntOfferItem);
         AddHandler("enter_checkpoint", EnterCheckpoint);
         AddGlobalHandler("player_discover_item", PlayerDiscoverItem);
+        AddGlobalHandler("player_item_get", PlayerItemGet);
         HealthClock = AddClock();
         StaminaRegenClock = AddClock();
         DodgeCooldownClock = AddClock();
@@ -238,22 +239,56 @@ public class SwPlayer: SwActor
         if(!command.TryGet("count", out int count)) return;
         if(count == 0) return;
         if(!command.TryGet("pickup_type", out string pickup_type)) return;
-        if(!Inventory.TryAdd(pickup_type, count, out int rem)) return;
+        int rem = 0;
+        if(command.TryGet("max", out int max) && max > Inventory.GetMax(pickup_type))
+        {
+            Inventory.SetCount(pickup_type, count, max);
+        }
+        else
+        {
+            Inventory.TryAdd(pickup_type, count, out rem);
+        }
+        // else if(!Inventory.TryAdd(pickup_type, count, out rem)) return;
         // bool newItem = !Inventory.HasEntry(pickup_type);
         if(!DiscoveredItems.Contains(pickup_type))
         {
             // handle new item
             SwApp.CommandQueue.AddCommandVerb("player_discover_item").TrySet("pickup_type", pickup_type);
         }
+        else
+        {
+            SwApp.CommandQueue.AddCommandVerb("player_item_get").TrySet("pickup_type", pickup_type);
+        }
         PriDict com = [];
         com.TrySet("verb", "pickup_set_rem");
         com.TrySet("rem", rem);
         entity.AddCommand(com);
     }
+    private void PlayerItemGet(PriNode command)
+    {
+        if(!command.TryGet("pickup_type", out string pickup_type)) return;
+        StateMachine?.SetState("item_get");
+        string? texPath = null;
+        PriNode pickupProto = SwData.Prototypes.Get($"pickups/{pickup_type}");
+        if(pickupProto.TryGet("texture_filepath", out string s)) texPath = s;
+        if(texPath is not null)
+        {
+            if(!ErTexture.TryFromPath(texPath, out PickupTexture)) ErEngine.Log("bad pickup texture path");
+        }
+        if(PlayerIdx == 0)
+        {
+            TempCommand = pickupProto.Get("pickup_command");
+        }
+        if(pickup_type == "root")
+        {
+            MaxRoots++;
+            Roots = MaxRoots;
+        }
+    }
     private void PlayerDiscoverItem(PriNode command)
     {
-        StateMachine?.SetState("item_get");
         if(!command.TryGet("pickup_type", out string pickup_type)) return;
+        StateMachine?.SetState("item_get");
         DiscoveredItems.Add(pickup_type);
         string? texPath = null;
         PriNode pickupProto = SwData.Prototypes.Get($"pickups/{pickup_type}");
@@ -265,7 +300,7 @@ public class SwPlayer: SwActor
         }
         if(PlayerIdx == 0)
         {
-            DiscoverCommand = pickupProto.Get("discover_command");
+            TempCommand = pickupProto.Get("discover_command");
         }
         if(pickup_type == "spoon") SpoonEnabled = true;
     }

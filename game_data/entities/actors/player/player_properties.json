@@ -61,7 +61,7 @@
         "sling_bullet_speed": 400,
         "sling_charge_time": 0.75
     },
-    "inventory":[
+    "inventory_unused":[
         {
             "type": "sling_ammo",
             "count": 0,

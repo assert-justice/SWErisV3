@@ -18,6 +18,11 @@ public class SwPickup : SwMapEntity
         get => Props.TryGet("fields/count", out int i) ? i : 0;
         set => Props.TrySet("fields/count", value);
     }
+    // public int Max
+    // {
+    //     get => Props.TryGet("fields/max", out int i) ? i : 0;
+    //     set => Props.TrySet("fields/max", value);
+    // }
     public SwPickup()
     {
         AddHandler("pickup_set_rem", SetRem);
@@ -64,6 +69,7 @@ public class SwPickup : SwMapEntity
         command.TrySet("ent_id", Id);
         command.TrySet("pickup_type", PickupType);
         command.TrySet("count", Count);
+        command.Add("max", Props.Get("fields/max"));
         entity.AddCommand(command);
     }
 }

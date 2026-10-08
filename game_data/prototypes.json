@@ -18,6 +18,19 @@
                 "title": "You got sling bullets!",
                 "text": "Aim with right stick to charge. Fire with R1/Right Bumper.\nRestock at ammo piles or checkpoints."
             }
+        },
+        "root":{
+            "texture_filepath": "map/props/root.png",
+            "discover_command":{
+                "verb": "show_text",
+                "title": "You got a vitality root!",
+                "text": "Use Circle to heal,\nCheckpoints regenerate your roots."
+            },
+            "pickup_command": {
+                "verb":"show_text",
+                "title": "You got another root!",
+                "text": "Use Circle to heal,\nCheckpoints regenerate your roots."
+            }
         }
     },
     "entities":{

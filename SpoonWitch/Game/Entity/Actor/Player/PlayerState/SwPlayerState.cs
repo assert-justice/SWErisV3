@@ -353,9 +353,9 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         {
             base.Update(dt);
             if(BodySprite.IsPlaying) return;
-            if(Entity.DiscoverCommand is not PriNull)
+            if(Entity.TempCommand is not PriNull)
             {
-                SwApp.CommandQueue.AddCommand(Entity.DiscoverCommand);
+                SwApp.CommandQueue.AddCommand(Entity.TempCommand);
             }
             StateMachine.SetState("default");
             // if(Controls.DodgeJustDown) StateMachine.SetState("default");
