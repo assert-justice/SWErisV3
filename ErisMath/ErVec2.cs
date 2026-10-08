@@ -11,6 +11,7 @@ public readonly struct ErVec2: IEquatable<ErVec2>
     public ErVec2(double x, double y){X = x; Y = y;}
     public static readonly ErVec2 Zero = new(0, 0);
     public static readonly ErVec2 One = new(1, 1);
+    public static readonly ErVec2 Epsilon = new(ErMath.EPSILON, ErMath.EPSILON);
     public static readonly ErVec2 Neg = new(-1, -1);
     public static readonly ErVec2 Left = new(-1, 0);
     public static readonly ErVec2 Right = new(1, 0);

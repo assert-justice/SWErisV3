@@ -49,16 +49,17 @@ public class ErPhysicsWorld2D
     }
     public ErVec2I PointToCellCoord(ErVec2 point)
     {
-        return (point / (ErVec2)CellSizePx).FloorToInt();
+        // return (point / (ErVec2)CellSizePx).FloorToInt();
+        return point.FloorToInt() / CellSizePx;
     }
     public ErVec2I PointToTileCoord(ErVec2 point)
     {
-        return (point / (ErVec2)TileSize).FloorToInt();
+        return point.FloorToInt() / TileSize;
     }
     private IEnumerable<ErVec2I> GetCellCoordsTouchingRect(ErRect2 rect)
     {
         var tl = PointToCellCoord(rect.Position);
-        var br = PointToCellCoord(rect.Position+rect.Size) + ErVec2I.One;
+        var br = PointToCellCoord(rect.Position+rect.Size);
         for (int xi = tl.X; xi <= br.X; xi++)
         {
             for(int yi = tl.Y; yi <= br.Y; yi++)
@@ -244,7 +245,7 @@ public class ErPhysicsWorld2D
     private IEnumerable<ErRect2> GetColliders(int id, uint mask, ErRect2 rect)
     {
         var tl = PointToTileCoord(rect.Position);
-        var br = PointToTileCoord(rect.Position + rect.Size) + ErVec2I.One;
+        var br = PointToTileCoord(rect.Position + rect.Size);
         for (int xi = tl.X; xi <= br.X; xi++)
         {
             for(int yi = tl.Y; yi <= br.Y; yi++)

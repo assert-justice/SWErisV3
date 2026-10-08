@@ -19,7 +19,6 @@ public class SwFwoosher: SwMapEntity
     private double TimeEnabled;
     private double Cooldown;
     private bool StartActive;
-    private ErRect2I RectTiles;
     public bool IsActive{get; private set;} = false;
     public SwFwoosher()
     {
@@ -34,7 +33,6 @@ public class SwFwoosher: SwMapEntity
         if(cycle.TryGet("time_enabled", out d)) TimeEnabled = d;
         if(cycle.TryGet("cooldown", out d)) Cooldown = d;
         if(cycle.TryGet("start_active", out bool b)) StartActive = b;
-        RectTiles = SwPrion.GetRect2I(Props.Data.Get("rect_tiles"));
     }
     public override void Init()
     {

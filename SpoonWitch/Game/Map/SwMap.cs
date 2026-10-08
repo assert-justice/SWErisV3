@@ -320,6 +320,7 @@ public class SwMap
                 entId = -1;
                 break;
             case "prop":
+                entId = Game.AddEntity<SwProp>(props).Id;
                 break;
             case "checkpoint":
                 break;
