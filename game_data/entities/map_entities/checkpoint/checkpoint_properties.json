@@ -1,0 +1,10 @@
+{
+    "sprites":[
+        {
+            "name": "sprite",
+            "ase_animations": {
+                "filepath": "checkpoint.json"
+            }
+        }
+    ]
+}

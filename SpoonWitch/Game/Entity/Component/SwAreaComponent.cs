@@ -1,15 +1,11 @@
 using Eris;
 using ErisMath;
 using ErisPhysics2D.Collider;
-using SpoonWitch.ByteStream;
 using SpoonWitch.Game.Map.Collision;
 
 namespace SpoonWitch.Game.Entity.Component;
 
 public class SwAreaComponent: SwComponent
-// (SwEntity parent, 
-//     string name, uint mask, ErVec2 size, ErVec2? offset = null, bool enabled = false,
-//     Action<SwEntity>? onBodyEnter = null, Action<SwEntity>? onBodyExit = null) : SwComponent(parent, name)
 {
     private readonly SwColliderArea Area;
     private bool WasEnabled = false;
@@ -66,26 +62,6 @@ public class SwAreaComponent: SwComponent
         if(!Parent.Game.EntityLookup.TryGet<SwEntity>(b.ParentId.ToString(), out var entity)) return;
         OnBodyExit(entity);
     }
-    // public override void Read(SwByteStream byteStream)
-    // {
-    //     base.Read(byteStream);
-    //     if(!byteStream.TryReadI32(out _Id)) throw new("bad area id");
-    //     if(!byteStream.TryReadBool(out WasEnabled)) throw new("bad area was enabled");
-    //     if(!byteStream.TryReadBool(out Enabled)) throw new("bad area enabled");
-    //     if(!byteStream.TryReadU32(out Mask)) throw new("bad area mask");
-    //     if(!byteStream.TryReadVec2(out Offset)) throw new("bad area offset");
-    //     if(!byteStream.TryReadVec2(out Size)) throw new("bad area offset");
-    // }
-    // public override void Write(SwByteStream byteStream)
-    // {
-    //     base.Write(byteStream);
-    //     byteStream.WriteI32(_Id);
-    //     byteStream.WriteBool(WasEnabled);
-    //     byteStream.WriteBool(Enabled);
-    //     byteStream.WriteU32(Mask);
-    //     byteStream.WriteVec2(Offset);
-    //     byteStream.WriteVec2(Size);
-    // }
     public override void Cleanup()
     {
         base.Cleanup();

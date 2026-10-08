@@ -11,7 +11,7 @@
 	"iid": "56816e60-fa90-11f0-b4ec-5b883517cfbd",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 125,
+	"nextUid": 127,
 	"identifierStyle": "Lowercase",
 	"toc": [],
 	"worldLayout": "GridVania",
@@ -743,8 +743,8 @@
 			"exportToToc": false,
 			"allowOutOfBounds": false,
 			"doc": null,
-			"width": 32,
-			"height": 32,
+			"width": 64,
+			"height": 64,
 			"resizableX": false,
 			"resizableY": false,
 			"minWidth": null,
@@ -759,9 +759,9 @@
 			"color": "#C501FF",
 			"renderMode": "Tile",
 			"showName": true,
-			"tilesetId": 29,
+			"tilesetId": 126,
 			"tileRenderMode": "Cover",
-			"tileRect": { "tilesetUid": 29, "x": 16, "y": 16, "w": 32, "h": 32 },
+			"tileRect": { "tilesetUid": 126, "x": 0, "y": 0, "w": 64, "h": 64 },
 			"uiTileRect": null,
 			"nineSliceBorders": [],
 			"maxCount": 0,
@@ -1958,7 +1958,7 @@
 		{
 			"__cWid": 2,
 			"__cHei": 1,
-			"identifier": "tileset",
+			"identifier": "fwoosher",
 			"uid": 123,
 			"relPath": "../entities/map_entities/fwoosher/fwoosher.png",
 			"embedAtlas": null,
@@ -1973,6 +1973,44 @@
 			"customData": [],
 			"savedSelections": [],
 			"cachedPixelData": { "opaqueTiles": "11", "averageColors": "f666f766" }
+		},
+		{
+			"__cWid": 0,
+			"__cHei": 0,
+			"identifier": "tileset",
+			"uid": 125,
+			"relPath": null,
+			"embedAtlas": null,
+			"pxWid": 0,
+			"pxHei": 0,
+			"tileGridSize": 16,
+			"spacing": 0,
+			"padding": 0,
+			"tags": [],
+			"tagsSourceEnumUid": null,
+			"enumTags": [],
+			"customData": [],
+			"savedSelections": [],
+			"cachedPixelData": null
+		},
+		{
+			"__cWid": 2,
+			"__cHei": 1,
+			"identifier": "checkpoint",
+			"uid": 126,
+			"relPath": "../entities/map_entities/checkpoint/checkpoint.png",
+			"embedAtlas": null,
+			"pxWid": 128,
+			"pxHei": 64,
+			"tileGridSize": 64,
+			"spacing": 0,
+			"padding": 0,
+			"tags": [],
+			"tagsSourceEnumUid": null,
+			"enumTags": [],
+			"customData": [],
+			"savedSelections": [],
+			"cachedPixelData": { "opaqueTiles": "00", "averageColors": "4fff4fe3" }
 		}
 	], "enums": [
 		{ "identifier": "script_type", "uid": 46, "values": [ { "id": "js", "tileRect": null, "color": 12470831 }, { "id": "json", "tileRect": null, "color": 14120515 } ], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] },
@@ -3285,16 +3323,16 @@
 					"entityInstances": [
 						{
 							"__identifier": "checkpoint",
-							"__grid": [32,20],
+							"__grid": [36,20],
 							"__pivot": [0,0],
 							"__tags": [],
-							"__tile": { "tilesetUid": 29, "x": 16, "y": 16, "w": 32, "h": 32 },
+							"__tile": { "tilesetUid": 126, "x": 0, "y": 0, "w": 64, "h": 64 },
 							"__smartColor": "#C501FF",
 							"iid": "19a43d70-bde0-11f1-b56b-db88f977dbda",
-							"width": 32,
-							"height": 32,
+							"width": 64,
+							"height": 64,
 							"defUid": 28,
-							"px": [256,160],
+							"px": [288,160],
 							"fieldInstances": [
 								{ "__identifier": "default", "__type": "Bool", "__value": true, "__tile": null, "defUid": 30, "realEditorValues": [{
 									"id": "V_Bool",
@@ -3302,7 +3340,26 @@
 								}] },
 								{ "__identifier": "property_overrides_json", "__type": "String", "__value": null, "__tile": null, "defUid": 45, "realEditorValues": [] }
 							],
-							"__worldX": 896,
+							"__worldX": 928,
+							"__worldY": 160
+						},
+						{
+							"__identifier": "checkpoint",
+							"__grid": [60,20],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 126, "x": 0, "y": 0, "w": 64, "h": 64 },
+							"__smartColor": "#C501FF",
+							"iid": "98b81920-bde0-11f1-b56b-c787fb9c0a0e",
+							"width": 64,
+							"height": 64,
+							"defUid": 28,
+							"px": [480,160],
+							"fieldInstances": [
+								{ "__identifier": "default", "__type": "Bool", "__value": false, "__tile": null, "defUid": 30, "realEditorValues": [] },
+								{ "__identifier": "property_overrides_json", "__type": "String", "__value": null, "__tile": null, "defUid": 45, "realEditorValues": [] }
+							],
+							"__worldX": 1120,
 							"__worldY": 160
 						}
 					]
@@ -4166,7 +4223,27 @@
 					"seed": 5414587,
 					"overrideTilesetUid": null,
 					"gridTiles": [],
-					"entityInstances": []
+					"entityInstances": [
+						{
+							"__identifier": "checkpoint",
+							"__grid": [36,16],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 126, "x": 0, "y": 0, "w": 64, "h": 64 },
+							"__smartColor": "#C501FF",
+							"iid": "27f508d0-bde0-11f1-b56b-a5a40287209b",
+							"width": 64,
+							"height": 64,
+							"defUid": 28,
+							"px": [288,128],
+							"fieldInstances": [
+								{ "__identifier": "default", "__type": "Bool", "__value": false, "__tile": null, "defUid": 30, "realEditorValues": [] },
+								{ "__identifier": "property_overrides_json", "__type": "String", "__value": null, "__tile": null, "defUid": 45, "realEditorValues": [] }
+							],
+							"__worldX": 928,
+							"__worldY": -832
+						}
+					]
 				},
 				{
 					"__identifier": "props",

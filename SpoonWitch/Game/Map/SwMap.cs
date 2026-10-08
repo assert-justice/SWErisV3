@@ -1,11 +1,8 @@
-using System.Collections;
 using Eris;
 using Eris.Utils.Grid2D;
 using ErisMath;
-using ErisPhysics2D;
 using Prion.Node;
 using SpoonWitch.Data;
-using SpoonWitch.Game.Effect;
 using SpoonWitch.Game.Entity.MapEntity;
 using SpoonWitch.Game.Map.Foliage;
 using SpoonWitch.Game.Map.MapData;
@@ -62,6 +59,7 @@ public class SwMap
         }
         AddGlobalHandler("map_set_tiles_rect", HandleSetTilesRect);
         AddGlobalHandler("map_set_tiles_area", HandleSetTilesArea);
+        AddGlobalHandler("map_set_checkpoint", HandleSetCheckpoint);
     }
     private void AddGlobalHandler(string verb, Action<PriNode> handler)
     {
@@ -87,6 +85,26 @@ public class SwMap
         SetTilesRect(layerIdx, tileRect, tileId);
         // add room diff
         SaveCommand(command);
+    }
+    private void HandleSetCheckpoint(PriNode command)
+    {
+        if(!command.TryGet("iid", out string iid))
+        {
+            ErEngine.LogWarning("command missing iid field");
+            return;
+        }
+        if(!MapObjectIdLookup.TryGetValue(iid, out int mapObjectIdx))
+        {
+            ErEngine.LogWarning("no map object with iid '", iid, "' exists");
+            return;
+        }
+        var mapObject = MapData.Objects[mapObjectIdx];
+        if(mapObject.Class != "checkpoint")
+        {
+            ErEngine.LogWarning("map object with iid '", iid, "' is not a checkpoint, it is a ", mapObject.Class);
+            return;
+        }
+        CurrentCheckpoint = mapObject;
     }
     private void SaveCommand(PriNode command)
     {
@@ -323,6 +341,7 @@ public class SwMap
                 entId = Game.AddEntity<SwProp>(props).Id;
                 break;
             case "checkpoint":
+                entId = Game.AddEntity<SwCheckpoint>(props).Id;
                 break;
             case "spawner":
                 entId = Game.AddEntity<SwSpawner>(props).Id;
