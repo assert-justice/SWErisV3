@@ -148,4 +148,9 @@ public abstract class SwActor: SwEntity
     {
         InvulnClock.Start(duration);
     }
+    public override void GameCleanup()
+    {
+        base.GameCleanup();
+        Game.PhysicsWorld.RemoveBody(Body.Id);
+    }
 }

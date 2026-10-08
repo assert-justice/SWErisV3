@@ -40,7 +40,7 @@
                 }
             ]
         },
-        "spoon_hurtbox_mask": 8,
+        "spoon_hurtbox_mask": 24,
         "spoon_hurtbox_size": {"x":32,"y":32},
         "spoon_swing_duration":0.625,
         "spoon_hurt_window_delay": 0.125,

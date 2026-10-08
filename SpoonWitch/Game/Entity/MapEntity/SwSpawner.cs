@@ -58,7 +58,12 @@ public class SwSpawner: SwMapEntity
             return;
         }
         Activations++;
-        var entProps = SwData.Prototypes.Get($"entities/{entType}").DeepCopy();
+        PriDict entProps = [];
+        if(SwData.Prototypes.TryGet($"entities/{entType}", out PriDict prototype))
+        {
+            entProps.Merge(prototype);
+        }
+        // var entProps = SwData.Prototypes.Get($"entities/{entType}").DeepCopy();
         // if(Props.TryGet("fields/spawned_property_overrides_json", out PriDict overrides))
         // {
         //     foreach (var (key,val) in overrides.Data)
@@ -89,6 +94,9 @@ public class SwSpawner: SwMapEntity
                 break;
             case "target":
                 entId = Game.AddEntity<SwTarget>(entProps).Id;
+                break;
+            case "pot":
+                entId = Game.AddEntity<SwPot>(entProps).Id;
                 break;
             default:
                 ErEngine.LogWarning("unsupported spawn type '", entType, "'");
