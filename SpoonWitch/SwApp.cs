@@ -9,6 +9,7 @@ using SpoonWitch.Game;
 using SpoonWitch.Game.Entity.Actor.Player;
 using SpoonWitch.Game.Map.MapData;
 using SpoonWitch.UI.Node;
+using SpoonWitch.Utils;
 
 namespace SpoonWitch;
 
@@ -31,6 +32,8 @@ public class SwApp : IErApp
     // public static double GameSpeedMul => 1;
     public static bool IsPaused{get; private set;} = true;
     public static bool Debug => false;// Settings.TryGet("debug/debug", out bool debug) && debug;
+    private bool IsGameVisible;
+    private readonly SwClock TextClock = new();
     public static int Main()
     {
         SwApp app = new();
@@ -52,6 +55,7 @@ public class SwApp : IErApp
         CommandQueue.AddHandler("log", LogHandler);
         CommandQueue.AddHandler("warning", WarnHandler);
         CommandQueue.AddHandler("error", ErrorHandler);
+        CommandQueue.AddHandler("show_text", ShowText);
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
         if (!TryInit())
         {
@@ -62,7 +66,7 @@ public class SwApp : IErApp
     }
     private bool TryInit()
     {
-        if(!SwData.TryLoadPallets()) return ErEngine.LogWarning("failed to load pallets");
+        if(!SwData.TryLoadPalettes()) return ErEngine.LogWarning("failed to load palettes");
         if(!SwData.TryLoadUiConfig()) return ErEngine.LogWarning("failed to load ui config");
         if(!SwData.TryLoadPrototypes()) return ErEngine.LogWarning("failed to load prototypes");
         if(!SwUiNode.TryFromPrion(SwData.UiConfig.Get("menu_config"), out SwMenuHolder menuHolder))
@@ -91,6 +95,7 @@ public class SwApp : IErApp
         }
         SwData.LoadGame(0);
         Game = new(mapData, command);
+        IsGameVisible = true;
     }
     private void LogHandler(PriNode command)
     {
@@ -104,31 +109,81 @@ public class SwApp : IErApp
     {
         ErEngine.LogError(command.Get("text"));
     }
+    private void HideText()
+    {
+        MenuHolder.Visible = false;
+    }
+    private void ShowText(PriNode command)
+    {
+        if(!command.TryGet("title", out string title)) title = string.Empty;
+        if(!command.TryGet("text", out string text)) text = string.Empty;
+        // if duration is 0 or missing, text will go away when the user hits a button
+        // otherwise the text will stay on screen for the duration
+        string menuName;
+        if(!command.TryGet("duration", out double duration) || duration == 0)
+        {
+            IsPaused = true;
+            menuName = "text";
+        }
+        else
+        {
+            // do stuff with duration
+            TextClock.Start(duration);
+            TextClock.OnFinish = HideText;
+            menuName = "text_temp";
+        }
+        // find text menu
+        SwMenu? textMenu = null;
+        foreach (var item in MenuHolder.Children)
+        {
+            if(item is not SwMenu menu) continue;
+            if(menu.Id != menuName) continue;
+            textMenu = menu;
+            break;
+        }
+        if(textMenu is null)
+        {
+            ErEngine.LogWarning("no text menu!");
+            return;
+        }
+        if(textMenu.Children[0] is SwText titleNode) titleNode.Text = title;
+        else ErEngine.LogWarning("text menu is missing title node");
+        if(textMenu.Children[1] is SwText textNode) textNode.Text = text;
+        else ErEngine.LogWarning("text menu is missing text node");
+        MenuHolder.SetMenu(menuName);
+        MenuHolder.Visible = true;
+    }
     private void Pause()
     {
         IsPaused = true;
         MenuHolder.Visible = true;
         MenuHolder.SetMenu("pause");
+        IsGameVisible = false;
     }
     private void UnPause()
     {
         IsPaused = false;
         MenuHolder.Visible = false;
+        IsGameVisible = true;
     }
     public void Update()
     {
+        TextClock.Update(ErEngine.DeltaTime);
         CommandQueue.Process();
         if(!IsPaused) Game?.Update(ErEngine.DeltaTime);
-        else PollMenu();
-        MenuHolder.Update();
+        if (MenuHolder.Visible)
+        {
+            if(IsPaused) PollMenu();
+            MenuHolder.Update(ErEngine.DeltaTime);
+        }
     }
     public void Draw()
     {
         ErEngine.Renderer.PushViewport(ErVec2.Zero, RenderTexture);
         ErEngine.Renderer.SetClearColor(ErColor.Black);
         ErEngine.Renderer.Clear();
-        if(!IsPaused) Game?.Draw();
-        if(MenuHolder is not null && MenuHolder.Visible) MenuHolder.Draw();
+        if(IsGameVisible) Game?.Draw();
+        if(MenuHolder.Visible) MenuHolder.Draw();
         ErEngine.Renderer.PopViewport();
         RenderTexture.DrawFullscreen();
     }

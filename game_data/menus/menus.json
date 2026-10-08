@@ -334,7 +334,58 @@
                     }
                 }
             ]
+        },
+        {
+            "type": "menu",
+            "id": "text",
+            "flow_h": "centered",
+            "flow_v": "centered",
+            "children":[
+                {
+                    "type": "text",
+                    "text": "[Title]",
+                    "text_justify": "centered",
+                    "font_size": 24,
+                    "font_color": "#ffffff"
+                },
+                {
+                    "type": "text",
+                    "text": "[Text]",
+                    "font_size": 16,
+                    "font_color": "#ffffff"
+                },
+                {
+                    "type": "button",
+                    "text": "-",
+                    "font_size": 16,
+                    "font_color": "#ffffff",
+                    "font_color_focus": "#ffffff",
+                    "on_click_command":{
+                        "verb": "unpause"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "menu",
+            "id": "text_temp",
+            "flow_h": "centered",
+            "flow_v": "centered",
+            "children":[
+                {
+                    "type": "text",
+                    "text": "[Title]",
+                    "text_justify": "centered",
+                    "font_size": 24,
+                    "font_color": "#ffffff"
+                },
+                {
+                    "type": "text",
+                    "text": "[Text]",
+                    "font_size": 16,
+                    "font_color": "#ffffff"
+                }
+            ]
         }
-
     ]
 }

@@ -16,6 +16,7 @@ public class SwText: SwUiNode
         {
             _Text = value;
             _MinSize = null;
+            SetDirty();
         }
     }
     private string FontPath = string.Empty;
@@ -75,6 +76,6 @@ public class SwText: SwUiNode
     public override void Draw()
     {
         base.Draw();
-        Font?.DrawString(Text, FontColor, GlobalPosition);
+        Font?.DrawString(Text, FontColor, GlobalPosition.Floor());
     }
 }

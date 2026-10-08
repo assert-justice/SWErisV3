@@ -40,7 +40,7 @@ public static class SwData
         UiConfig.SetData(data);
         return true;
     }
-    public static bool TryLoadPallets()
+    public static bool TryLoadPalettes()
     {
         if(!Manifest.TryGet("palettes", out string paletteFilepath)) return ErEngine.LogError("no valid pallet filepath");
         if(!ErTexture.TryGetPaletteHandles(out var paletteHandles, paletteFilepath)) return ErEngine.LogError("unable to load palettes");

@@ -19,16 +19,13 @@ public class SwButton : SwUiNode
             if (HasFocus)
             {
                 TextNode.Text = Sep + value + Sep;
-                TextNode.LocalPosition = ErVec2.Zero;
             }
             else
             {
                 TextNode.Text = value;
-                TextNode.LocalPosition = ErVec2.Right * MinusWidth;
             }
         }
     }
-    private readonly double MinusWidth;
     public override ErVec2 MinSize => TextNode.MinSize;
     private ErColor DefaultColor = ErColor.Red;
     private ErColor FocusColor = ErColor.White;
@@ -44,7 +41,6 @@ public class SwButton : SwUiNode
             if(!ErColor.TryParse(font_color_focus, out var color)) ErEngine.LogWarning("bad color string '", font_color_focus, "'");
             else FocusColor = color;
         }
-        MinusWidth = TextNode.Font?.GetStringSize("-").X ?? 0;
         Text = TextNode.Text;
         Command = node.Get("on_click_command");
     }

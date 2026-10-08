@@ -11,7 +11,7 @@
 	"iid": "56816e60-fa90-11f0-b4ec-5b883517cfbd",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 141,
+	"nextUid": 142,
 	"identifierStyle": "Lowercase",
 	"toc": [],
 	"worldLayout": "GridVania",
@@ -2223,6 +2223,43 @@
 			"pivotY": 0,
 			"fieldDefs": [
 				{
+					"identifier": "title",
+					"doc": null,
+					"__type": "String",
+					"uid": 141,
+					"type": "F_String",
+					"isArray": false,
+					"canBeNull": true,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
+				},
+				{
 					"identifier": "text",
 					"doc": null,
 					"__type": "String",
@@ -3837,9 +3874,11 @@
 							"defUid": 128,
 							"px": [160,192],
 							"fieldInstances": [
-								{ "__identifier": "on_break_json", "__type": "String", "__value": "{\n  \"verb\": \"log\",\n  \"text\": \"broke target!\"\n}", "__tile": null, "defUid": 129, "realEditorValues": [{
+								{ "__identifier": "on_break_json", "__type": "String", "__value": "{\n  \"verb\": \"show_text\",\n  \"title\": \"target broken!\",\n  \"text\": \"you smashed that sucker\",\n  \"duration\": 1\n}", "__tile": null, "defUid": 129, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["{\\n  \"verb\": \"log\",\\n  \"text\": \"broke target!\"\\n}"]
+									"params": [
+										"{\\n  \"verb\": \"show_text\",\\n  \"title\": \"target broken!\",\\n  \"text\": \"you smashed that sucker\",\\n  \"duration\": 1\\n}"
+									]
 								}] },
 								{ "__identifier": "class", "__type": "String", "__value": "spawner", "__tile": null, "defUid": 130, "realEditorValues": [] },
 								{ "__identifier": "trigger_on_load", "__type": "Bool", "__value": true, "__tile": null, "defUid": 131, "realEditorValues": [] },
@@ -3880,10 +3919,16 @@
 							"height": 32,
 							"defUid": 139,
 							"px": [224,224],
-							"fieldInstances": [{ "__identifier": "text", "__type": "String", "__value": "I am a sign!", "__tile": null, "defUid": 140, "realEditorValues": [{
-								"id": "V_String",
-								"params": ["I am a sign!"]
-							}] }],
+							"fieldInstances": [
+								{ "__identifier": "title", "__type": "String", "__value": "An important message:", "__tile": null, "defUid": 141, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["An important message:"]
+								}] },
+								{ "__identifier": "text", "__type": "String", "__value": "I am a sign!", "__tile": null, "defUid": 140, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["I am a sign!"]
+								}] }
+							],
 							"__worldX": 864,
 							"__worldY": 224
 						}

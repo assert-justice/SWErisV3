@@ -108,6 +108,10 @@ public readonly struct ErVec2: IEquatable<ErVec2>
     {
         return Dot(this, a);
     }
+    public ErVec2 Floor()
+    {
+        return new(Math.Floor(X),Math.Floor(Y));
+    }
     public ErVec2I FloorToInt()
     {
         double x = Math.Floor(X);

@@ -42,6 +42,16 @@ public class SwSign: SwMapEntity
     private void OnUse(PriNode _)
     {
         if(!IsUsable) return;
-        ErEngine.Log(Props.Get("fields/text"));
+//         {
+//   "verb": "show_text",
+//   "title": "target broken!",
+//   "text": "you smashed that sucker",
+//   "duration": 1
+// }
+        PriDict command = [];
+        command.TrySet("verb", "show_text");
+        command.Add("title", Props.Get("fields/title"));
+        command.Add("text", Props.Get("fields/text"));
+        SwApp.CommandQueue.AddCommand(command);
     }
 }

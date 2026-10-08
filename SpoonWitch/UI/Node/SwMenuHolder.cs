@@ -21,10 +21,10 @@ public class SwMenuHolder: SwUiNode
             menu.Visible = false;
         }
     }
-    public override void Update()
+    public override void Update(double dt)
     {
         HandleQueued();
-        base.Update();
+        base.Update(dt);
     }
     public override void Up()
     {

@@ -14,6 +14,41 @@ public class SwMenu: SwUiNode
     {
         if(!node.TryGet("id", out Id)) throw new("no id");
     }
+    private ErVec2 GetMinSize()
+    {
+        double minX = 0;
+        double minY = 0;
+        foreach (var item in Children)
+        {
+            if(!item.Visible) continue;
+            if(item.MinSize.X > minX) minX = item.MinSize.X;
+            minY += item.MinSize.Y;
+        }
+        return new(minX, minY);
+    }
+    protected override void Clean()
+    {
+        base.Clean();
+        UpdateLayout();
+    }
+    private void UpdateLayout()
+    {
+        ErVec2 minSize = GetMinSize();
+        ErVec2 ul = new((SwApp.CameraSize.X - minSize.X)/2,(SwApp.CameraSize.Y - minSize.Y)/2);
+        double posY = ul.Y;
+        foreach (var item in Children)
+        {
+            if(!item.Visible) continue;
+            double posX = SwApp.CameraSize.X / 2 - item.MinSize.X / 2;
+            item.LocalPosition = new(posX,posY);
+            posY += item.MinSize.Y;
+        }
+    }
+    public override void Draw()
+    {
+        UpdateLayout();
+        base.Draw();
+    }
     protected override void SetVisible(bool isVisible)
     {
         base.SetVisible(isVisible);
@@ -23,12 +58,10 @@ public class SwMenu: SwUiNode
         if (!isVisible) return;
         // position children
         FocusableNodes.Clear();
-        var pos = LocalPosition;
+        UpdateLayout();
         foreach (var item in Children)
         {
             if(!item.Visible) continue;
-            item.LocalPosition = pos;
-            pos += new ErVec2(0, item.MinSize.Y);
             if(item.CanFocus) FocusableNodes.Add(item);
         }
         // focus first element
@@ -38,7 +71,7 @@ public class SwMenu: SwUiNode
             SetFocus(item);
             break;
         }
-        if(FocusNode is null) ErEngine.LogWarning("menu has no focus");
+        // if(FocusNode is null) ErEngine.LogWarning("menu has no focus");
     }
     public override void Up()
     {

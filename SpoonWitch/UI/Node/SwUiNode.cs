@@ -9,6 +9,7 @@ public abstract class SwUiNode
     public readonly List<SwUiNode> Children = [];
     public SwUiNode? Parent{get; private set;}
     public virtual ErVec2 MinSize => ErVec2.Zero;
+    public ErVec2 Size{get; private set;}
     public ErVec2 LocalPosition;
     public ErVec2 GlobalPosition => (Parent?.GlobalPosition ?? ErVec2.Zero) + LocalPosition;
     public bool CanFocus => Visible && CanFocusPro;
@@ -23,6 +24,10 @@ public abstract class SwUiNode
         {
             if(_Visible != value) SetVisible(value);
         }
+    }
+    public void ParentSetSize(ErVec2 size)
+    {
+        Size = size;
     }
     protected SwUiNode(PriNode node)
     {
@@ -53,18 +58,20 @@ public abstract class SwUiNode
             item.Clean();
         }
     }
+    protected virtual void SetDirty()
+    {
+        IsDirty = true;
+        Parent?.IsDirty = true;
+    }
     public virtual void Draw()
     {
+        if(IsDirty) Clean();
         foreach (var item in Children)
         {
             if(item.Visible) item.Draw();
         }
     }
-    public virtual void Update(){}
-    // public SwUiNode[] GetChildren()
-    // {
-    //     return [..Children];
-    // }
+    public virtual void Update(double dt){}
     public IEnumerable<T> GetChildren<T>() where T: SwUiNode
     {
         foreach (var item in Children)
