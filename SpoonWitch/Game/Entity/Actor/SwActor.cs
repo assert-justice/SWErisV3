@@ -105,9 +105,12 @@ public abstract class SwActor: SwEntity
         Velocity = knockback;
         Health -= value;
         KnockbackClock.Start(KnockbackTime);
-        InvulnClock.Start(InvulnTime);
-        FlickerClock.Start(InvulnTime);
-        FlickerCycle.Start();
+        if(InvulnTime > 0)
+        {
+            InvulnClock.Start(InvulnTime);
+            FlickerClock.Start(InvulnTime);
+            FlickerCycle.Start();
+        }
         if(Health > 0)
         {
             if(SwApp.Debug) ErEngine.Log("entity ", Id," '", GetTypeName(), "' took ", value, " damage. health is now ", Health);

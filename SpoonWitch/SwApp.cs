@@ -49,6 +49,9 @@ public class SwApp : IErApp
         CommandQueue.AddHandler("launch", Launch);
         CommandQueue.AddHandler("pause", (_)=>Pause());
         CommandQueue.AddHandler("unpause", (_)=>UnPause());
+        CommandQueue.AddHandler("log", LogHandler);
+        CommandQueue.AddHandler("warning", WarnHandler);
+        CommandQueue.AddHandler("error", ErrorHandler);
         RenderTexture = ErTexture.GetRenderTexture(INTERNAL_WIDTH,INTERNAL_HEIGHT);
         if (!TryInit())
         {
@@ -88,6 +91,18 @@ public class SwApp : IErApp
         }
         SwData.LoadGame(0);
         Game = new(mapData, command);
+    }
+    private void LogHandler(PriNode command)
+    {
+        ErEngine.Log(command.Get("text"));
+    }
+    private void WarnHandler(PriNode command)
+    {
+        ErEngine.LogWarning(command.Get("text"));
+    }
+    private void ErrorHandler(PriNode command)
+    {
+        ErEngine.LogError(command.Get("text"));
     }
     private void Pause()
     {

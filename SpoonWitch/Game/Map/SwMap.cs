@@ -354,6 +354,8 @@ public class SwMap
             case "fwoosher":
                 entId = Game.AddEntity<SwFwoosher>(props).Id;
                 break;
+            case "target":
+                break;
             default:
                 ErEngine.LogWarning("unsupported map object class ", className);
                 return;

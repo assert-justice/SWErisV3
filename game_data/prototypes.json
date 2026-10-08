@@ -24,7 +24,8 @@
         "player": "entities/actors/player/player_properties.json",
         "aspect": "entities/actors/aspect/aspect_properties.json",
         "slume": "entities/actors/slume/slume_properties.json",
-        "knight": "entities/actors/knight/knight_properties.json"
+        "knight": "entities/actors/knight/knight_properties.json",
+        "target": "entities/map_entities/target/target_properties.json"
     },
     "map_entities":{
         "fwoosher": "entities/map_entities/fwoosher/fwoosher_properties.json",
@@ -32,7 +33,7 @@
     },
     "projectiles":{
         "sling":{
-            "hurtbox_mask": 8,
+            "hurtbox_mask": 40,
             "size": {"x": 14, "y": 14},
             "damage": null,
             "body":{

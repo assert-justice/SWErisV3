@@ -1,6 +1,7 @@
 using Eris;
 using Prion.Node;
 using SpoonWitch.Data;
+using SpoonWitch.Game.Entity.Actor;
 using SpoonWitch.Game.Entity.Actor.Enemy.Aspect;
 using SpoonWitch.Game.Entity.Actor.Enemy.Knight;
 using SpoonWitch.Game.Entity.Actor.Enemy.Slume;
@@ -24,7 +25,7 @@ public class SwSpawner: SwMapEntity
             Spawn(item);
         }
         Props.TrySet("spawned_entities", new PriDict());
-        if(Props.TryGet("fields/trigger_on_load", out bool b)) SpawnNew();
+        if(Props.TryGet("fields/trigger_on_load", out bool b) && b) SpawnNew();
     }
     protected override void Save()
     {
@@ -51,12 +52,24 @@ public class SwSpawner: SwMapEntity
     private void SpawnNew()
     {
         if(!CanSpawn()) return;
-        if(!Props.TryGet("fields/entity_type", out string entType)) return;
+        if(!Props.TryGet("fields/entity_type", out string entType))
+        {
+            ErEngine.LogWarning("missing entity type");
+            return;
+        }
         Activations++;
         var entProps = SwData.Prototypes.Get($"entities/{entType}").DeepCopy();
+        // if(Props.TryGet("fields/spawned_property_overrides_json", out PriDict overrides))
+        // {
+        //     foreach (var (key,val) in overrides.Data)
+        //     {
+        //         entProps.TrySet(key, val);
+        //     }
+        // }
         SwPrion.TrySetVec2(entProps, Position);
         entProps.TrySet("is_passive", Props.Get("fields/is_passive"));
         entProps.TrySet("ent_type", entType);
+        entProps.TrySet("spawner_props", Props.Data.DeepCopy());
         Spawn(entProps);
     }
     private void Spawn(PriNode entProps)
@@ -73,6 +86,9 @@ public class SwSpawner: SwMapEntity
                 break;
             case "aspect":
                 entId = Game.AddEntity<SwAspect>(entProps).Id;
+                break;
+            case "target":
+                entId = Game.AddEntity<SwTarget>(entProps).Id;
                 break;
             default:
                 ErEngine.LogWarning("unsupported spawn type '", entType, "'");

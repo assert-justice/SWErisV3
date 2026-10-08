@@ -10,4 +10,6 @@ public enum SwCollisionMask: uint
     Player = 5,
     EnemyTeam = 8,
     Enemy = 9,
+    Spoon = 16,
+    Sling = 32,
 }
