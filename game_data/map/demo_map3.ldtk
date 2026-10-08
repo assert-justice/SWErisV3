@@ -11,7 +11,7 @@
 	"iid": "56816e60-fa90-11f0-b4ec-5b883517cfbd",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 138,
+	"nextUid": 141,
 	"identifierStyle": "Lowercase",
 	"toc": [],
 	"worldLayout": "GridVania",
@@ -2187,6 +2187,79 @@
 					"tilesetUid": null
 				}
 			]
+		},
+		{
+			"identifier": "sign",
+			"uid": 139,
+			"tags": [],
+			"exportToToc": false,
+			"allowOutOfBounds": false,
+			"doc": null,
+			"width": 32,
+			"height": 32,
+			"resizableX": false,
+			"resizableY": false,
+			"minWidth": null,
+			"maxWidth": null,
+			"minHeight": null,
+			"maxHeight": null,
+			"keepAspectRatio": false,
+			"tileOpacity": 1,
+			"fillOpacity": 0.08,
+			"lineOpacity": 0,
+			"hollow": false,
+			"color": "#124E89",
+			"renderMode": "Tile",
+			"showName": true,
+			"tilesetId": 138,
+			"tileRenderMode": "FitInside",
+			"tileRect": { "tilesetUid": 138, "x": 0, "y": 0, "w": 32, "h": 32 },
+			"uiTileRect": null,
+			"nineSliceBorders": [],
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0,
+			"pivotY": 0,
+			"fieldDefs": [
+				{
+					"identifier": "text",
+					"doc": null,
+					"__type": "String",
+					"uid": 140,
+					"type": "F_Text",
+					"isArray": false,
+					"canBeNull": true,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
+				}
+			]
 		}
 	], "tilesets": [
 		{
@@ -2379,6 +2452,25 @@
 			"customData": [],
 			"savedSelections": [],
 			"cachedPixelData": { "opaqueTiles": "0", "averageColors": "c732" }
+		},
+		{
+			"__cWid": 1,
+			"__cHei": 1,
+			"identifier": "sign",
+			"uid": 138,
+			"relPath": "props/sign.png",
+			"embedAtlas": null,
+			"pxWid": 32,
+			"pxHei": 32,
+			"tileGridSize": 32,
+			"spacing": 0,
+			"padding": 0,
+			"tags": [],
+			"tagsSourceEnumUid": null,
+			"enumTags": [],
+			"customData": [],
+			"savedSelections": [],
+			"cachedPixelData": { "opaqueTiles": "0", "averageColors": "6731" }
 		}
 	], "enums": [
 		{ "identifier": "script_type", "uid": 46, "values": [ { "id": "js", "tileRect": null, "color": 12470831 }, { "id": "json", "tileRect": null, "color": 14120515 } ], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] },
@@ -3775,6 +3867,25 @@
 							],
 							"__worldX": 800,
 							"__worldY": 256
+						},
+						{
+							"__identifier": "sign",
+							"__grid": [28,28],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 138, "x": 0, "y": 0, "w": 32, "h": 32 },
+							"__smartColor": "#124E89",
+							"iid": "fb283a60-bde0-11f1-b56b-57a30f8d510b",
+							"width": 32,
+							"height": 32,
+							"defUid": 139,
+							"px": [224,224],
+							"fieldInstances": [{ "__identifier": "text", "__type": "String", "__value": "I am a sign!", "__tile": null, "defUid": 140, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["I am a sign!"]
+							}] }],
+							"__worldX": 864,
+							"__worldY": 224
 						}
 					]
 				},

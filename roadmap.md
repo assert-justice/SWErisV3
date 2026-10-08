@@ -9,5 +9,6 @@
     - targets
 - sfx/music
 - in game text
+- spells!
 
 ## Done

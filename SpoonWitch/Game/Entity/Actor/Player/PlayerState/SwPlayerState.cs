@@ -1,5 +1,6 @@
 using Eris;
 using ErisMath;
+using Prion.Node;
 using SpoonWitch.Data;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
@@ -286,12 +287,19 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             if(CanAttack() && Controls.AttackJustDown) StateMachine.SetState("attack");
             else if(Controls.IsCharging && Inventory.GetCount("sling_ammo") > 0) StateMachine.SetState("charging");
             else if(CanDodge() && Controls.DodgeJustDown) StateMachine.SetState("dodging");
-            else if(Entity.CurrentSpell is not null && !Entity.CurrentSpell.IsActive && CanCast() && Controls.CastJustDown)
+            else if (Controls.UseJustDown)
             {
-                Entity.CurrentSpell.Begin();
-                Entity.Mana -= Entity.CurrentSpell.ManaCost;
+                PriDict command = [];
+                command.TrySet("verb", "player_use");
+                command.TrySet("player_idx", Entity.PlayerIdx);
+                SwApp.CommandQueue.AddCommand(command);
             }
-            else if(Entity.CurrentSpell is not null && Entity.CurrentSpell.IsActive && Controls.CastJustDown){}
+            // else if(Entity.CurrentSpell is not null && !Entity.CurrentSpell.IsActive && CanCast() && Controls.CastJustDown)
+            // {
+            //     Entity.CurrentSpell.Begin();
+            //     Entity.Mana -= Entity.CurrentSpell.ManaCost;
+            // }
+            // else if(Entity.CurrentSpell is not null && Entity.CurrentSpell.IsActive && Controls.CastJustDown){}
             else if(ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.T)) StateMachine.SetState("dancing");
         }
     }
