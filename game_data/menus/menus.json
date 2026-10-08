@@ -340,6 +340,8 @@
             "id": "text",
             "flow_h": "centered",
             "flow_v": "centered",
+            "bg_color": "#00000088",
+            "padding":8,
             "children":[
                 {
                     "type": "text",
@@ -371,6 +373,8 @@
             "id": "text_temp",
             "flow_h": "centered",
             "flow_v": "centered",
+            "bg_color": "#00000088",
+            "padding":8,
             "children":[
                 {
                     "type": "text",

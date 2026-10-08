@@ -11,12 +11,12 @@
             }
         },
         "sling_ammo":{
-            "texture_filepath": "entities/actors/player/images/bella_sling_ammo_pickup.png",
+            "texture_filepath": "entities/actors/player/images/bella_sling_ammo_shot.png",
             "discover_texture_filepath": "entities/actors/player/images/bella_sling_ammo_shot.png",
             "discover_command":{
                 "verb": "show_text",
                 "title": "You got sling bullets!",
-                "text": "Aim with right stick to charge. Fire with R1/Right Bumper."
+                "text": "Aim with right stick to charge. Fire with R1/Right Bumper.\nRestock at ammo piles or checkpoints."
             }
         }
     },

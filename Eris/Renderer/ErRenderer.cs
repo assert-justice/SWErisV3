@@ -121,20 +121,18 @@ public class ErRenderer
     {
         ClearColor = color;
     }
-    public void DrawRect(ErRect2 rect, ErColor color, double alpha = 1, bool filled = true)
+    public void DrawRect(ErRect2 rect, ErColor color, bool filled = true)
     {
         rect = rect.Translate(-ViewportTransform.Position);
-        byte a = (byte)(alpha * 255);
-        SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, a);
+        SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, color.A);
         if (filled)SDL.RenderFillRect(Handle, rect.ToSdlRect());
         else SDL.RenderRect(Handle, rect.ToSdlRect());
     }
-    public void DrawLine(ErVec2 start, ErVec2 end, ErColor color, double alpha = 1)
+    public void DrawLine(ErVec2 start, ErVec2 end, ErColor color)
     {
         start -= ViewportTransform.Position;
         end -= ViewportTransform.Position;
-        byte a = (byte)(alpha * 255);
-        SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, a);
+        SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, color.A);
         SDL.RenderLine(Handle, (float)start.X, (float)start.Y, (float)end.X, (float)end.Y);
     }
     public void DrawTriangle(ErVec2 a, ErVec2 b, ErVec2 c, ErColor color)

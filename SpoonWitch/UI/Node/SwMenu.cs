@@ -1,4 +1,5 @@
 using Eris;
+using Eris.Renderer;
 using ErisMath;
 using Prion.Node;
 using SpoonWitch.UI.Node;
@@ -10,9 +11,17 @@ public class SwMenu: SwUiNode
     public readonly string Id;
     private readonly List<SwUiNode> FocusableNodes = [];
     private SwUiNode? FocusNode;
+    private ErColor? BgColor;
+    public double Padding = 0;
     public SwMenu(PriNode node) : base(node)
     {
         if(!node.TryGet("id", out Id)) throw new("no id");
+        if(node.TryGet("bg_color", out string bgColor))
+        {
+            if(!ErColor.TryParse(bgColor, out var color)) ErEngine.LogWarning("failed to parse string as color: ", bgColor);
+            else BgColor = color;
+        }
+        if(node.TryGet("padding", out double d)) Padding = d;
     }
     private ErVec2 GetMinSize()
     {
@@ -34,12 +43,13 @@ public class SwMenu: SwUiNode
     private void UpdateLayout()
     {
         ErVec2 minSize = GetMinSize();
-        ErVec2 ul = new((SwApp.CameraSize.X - minSize.X)/2,(SwApp.CameraSize.Y - minSize.Y)/2);
-        double posY = ul.Y;
+        ErRect2 contentRect = ErRect2.Centered(SwApp.CameraSize/2,minSize+new ErVec2(Padding * 2, Padding * 2));
+        if(BgColor is not null) ErEngine.Renderer.DrawRect(contentRect, BgColor.Value);
+        double posY = contentRect.Position.Y + Padding;
         foreach (var item in Children)
         {
             if(!item.Visible) continue;
-            double posX = SwApp.CameraSize.X / 2 - item.MinSize.X / 2;
+            double posX = contentRect.Center.X - item.MinSize.X / 2;
             item.LocalPosition = new(posX,posY);
             posY += item.MinSize.Y;
         }

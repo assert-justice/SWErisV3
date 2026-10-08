@@ -33,6 +33,15 @@ public readonly struct ErColor: IPriSchema<ErColor>
         res |= R << 24;
         return res;
     }
+    public ErColor WithAlpha(double alpha)
+    {
+        alpha = Math.Clamp(alpha, 0, 1) * 255;
+        return new(R,G,B,(byte)alpha);
+    }
+    public ErColor WithAlpha(byte alpha)
+    {
+        return new(R,G,B,alpha);
+    }
     public static ErColor FromDoubles(double r, double g, double b, double a = 1)
     {
         return new()
