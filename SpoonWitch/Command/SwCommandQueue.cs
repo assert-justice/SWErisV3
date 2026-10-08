@@ -53,11 +53,12 @@ public class SwCommandQueue
         if(IsProcessing) Overflow.Enqueue(command);
         else CommandQueue.Enqueue(command);
     }
-    public void AddCommandVerb(string verb)
+    public PriDict AddCommandVerb(string verb)
     {
         PriDict command = [];
         command.TrySet("verb", verb);
         AddCommand(command);
+        return command;
     }
     public void Process()
     {

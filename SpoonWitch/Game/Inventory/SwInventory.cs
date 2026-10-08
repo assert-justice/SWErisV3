@@ -44,6 +44,18 @@ public class SwInventory
         if(!Data.TryGetValue(key, out var entry)) return 0;
         return entry.Max;
     }
+    public bool TryGet(string key, out int count, out int max)
+    {
+        count = 0; max = 0;
+        if(!Data.TryGetValue(key, out var entry)) return false;
+        count = entry.Count;
+        max = entry.Max;
+        return true;
+    }
+    public bool HasEntry(string key)
+    {
+        return Data.ContainsKey(key);
+    }
     public void SetCount(string key, int count)
     {
         if(Data.TryGetValue(key, out var value))

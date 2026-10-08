@@ -52,6 +52,7 @@ public class SwApp : IErApp
         CommandQueue.AddHandler("launch", Launch);
         CommandQueue.AddHandler("pause", (_)=>Pause());
         CommandQueue.AddHandler("unpause", (_)=>UnPause());
+        CommandQueue.AddHandler("main_menu", (_)=>MenuHolder.SetMenu("main_menu"));
         CommandQueue.AddHandler("log", LogHandler);
         CommandQueue.AddHandler("warning", WarnHandler);
         CommandQueue.AddHandler("error", ErrorHandler);

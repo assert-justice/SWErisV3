@@ -4,19 +4,19 @@
     "pickups":{
         "spoon":{
             "texture_filepath": "entities/actors/player/images/bella_spoon_item.png",
-            "count": 1,
-            "max_uses": 1,
-            "on_enter_global":{
-                "verb": "player_add_item",
-                "pickup_type": "spoon"
+            "discover_command":{
+                "verb": "show_text",
+                "title": "You got your spoon!",
+                "text": "Attack with Square!"
             }
         },
         "sling_ammo":{
             "texture_filepath": "entities/actors/player/images/bella_sling_ammo_pickup.png",
-            "count": 4,
-            "on_enter":{
-                "verb": "ent_offer_item",
-                "pickup_type": "sling_ammo"
+            "discover_texture_filepath": "entities/actors/player/images/bella_sling_ammo_shot.png",
+            "discover_command":{
+                "verb": "show_text",
+                "title": "You got sling bullets!",
+                "text": "Aim with right stick to charge. Fire with R1/Right Bumper."
             }
         }
     },

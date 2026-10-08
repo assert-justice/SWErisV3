@@ -33,14 +33,11 @@ public class SwCheckpoint: SwMapEntity
         {
             // set sprite to enabled
             Sprite?.Play("active");
-            Area?.Enabled = false;
-            // set current checkpoint
         }
         else
         {
             // set sprite to default
             Sprite?.Play("default");
-            Area?.Enabled = true;
         }
     }
     private void OnEnter(SwEntity entity)
@@ -49,5 +46,9 @@ public class SwCheckpoint: SwMapEntity
         command.TrySet("verb", "map_set_checkpoint");
         command.TrySet("iid", Iid);
         SwApp.CommandQueue.AddCommand(command);
+        command = [];
+        command.TrySet("verb", "enter_checkpoint");
+        command.TrySet("iid", Iid);
+        entity.AddCommand(command);
     }
 }

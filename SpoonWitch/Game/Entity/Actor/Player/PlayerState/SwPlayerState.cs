@@ -90,6 +90,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
     }
     protected bool CanAttack()
     {
+        if(!Entity.SpoonEnabled) return false;
         if(Entity.SpoonCooldownClock.IsRunning) return false;
         if(Entity.Stamina <= 0) return false;
         return true;
@@ -351,7 +352,13 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         public override void Update(double dt)
         {
             base.Update(dt);
-            if(Controls.DodgeJustDown) StateMachine.SetState("default");
+            if(BodySprite.IsPlaying) return;
+            if(Entity.DiscoverCommand is not PriNull)
+            {
+                SwApp.CommandQueue.AddCommand(Entity.DiscoverCommand);
+            }
+            StateMachine.SetState("default");
+            // if(Controls.DodgeJustDown) StateMachine.SetState("default");
         }
         public override void EndState(string nextState)
         {

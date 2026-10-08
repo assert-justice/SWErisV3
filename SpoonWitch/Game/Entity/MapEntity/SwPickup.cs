@@ -12,9 +12,12 @@ public class SwPickup : SwMapEntity
 {
     private SwAreaComponent Area = null!;
     private ErTexture? Texture;
-    public int Count;
-    public int MaxUses = 0;
-    public int Uses = 0;
+    private string PickupType = string.Empty;
+    public int Count
+    {
+        get => Props.TryGet("fields/count", out int i) ? i : 0;
+        set => Props.TrySet("fields/count", value);
+    }
     public SwPickup()
     {
         AddHandler("pickup_set_rem", SetRem);
@@ -22,15 +25,16 @@ public class SwPickup : SwMapEntity
     public override void SetProps(PriNode props)
     {
         base.SetProps(props);
-        if(Props.TryGet("count", out int i)) Count = i;
-        if(Props.TryGet("max_uses", out i)) MaxUses = i;
     }
     public override void Init()
     {
         base.Init();
-        SwData.TryLoadTexture(out Texture, Props.Get("texture_filepath"));
-        if(!Props.TryGet("mask", out uint mask)) mask = 2;
-        Area = new(this, "area", mask, SwPrion.GetVec2(Props.Data, "width_px", "height_px", new ErVec2(32,32)), enabled: true, onBodyEnter: OnEnter);
+        if(Props.TryGet("fields/pickup_type", out string s)) PickupType = s;
+        var pickupData = SwData.Prototypes.Get($"pickups/{PickupType}");
+        Props.TrySet("pickup", pickupData);
+        SwData.TryLoadTexture(out Texture, Props.Get("pickup/texture_filepath"));
+        if(!Props.TryGet("fields/mask", out uint mask)) mask = 4;
+        Area = new(this, "area", mask, Size, enabled: Count > 0, onBodyEnter: OnEnter);
         RegisterComponent(Area);
     }
     protected override void Draw()
@@ -55,26 +59,11 @@ public class SwPickup : SwMapEntity
     }
     private void OnEnter(SwEntity entity)
     {
-        if(Props.Get("on_enter").DeepCopy().TryAs(out PriDict command))
-        {
-            if(!command.TryGet("verb", out string verb)) return;
-            switch (verb)
-            {
-                case "ent_offer_item":
-                    command.TrySet("ent_id", Id);
-                    command.TrySet("count", Count);
-                    break;
-                default:
-                    break;
-            }
-            entity.AddCommand(command);
-        }
-        if(Props.TryGet("on_enter_global", out command)) SwApp.CommandQueue.AddCommand(command);
-        Uses++;
-        if(MaxUses > 0 && Uses >= MaxUses)
-        {
-            Area.Enabled = false;
-            Visible = false;
-        }
+        PriDict command = [];
+        command.TrySet("verb", "ent_offer_item");
+        command.TrySet("ent_id", Id);
+        command.TrySet("pickup_type", PickupType);
+        command.TrySet("count", Count);
+        entity.AddCommand(command);
     }
 }

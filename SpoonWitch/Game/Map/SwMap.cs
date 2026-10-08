@@ -330,7 +330,7 @@ public class SwMap
         props.TrySet("map_iid", MapData.Iid);
         // ErEngine.Log(props);
         string className = MapData.Objects[mapObjectIdx].Class;
-        int entId = -1;// int.MaxValue;
+        int entId;// int.MaxValue;
         switch (className)
         {
             case "area":
@@ -347,6 +347,7 @@ public class SwMap
                 entId = Game.AddEntity<SwSpawner>(props).Id;
                 break;
             case "pickup":
+                entId = Game.AddEntity<SwPickup>(props).Id;
                 break;
             case "trigger":
                 entId = Game.AddEntity<SwTrigger>(props).Id;

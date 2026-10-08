@@ -58,6 +58,7 @@ public class SwPlayer: SwActor
     public readonly SwClock DodgeCooldownClock;
     // Spoon
     // Note: SpoonDamage stays in props
+    public bool SpoonEnabled = false;
     public double SpoonSwingDuration = 0.625;
     public double SpoonHurtDelay = 0.125;
     public double SpoonHurtDuration = 0.125;
@@ -69,6 +70,7 @@ public class SwPlayer: SwActor
     public double SlingBulletSpeed = 600;
     public double SlingChargeTime = 0.75;
     public readonly SwClock SlingChargeClock;
+    public PriNode DiscoverCommand = PriNull.Null;
     // Inventory
     public readonly SwInventory Inventory = new();
     public int Ammo
@@ -83,23 +85,25 @@ public class SwPlayer: SwActor
     }
     public int Roots
     {
-        get => Inventory.GetCount("roots");
-        set => Inventory.SetCount("roots", value);
+        get => Inventory.GetCount("root");
+        set => Inventory.SetCount("root", value);
     }
     public int MaxRoots
     {
-        get => Inventory.GetMax("roots");
-        set => Inventory.SetCount("roots", Ammo, value);
+        get => Inventory.GetMax("root");
+        set => Inventory.SetCount("root", Ammo, value);
     }
     public SwSpell? CurrentSpell;
     public SwStateMachine<SwPlayer>? StateMachine{get; private set;}
     public ErTexture? PickupTexture;
     public SwPlayerControls Controls{get; private set;} = null!;
+    private readonly HashSet<string> DiscoveredItems = [];
     // private bool GotMad = false;
     public SwPlayer()
     {
         AddHandler("ent_offer_item", EntOfferItem);
-        AddGlobalHandler("player_add_item", PlayerAddItem);
+        AddHandler("enter_checkpoint", EnterCheckpoint);
+        AddGlobalHandler("player_discover_item", PlayerDiscoverItem);
         HealthClock = AddClock();
         StaminaRegenClock = AddClock();
         DodgeCooldownClock = AddClock();
@@ -232,20 +236,45 @@ public class SwPlayer: SwActor
         if(!command.TryGet("ent_id", out int id)) return;
         if(!Game.EntityLookup.TryGet<SwEntity>(id.ToString(), out var entity)) return;
         if(!command.TryGet("count", out int count)) return;
+        if(count == 0) return;
         if(!command.TryGet("pickup_type", out string pickup_type)) return;
         if(!Inventory.TryAdd(pickup_type, count, out int rem)) return;
+        // bool newItem = !Inventory.HasEntry(pickup_type);
+        if(!DiscoveredItems.Contains(pickup_type))
+        {
+            // handle new item
+            SwApp.CommandQueue.AddCommandVerb("player_discover_item").TrySet("pickup_type", pickup_type);
+        }
         PriDict com = [];
         com.TrySet("verb", "pickup_set_rem");
         com.TrySet("rem", rem);
         entity.AddCommand(com);
     }
-    private void PlayerAddItem(PriNode command)
+    private void PlayerDiscoverItem(PriNode command)
     {
         StateMachine?.SetState("item_get");
         if(!command.TryGet("pickup_type", out string pickup_type)) return;
-        if(SwData.Prototypes.TryGet($"pickups/{pickup_type}/texture_filepath", out string texture_filepath))
+        DiscoveredItems.Add(pickup_type);
+        string? texPath = null;
+        PriNode pickupProto = SwData.Prototypes.Get($"pickups/{pickup_type}");
+        if(pickupProto.TryGet("discover_texture_filepath", out string s)) texPath = s;
+        else if(pickupProto.TryGet("texture_filepath", out s)) texPath = s;
+        if(texPath is not null)
         {
-            if(!ErTexture.TryFromPath(texture_filepath, out PickupTexture)) ErEngine.Log("bad pickup texture path");
+            if(!ErTexture.TryFromPath(texPath, out PickupTexture)) ErEngine.Log("bad pickup texture path");
         }
+        if(PlayerIdx == 0)
+        {
+            DiscoverCommand = pickupProto.Get("discover_command");
+        }
+        if(pickup_type == "spoon") SpoonEnabled = true;
+    }
+    private void EnterCheckpoint(PriNode command)
+    {
+        Health = MaxHealth;
+        Stamina = MaxStamina;
+        Mana = MaxMana;
+        if(DiscoveredItems.Contains("root")) Roots = MaxRoots;
+        if(DiscoveredItems.Contains("sling_ammo")) Ammo = MaxAmmo;
     }
 }

@@ -131,7 +131,7 @@
                     "font_color": "#ffffff",
                     "font_color_focus": "#ff0000",
                     "on_click_command":{
-                        "verb": "menu_back"
+                        "verb": "main_menu"
                     }
                 },
                 {

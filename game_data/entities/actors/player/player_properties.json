@@ -64,13 +64,18 @@
     "inventory":[
         {
             "type": "sling_ammo",
-            "count": 8,
+            "count": 0,
             "max": 8
         },
         {
             "type": "root",
-            "count": 1,
-            "max": 4
+            "count": 0,
+            "max": 1
+        },
+        {
+            "type": "spoon",
+            "count": 0,
+            "max": 1
         }
     ],
     "dust_particles":{
