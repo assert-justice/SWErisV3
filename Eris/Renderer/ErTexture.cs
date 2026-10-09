@@ -91,7 +91,7 @@ public class ErTexture
         bool vFlip = false)
     {
         size ??= Size;
-        ErRect2 destRect = new(position.Floor(), size.Value.Floor());
+        ErRect2 destRect = new(position, size.Value);
         sourceRect ??= new(ErVec2.Zero, Size);
         origin ??= ErVec2.Zero;
         destRect = destRect.Translate(-ErEngine.Renderer.ViewportTransform.Position-origin.Value);
