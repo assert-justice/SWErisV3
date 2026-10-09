@@ -89,5 +89,17 @@
             "name": "dust_1",
             "filepath": "../../../particles/particles.json"
         }
+    },
+    "heal_particles":{
+        "offset": {"x": 0, "y": 9},
+        "speed": 30,
+        "amount": 80,
+        "use_local_coordinates": false,
+        "lifetime": 0.625,
+        "one_shot": true,
+        "ase_data":{
+            "name": "dust_1",
+            "filepath": "../../../particles/particles.json"
+        }
     }
 }

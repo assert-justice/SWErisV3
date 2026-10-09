@@ -32,6 +32,7 @@ public class SwPlayer: SwActor
     public SwCamera Camera = null!;
     // Health
     // Note: Health and MaxHealth defined in SwActor
+    public double HealAmount = 30;
     public readonly SwClock HealthClock;
     // Stamina
     public double Stamina = 100;
@@ -70,7 +71,7 @@ public class SwPlayer: SwActor
     public double SlingBulletSpeed = 600;
     public double SlingChargeTime = 0.75;
     public readonly SwClock SlingChargeClock;
-    public PriNode TempCommand = PriNull.Null;
+    public PriNode TempData = PriNull.Null;
     // Inventory
     public readonly SwInventory Inventory = new();
     public int Ammo
@@ -121,8 +122,9 @@ public class SwPlayer: SwActor
         base.SetProps(props);
         // Health
         // Note: Health and MaxHealth are handled in SwActor
+        if(Props.TryGet("health/heal_amount", out double d)) HealAmount = d;
         // Stamina
-        if(Props.TryGet("stamina/max_stamina", out double d)) MaxStamina = d;
+        if(Props.TryGet("stamina/max_stamina", out d)) MaxStamina = d;
         if(Props.TryGet("stamina/stamina", out d)) Stamina = d;
         if(Props.TryGet("stamina/stamina_regen", out d)) StaminaRegen = d;
         if(Props.TryGet("stamina/stamina_regen_delay", out d)) StaminaRegenDelay = d;
@@ -170,6 +172,8 @@ public class SwPlayer: SwActor
         RegisterComponent(Controls);
         if(!SwParticles2D.TryFromData(out var particles, Props.Get("dust_particles"))) ErEngine.LogWarning("unable to read player dust particles");
         else RegisterComponent(new SwParticleComponent(this, "dust_particles", particles));
+        if(!SwParticles2D.TryFromData(out particles, Props.Get("heal_particles"))) ErEngine.LogWarning("unable to read player heal particles");
+        else RegisterComponent(new SwParticleComponent(this, "heal_particles", particles));
         LoadSprites("anim_data/sprites");
         if(!Props.TryGet("spoon/spoon_hurtbox_mask", out uint mask)) mask = 8;
         var hurtboxSize = SwPrion.GetVec2(Props.Get("spoon/spoon_hurtbox_size"));
@@ -277,7 +281,7 @@ public class SwPlayer: SwActor
         }
         if(PlayerIdx == 0)
         {
-            TempCommand = pickupProto.Get("pickup_command");
+            TempData = pickupProto.Get("pickup_command");
         }
         if(pickup_type == "root")
         {
@@ -300,7 +304,7 @@ public class SwPlayer: SwActor
         }
         if(PlayerIdx == 0)
         {
-            TempCommand = pickupProto.Get("discover_command");
+            TempData = pickupProto.Get("discover_command");
         }
         if(pickup_type == "spoon") SpoonEnabled = true;
     }

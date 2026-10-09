@@ -21,6 +21,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
     protected SwPlayerInput Controls = null!;
     protected SwAreaComponent SpoonHurtbox = null!;
     protected SwParticleComponent DustParticles = null!;
+    protected SwParticleComponent HealParticles = null!;
     protected SwInventory Inventory => Entity.Inventory;
     protected virtual double StaminaRegenClockMul => 1;
     protected virtual double ManaRegenMul => 1;
@@ -102,6 +103,11 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         if(Entity.CurrentSpell.IsActive) return false;
         return true;
     }
+    protected bool CanHeal()
+    {
+        if(Entity.Health >= Entity.MaxHealth) return false;
+        return Entity.Roots > 0;
+    }
     public override void Ready()
     {
         base.Ready();
@@ -111,6 +117,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         SlingSprite = Entity.GetComponent<SwSpriteComponent>("sling")?.Sprite!;
         ReticleSprite = Entity.GetComponent<SwSpriteComponent>("reticle")?.Sprite!;
         DustParticles = Entity.GetComponent<SwParticleComponent>("dust_particles")!;
+        HealParticles = Entity.GetComponent<SwParticleComponent>("heal_particles")!;
         Controls = Entity.GetComponent<SwPlayerControls>("controls")?.InputDevice!;
         SpoonHurtbox = Entity.GetComponent<SwAreaComponent>("spoon_hurtbox")!;
     }
@@ -168,114 +175,10 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             if(BodySprite.IsPlaying) return;
             // Todo: drive this elsewhere
             if(BodySprite.CurrentAnimation.Name == "die") PlayBodyAnim("continue");
-            // else if(Entity.Game.Map.InSameRoom(Entity.Position, SwGame.ActiveCheckpoint.RectPx.Center)) StateMachine.SetState("respawn");
+            else if(Entity.Game.Map.InSameRoom(Entity.Position, Entity.Game.Map.CurrentCheckpointPos)) StateMachine.SetState("respawn");
             else StateMachine.SetState("respawn_fade_out");
         }
     }
-    // public class RespawnFadeOut: SwPlayerState
-    // {
-    //     public override string Name => "respawn_fade_out";
-    //     public override void BeginState(string lastState)
-    //     {
-    //         base.BeginState(lastState);
-    //         PlayBodyAnim("fly");
-    //         SwGame.Game.FadeOut();
-    //     }
-    //     public override void Update()
-    //     {
-    //         base.Update();
-    //         bool isVisible = SwGame.Camera.IsPointVisible(Entity.Position);
-    //         if (isVisible)
-    //         {
-    //             Entity.MoveToward(SwGame.ActiveCheckpoint.RectPx.Center, Entity.BaseSpeed);
-    //         }
-    //         else Entity.Velocity = ErVec2.Zero;
-    //         if(SwGame.Game.FadeState == 1 && !isVisible) StateMachine.SetState("respawn_fade_in");
-    //     }
-    // }
-    // public class RespawnQuick: SwPlayerState
-    // {
-    //     public override string Name => "quick_spawn";
-    //     public override void BeginState(string lastState)
-    //     {
-    //         base.BeginState(lastState);
-    //         SwGame.SetCameraTarget(SwGame.ActiveCheckpoint.RectPx.Center, true);
-    //         Entity.Position = SwGame.ActiveCheckpoint.RectPx.Center;
-    //     }
-    //     public override void Update()
-    //     {
-    //         base.Update();
-    //         Entity.IsAlive = true;
-    //         StateMachine.SetState("default");
-    //     }
-    // }
-    // public class RespawnFadeIn: SwPlayerState
-    // {
-    //     public override string Name => "respawn_fade_in";
-    //     public override void BeginState(string lastState)
-    //     {
-    //         base.BeginState(lastState);
-    //         PlayBodyAnim("fly");
-    //         SwGame.Game.FadeIn();
-    //         SwGame.SetCameraTarget(SwGame.ActiveCheckpoint.RectPx.Center, true);
-    //         ErVec2 diff = Entity.Position - SwGame.ActiveCheckpoint.RectPx.Center;
-    //         double distance = diff.GetLength();
-    //         if(500 < distance) distance = 500;
-    //         ErVec2 offset = diff.Normalized() * distance;
-    //         ErVec2 pos = SwGame.ActiveCheckpoint.RectPx.Center + offset;
-    //         Entity.Position = pos;
-    //     }
-    //     public override void Update()
-    //     {
-    //         base.Update();
-    //         if(BodySprite.CurrentAnimation.Name == "respawn")
-    //         {
-    //             if (!BodySprite.IsPlaying)
-    //             {
-    //                 StateMachine.SetState("default");
-    //                 Entity.IsAlive = true;
-    //             }
-    //             return;
-    //         }
-    //         double distance = Entity.MoveToward(SwGame.ActiveCheckpoint.RectPx.Center, Entity.BaseSpeed);
-    //         if(distance == 0)
-    //         {
-    //             PlayBodyAnim("respawn");
-    //         }
-    //     }
-    // }
-    // public class Respawn: SwPlayerState
-    // {
-    //     public override string Name => "respawn";
-    //     public override void BeginState(string lastState)
-    //     {
-    //         base.BeginState(lastState);
-    //         PlayBodyAnim("fly");
-    //     }
-    //     public override void Update()
-    //     {
-    //         base.Update();
-    //         if(BodySprite.CurrentAnimation.Name == "respawn")
-    //         {
-    //             if(!BodySprite.IsPlaying) StateMachine.SetState("default");
-    //             Entity.IsAlive = true;
-    //             return;
-    //         }
-    //         ErVec2 diff = SwGame.ActiveCheckpoint.RectPx.Center - Entity.Position;
-    //         double speed = Entity.BaseSpeed * SwGame.DeltaTime;
-    //         double lenSq = diff.GetLengthSquared();
-    //         if(lenSq < speed * speed)
-    //         {
-    //             Entity.Velocity = ErVec2.Zero;
-    //             PlayBodyAnim("respawn");
-    //         }
-    //         else
-    //         {
-    //             ErVec2 dir = (SwGame.ActiveCheckpoint.RectPx.Center - Entity.Position).Normalized();
-    //             Entity.Velocity = dir * Entity.BaseSpeed;
-    //         }
-    //     }
-    // }
     public class Default: SwPlayerState
     {
         public override string Name => "default";
@@ -288,6 +191,12 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             if(CanAttack() && Controls.AttackJustDown) StateMachine.SetState("attack");
             else if(Controls.IsCharging && Inventory.GetCount("sling_ammo") > 0) StateMachine.SetState("charging");
             else if(CanDodge() && Controls.DodgeJustDown) StateMachine.SetState("dodging");
+            else if(CanHeal() && Controls.HealJustDown)
+            {
+                Entity.Health = Math.Clamp(Entity.Health + Entity.HealAmount, 0, Entity.MaxHealth);
+                Entity.Roots -= 1;
+                HealParticles.Particles.Emitting = true;
+            }
             else if (Controls.UseJustDown)
             {
                 PriDict command = [];
@@ -295,6 +204,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
                 command.TrySet("player_idx", Entity.PlayerIdx);
                 SwApp.CommandQueue.AddCommand(command);
             }
+            else if(ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Semicolon)) Entity.TestDamage(70);
             // else if(Entity.CurrentSpell is not null && !Entity.CurrentSpell.IsActive && CanCast() && Controls.CastJustDown)
             // {
             //     Entity.CurrentSpell.Begin();
@@ -353,9 +263,9 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         {
             base.Update(dt);
             if(BodySprite.IsPlaying) return;
-            if(Entity.TempCommand is not PriNull)
+            if(Entity.TempData is not PriNull)
             {
-                SwApp.CommandQueue.AddCommand(Entity.TempCommand);
+                SwApp.CommandQueue.AddCommand(Entity.TempData);
             }
             StateMachine.SetState("default");
             // if(Controls.DodgeJustDown) StateMachine.SetState("default");
@@ -385,10 +295,10 @@ public abstract class SwPlayerState : SwState<SwPlayer>
     {
         return new(parent, name, [
             // new RespawnQuick(),
-            // new RespawnFadeIn(),
-            // new RespawnFadeOut(),
-            // new Respawn(),
             new Default(),
+            new SwPlayerRespawnFadeIn(),
+            new SwPlayerRespawnFadeOut(),
+            new SwPlayerRespawn(),
             new Attack(),
             new SwPlayerCharging(),
             new SwPlayerCharged(),

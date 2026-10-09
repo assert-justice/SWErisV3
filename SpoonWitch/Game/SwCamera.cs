@@ -39,9 +39,18 @@ public class SwCamera
         CurrentPos = TargetPos;
         NextPos = TargetPos;
     }
+    public void SnapToTarget(ErVec2 targetPos)
+    {
+        SetTargetPosition(targetPos);
+        SnapToTarget();
+    }
     public bool IsPointVisible(ErVec2 point)
     {
         return ErRect2.Centered(Position, Size).Contains(point);
+    }
+    public bool IsRectVisible(ErRect2 rect)
+    {
+        return ErRect2.Centered(Position, Size).Contains(rect);
     }
     public void Update(double dt)
     {

@@ -75,6 +75,7 @@ public abstract class SwActor: SwEntity
         Body.Mask = (uint)Mask;
         Body.Rect = ErRect2.Centered(Position, Size);
         Body.Velocity = Velocity;
+        ErVec2 vel = Velocity;
         Game.PhysicsWorld.MoveAndSlide(dt, Body);
         Position = Body.Rect.Center;
         Velocity = Body.Velocity;
@@ -144,6 +145,22 @@ public abstract class SwActor: SwEntity
     //     else Velocity = diff.Normalized() * speed;
     //     return distance;
     // }
+    public void MoveToward(ErVec2 point, double speed)
+    {
+        Velocity = (point - Position).Normalized() * speed;
+    }
+    public double MoveToward(ErVec2 point, double speed, double dt)
+    {
+        var (dir,len) = (point - Position).GetDirLen();
+        if(len < speed * dt)
+        {
+            Position = point;
+            Velocity = ErVec2.Zero;
+            return 0;
+        }
+        Velocity = dir * speed;
+        return len;
+    }
     public void SetInvulnerable(double duration)
     {
         InvulnClock.Start(duration);

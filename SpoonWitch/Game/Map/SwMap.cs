@@ -61,6 +61,13 @@ public class SwMap
         AddGlobalHandler("map_set_tiles_area", HandleSetTilesArea);
         AddGlobalHandler("map_set_checkpoint", HandleSetCheckpoint);
     }
+    public bool TryGetRoomRect(string roomId, out ErRect2 roomRect)
+    {
+        roomRect = default;
+        if(!RoomIdLookup.TryGetValue(roomId, out int roomIdx)) return false;
+        roomRect = (ErRect2)(MapData.Rooms[roomIdx].RectSectors * SectorSizePx);
+        return true;
+    }
     private void AddGlobalHandler(string verb, Action<PriNode> handler)
     {
         SwApp.CommandQueue.AddHandler(verb, handler);

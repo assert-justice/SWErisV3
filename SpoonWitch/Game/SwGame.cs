@@ -29,7 +29,7 @@ public class SwGame
     }
     private readonly SwCamera[] Cameras;
     private SwCamera? CurrentCamera{get; set;}
-        private readonly List<ErVec2> FocusPoints = [];
+    private readonly List<ErVec2> FocusPoints = [];
     public void ClearFocusPoints()
     {
         FocusPoints.Clear();
@@ -54,6 +54,14 @@ public class SwGame
         }
         return false;
     }
+    public bool IsRectVisibleToAny(ErRect2 rect)
+    {
+        foreach (var camera in Cameras)
+        {
+            if(camera.IsRectVisible(rect)) return true;
+        }
+        return false;
+    }
     public double MaxCameraDistance(ErVec2 point)
     {
         double res = double.MinValue;
@@ -64,6 +72,29 @@ public class SwGame
         }
         return res;
     }
+    public void SnapToTarget(ErVec2 targetPos)
+    {
+        CameraTarget = targetPos;
+        if(!Map.TryGetRoomId(targetPos, out string roomId))
+        {
+            ErEngine.LogWarning("attempted to snap to invalid target");
+            return;
+        }
+        if(!Map.TryGetRoomRect(roomId, out var room))
+        {
+            ErEngine.LogWarning("no room with id found: ", roomId);
+            return;
+        }
+        foreach (var camera in Cameras)
+        {
+            camera.UseBounds = true;
+            camera.SetBounds(room);
+            camera.SnapToTarget(targetPos);
+        }
+    }
+    public double FadeOpacity{get; private set;} = 1;
+    public double FadeTarget{get; private set;} = 0;
+    public double FadeSpeed{get; private set;} = 1;
     public ErVec2 CameraTarget{get; set;}
     // Physics stuff
     public readonly ErPhysicsWorld2D PhysicsWorld;
@@ -72,6 +103,7 @@ public class SwGame
     public readonly SwLookup EntityLookup = new();
     private readonly Queue<SwEntity> NewEntities = [];
     private readonly Queue<SwEntity> FreedEntitiesQueue = [];
+    private readonly List<(string verb, Action<PriNode> handler)> GlobalHandlers = [];
     public SwGame(SwMapData mapData, PriNode launchProps)
     {
         if(!launchProps.TryGet("num_players", out int numPlayers)) numPlayers = 1;
@@ -136,6 +168,21 @@ public class SwGame
             Huds[idx] = hud;
             hud.Player = player; 
         }
+        AddGlobalHandler("game_fade_out", (_) =>
+        {
+            FadeOpacity = 0;
+            FadeTarget = 1;
+        });
+        AddGlobalHandler("game_fade_in", (_) =>
+        {
+            FadeOpacity = 1;
+            FadeTarget = 0;
+        });
+    }
+    private void AddGlobalHandler(string verb, Action<PriNode> handler)
+    {
+        SwApp.CommandQueue.AddHandler(verb, handler);
+        GlobalHandlers.Add((verb, handler));
     }
     public void Update(double dt)
     {
@@ -159,6 +206,7 @@ public class SwGame
         List<(string playerId, string roomId)> temp = [];
         foreach (var player in EntityLookup.GetValues<SwPlayer>())
         {
+            if(!player.IsAlive) continue;
             var targetPoint = player.Position + player.Velocity * dt;
             if (MaxCameraDistance(targetPoint) > 8)
             {
@@ -204,7 +252,14 @@ public class SwGame
             camera.SetTargetPosition(CameraTarget);
             camera.Update(dt);
         }
-        // Handle commands
+        // Handle fade stuff
+        double fadeSign = Math.Sign(FadeTarget - FadeOpacity);
+        if(fadeSign != 0)
+        {
+            double df = dt * FadeSpeed * fadeSign;
+            FadeOpacity += df;
+            if(FadeOpacity < 0 || FadeOpacity > 1) FadeOpacity = FadeTarget;
+        }
     }
     private void FreeEntities()
     {
@@ -271,6 +326,11 @@ public class SwGame
             {
                 hud.Draw();
             }
+            // fade state stuff
+            if(FadeOpacity > 0)
+            {
+                ErEngine.Renderer.DrawRect(new(ErVec2.Zero,SwApp.ScreenSize), ErColor.Black.WithAlpha(FadeOpacity));
+            }
         }
         CurrentCamera = null;
     }
@@ -282,6 +342,10 @@ public class SwGame
             FreedEntitiesQueue.Enqueue(item);
         }
         FreeEntities();
+        foreach (var (verb,handler) in GlobalHandlers)
+        {
+            SwApp.CommandQueue.RemoveHandler(verb, handler);
+        }
     }
     public T AddEntity<T>(PriNode props) where T: SwEntity, new()
     {

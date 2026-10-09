@@ -1,7 +1,6 @@
 # Eris Roadmap
 
 ## PRGE 2026
-- roots/healing
 - death and respawning
 - fix knight
 - finish the aspect
@@ -10,6 +9,7 @@
 - spells!
 
 ## Done
+- roots/healing
 - in game text
 - map entities
     - props, solid or otherwise
