@@ -125,13 +125,15 @@ public class ErRenderer
     {
         rect = rect.Translate(-ViewportTransform.Position);
         SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, color.A);
-        if (filled)SDL.RenderFillRect(Handle, rect.ToSdlRect());
+        if (filled)SDL.RenderFillRect(Handle, rect.Floor().ToSdlRect());
         else SDL.RenderRect(Handle, rect.ToSdlRect());
     }
     public void DrawLine(ErVec2 start, ErVec2 end, ErColor color)
     {
         start -= ViewportTransform.Position;
         end -= ViewportTransform.Position;
+        start = start.Floor();
+        end = end.Floor();
         SDL.SetRenderDrawColor(Handle, color.R, color.G, color.B, color.A);
         SDL.RenderLine(Handle, (float)start.X, (float)start.Y, (float)end.X, (float)end.Y);
     }
@@ -296,7 +298,7 @@ public class ErRenderer
         {
             Vertices[idx] = new()
             {
-                Position = Points[idx].ToSdlPoint(),
+                Position = Points[idx].Floor().ToSdlPoint(),
                 Color = sColor,
             };
         }

@@ -91,7 +91,7 @@ public class ErTexture
         bool vFlip = false)
     {
         size ??= Size;
-        ErRect2 destRect = new(position, size.Value);
+        ErRect2 destRect = new(position.Floor(), size.Value.Floor());
         sourceRect ??= new(ErVec2.Zero, Size);
         origin ??= ErVec2.Zero;
         destRect = destRect.Translate(-ErEngine.Renderer.ViewportTransform.Position-origin.Value);
@@ -100,8 +100,8 @@ public class ErTexture
         if(vFlip) flipMode |= SDL.FlipMode.Vertical;
         SDL.RenderTextureRotated(ErEngine.Renderer.Handle, 
             Handle, 
-            sourceRect.Value.ToSdlRect(), 
-            destRect.ToSdlRect(),
+            sourceRect.Value.Floor().ToSdlRect(), 
+            destRect.Floor().ToSdlRect(),
             ErMath.RadToDeg(angle),
             origin.Value.ToSdlPoint(),
             flipMode);

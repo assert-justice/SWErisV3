@@ -84,6 +84,10 @@ public readonly struct ErRect2
     {
         return Centered(center, Size);
     }
+    public ErRect2 Floor()
+    {
+        return new(Position.Floor(),Size.Floor());
+    }
 
     public ErVec2 Clamp(ErVec2 vec)
     {

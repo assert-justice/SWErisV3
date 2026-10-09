@@ -4,6 +4,7 @@
 - roots/healing
 - death and respawning
 - fix knight
+- finish the aspect
 - misc particle effects
 - sfx/music
 - spells!
