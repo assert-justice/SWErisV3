@@ -30,6 +30,7 @@ public class SwGame
     private readonly SwCamera[] Cameras;
     private SwCamera? CurrentCamera{get; set;}
     private readonly List<ErVec2> FocusPoints = [];
+    public readonly SwPlayerManager PlayerManager;
     public void ClearFocusPoints()
     {
         FocusPoints.Clear();
@@ -93,7 +94,7 @@ public class SwGame
         }
     }
     public double FadeOpacity{get; private set;} = 1;
-    public double FadeTarget{get; private set;} = 0;
+    public double FadeTarget{get; private set;} = 1;
     public double FadeSpeed{get; private set;} = 1;
     public ErVec2 CameraTarget{get; set;}
     // Physics stuff
@@ -106,7 +107,9 @@ public class SwGame
     private readonly List<(string verb, Action<PriNode> handler)> GlobalHandlers = [];
     public SwGame(SwMapData mapData, PriNode launchProps)
     {
+        PlayerManager = new(this);
         if(!launchProps.TryGet("num_players", out int numPlayers)) numPlayers = 1;
+        PlayerManager.SetNumPlayers(numPlayers);
         bool skipKb = launchProps.TryGet("skip_kb", out bool b) && b;
         PhysicsWorld = new(new(8,8), mapData.TileData.TileSize);
         Map = new(this, mapData)
@@ -120,7 +123,7 @@ public class SwGame
         {
             RenderTextures[idx] = ErTexture.GetRenderTexture((int)SwApp.CameraSize.X, (int)SwApp.CameraSize.Y);
         }
-        CameraTarget = Map.CurrentCheckpointPos;
+        // CameraTarget = Map.CurrentCheckpointPos;
         // add players
         Huds = new SwHud[numPlayers];
         var playerProps = SwData.Prototypes.Get("entities/player");
@@ -148,7 +151,8 @@ public class SwGame
             var player = AddEntity<SwPlayer>(playerProps);
             player.PlayerIdx = idx;
             player.Camera = Cameras[0];
-            player.Position = new(startX + playerWidth * idx, CameraTarget.Y);
+            player.Position = Map.CurrentCheckpointPos + ErVec2.Down * 500;
+            // player.Position = new(startX + playerWidth * idx, CameraTarget.Y);
             var (type,gamepadIdx) = inputBinders[idx];
             switch (type)
             {
@@ -260,6 +264,7 @@ public class SwGame
             FadeOpacity += df;
             if(FadeOpacity < 0 || FadeOpacity > 1) FadeOpacity = FadeTarget;
         }
+        PlayerManager.Update();
     }
     private void FreeEntities()
     {

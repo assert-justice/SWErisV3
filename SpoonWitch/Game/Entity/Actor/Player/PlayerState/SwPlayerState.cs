@@ -169,15 +169,15 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             PlayBodyAnim("die");
             Entity.Velocity = ErVec2.Zero;
         }
-        public override void Update(double dt)
-        {
-            base.Update(dt);
-            if(BodySprite.IsPlaying) return;
-            // Todo: drive this elsewhere
-            if(BodySprite.CurrentAnimation.Name == "die") PlayBodyAnim("continue");
-            else if(Entity.Game.Map.InSameRoom(Entity.Position, Entity.Game.Map.CurrentCheckpointPos)) StateMachine.SetState("respawn");
-            else StateMachine.SetState("respawn_fade_out");
-        }
+        // public override void Update(double dt)
+        // {
+        //     base.Update(dt);
+        //     if(BodySprite.IsPlaying) return;
+        //     // Todo: drive this elsewhere
+        //     if(BodySprite.CurrentAnimation.Name == "die") PlayBodyAnim("continue");
+        //     else if(Entity.Game.Map.InSameRoom(Entity.Position, Entity.Game.Map.CurrentCheckpointPos)) StateMachine.SetState("respawn");
+        //     else StateMachine.SetState("respawn_fade_out");
+        // }
     }
     public class Default: SwPlayerState
     {
@@ -294,10 +294,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
     public static SwStateMachine<SwPlayer> GetStateMachine(SwPlayer parent, string name)
     {
         return new(parent, name, [
-            // new RespawnQuick(),
             new Default(),
-            new SwPlayerRespawnFadeIn(),
-            new SwPlayerRespawnFadeOut(),
             new SwPlayerRespawn(),
             new Attack(),
             new SwPlayerCharging(),

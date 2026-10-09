@@ -61,6 +61,12 @@ public class SwMap
         AddGlobalHandler("map_set_tiles_area", HandleSetTilesArea);
         AddGlobalHandler("map_set_checkpoint", HandleSetCheckpoint);
     }
+    public bool IsPointInRoom(string roomId, ErVec2 point)
+    {
+        var sectorCoord = point.FloorToInt() / SectorSizePx;
+        if(!RoomSectorLookup.TryGetValue(sectorCoord, out string? rid)) return false;
+        return rid == roomId;
+    }
     public bool TryGetRoomRect(string roomId, out ErRect2 roomRect)
     {
         roomRect = default;

@@ -48,6 +48,7 @@ public class SwPlayer: SwActor
     // Speed
     // Note: BaseSpeed is defined in SwActor
     public double SlowedSpeedMul = 0.5;
+    public double RespawnSpeedMul = 1;
     // Dodge
     public double DodgeSpeedMul = 1.5;
     // public double DodgeDuration = 9.0 / 8;
@@ -95,7 +96,7 @@ public class SwPlayer: SwActor
         set => Inventory.SetCount("root", Ammo, value);
     }
     public SwSpell? CurrentSpell;
-    public SwStateMachine<SwPlayer>? StateMachine{get; private set;}
+    public SwStateMachine<SwPlayer> StateMachine{get; private set;} = null!;
     public ErTexture? PickupTexture;
     public SwPlayerControls Controls{get; private set;} = null!;
     private readonly HashSet<string> DiscoveredItems = [];
@@ -106,6 +107,7 @@ public class SwPlayer: SwActor
         AddHandler("enter_checkpoint", EnterCheckpoint);
         AddGlobalHandler("player_discover_item", PlayerDiscoverItem);
         AddGlobalHandler("player_item_get", PlayerItemGet);
+        AddGlobalHandler("player_respawn", PlayerRespawn);
         HealthClock = AddClock();
         StaminaRegenClock = AddClock();
         DodgeCooldownClock = AddClock();
@@ -181,6 +183,8 @@ public class SwPlayer: SwActor
         RegisterComponent(SpoonHurtbox);
         StateMachine = SwPlayerState.GetStateMachine(this, "state_machine");
         RegisterComponent(StateMachine);
+        StateMachine.SetDefaultState("respawn");
+        IsAlive = false;
     }
     protected override void Update(double dt)
     {
@@ -315,5 +319,11 @@ public class SwPlayer: SwActor
         Mana = MaxMana;
         if(DiscoveredItems.Contains("root")) Roots = MaxRoots;
         if(DiscoveredItems.Contains("sling_ammo")) Ammo = MaxAmmo;
+    }
+    private void PlayerRespawn(PriNode _)
+    {
+        StateMachine.SetState("respawn");
+        // if(Game.Map.InSameRoom(Position, Game.Map.CurrentCheckpointPos)) StateMachine.SetState("respawn");
+        // else StateMachine.SetState("respawn_fade_out");
     }
 }

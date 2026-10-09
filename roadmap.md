@@ -1,6 +1,7 @@
 # Eris Roadmap
 
 ## PRGE 2026
+- death and respawning (coop)
 - finish the aspect
 - fix knight
 - misc particle effects

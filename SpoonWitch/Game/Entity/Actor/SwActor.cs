@@ -29,6 +29,7 @@ public abstract class SwActor: SwEntity
     }
     public ErVec2 Velocity;
     public ErVec2 Size = new (32, 32);
+    public ErRect2 Rect => new(Position,Size);
     public virtual SwCollisionMask Mask => 0;
     private SwColliderBody Body = null!;
     public SwActor()
