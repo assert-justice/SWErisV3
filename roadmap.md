@@ -1,14 +1,14 @@
 # Eris Roadmap
 
 ## PRGE 2026
-- death and respawning
-- fix knight
 - finish the aspect
+- fix knight
 - misc particle effects
 - sfx/music
 - spells!
 
 ## Done
+- death and respawning
 - roots/healing
 - in game text
 - map entities
