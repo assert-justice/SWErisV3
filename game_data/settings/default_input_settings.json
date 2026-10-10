@@ -28,12 +28,12 @@
         "dodge": {
             "buffer": 0.25,
             "keys":["Space"],
-            "gamepad_buttons":["East", "LeftShoulder"]
+            "gamepad_buttons":["LeftShoulder"]
         },
         "use": {
             "buffer": 0.25,
             "keys":["E"],
-            "gamepad_buttons":["North"]
+            "gamepad_buttons":["South"]
         },
         "heal": {
             "buffer": 0.25,

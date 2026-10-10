@@ -35,7 +35,7 @@ public class SwAspect: SwEnemy
     {
         base.Init();
         StateMachine = RegisterComponent(SwAspectState.GetStateMachine(this, "state_machine"));
-        StateMachine.SetDefaultState("wandering");
+        StateMachine.SetDefaultState("asleep");
         RegisterComponent(new SwTentacleComponent(this, "right_arm"));
         RegisterComponent(new SwTentacleComponent(this, "left_arm"));
         var legs = RegisterComponent(new SwAspectLegsComponent(this, "legs"));
@@ -44,6 +44,6 @@ public class SwAspect: SwEnemy
     }
     private void Wake(PriNode command)
     {
-        // StateMachine.SetState("wake");
+        StateMachine.SetState("wake");
     }
 }

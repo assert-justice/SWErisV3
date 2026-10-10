@@ -23,7 +23,6 @@ public abstract class SwPlayerState : SwState<SwPlayer>
     protected SwParticleComponent DustParticles = null!;
     protected SwParticleComponent HealParticles = null!;
     protected SwInventory Inventory => Entity.Inventory;
-    protected virtual double StaminaRegenClockMul => 1;
     protected virtual double ManaRegenMul => 1;
     // name, hands, facing
     private static readonly string[][][] BodyAnimations = [
@@ -92,7 +91,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
     protected bool CanAttack()
     {
         if(!Entity.SpoonEnabled) return false;
-        if(Entity.SpoonCooldownClock.IsRunning) return false;
+        // if(Entity.SpoonClock.IsRunning) return false;
         if(Entity.Stamina <= 0) return false;
         return true;
     }
@@ -151,7 +150,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         ReticleSprite.Offset = Controls.ReticlePosition;
         if(Entity.Stamina < Entity.MaxStamina && !Entity.StaminaRegenClock.IsRunning)
         {
-            Entity.Stamina += Entity.StaminaRegen * dt;
+            Entity.Stamina += Entity.StaminaRegen * dt * Entity.StaminaRegenMul;
             if(Entity.Stamina > Entity.MaxStamina) Entity.Stamina = Entity.MaxStamina;
         }
         if(Entity.Mana < Entity.MaxMana)
@@ -168,16 +167,14 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             base.BeginState(lastState);
             PlayBodyAnim("die");
             Entity.Velocity = ErVec2.Zero;
+            Entity.ReviveArea.Enabled = true;
         }
-        // public override void Update(double dt)
-        // {
-        //     base.Update(dt);
-        //     if(BodySprite.IsPlaying) return;
-        //     // Todo: drive this elsewhere
-        //     if(BodySprite.CurrentAnimation.Name == "die") PlayBodyAnim("continue");
-        //     else if(Entity.Game.Map.InSameRoom(Entity.Position, Entity.Game.Map.CurrentCheckpointPos)) StateMachine.SetState("respawn");
-        //     else StateMachine.SetState("respawn_fade_out");
-        // }
+        public override void EndState(string nextState)
+        {
+            base.EndState(nextState);
+            Entity.ReviveArea.Enabled = false;
+            Entity.CanRevive = false;
+        }
     }
     public class SwPlayerRevive: SwPlayerState
     {
@@ -204,7 +201,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
             SetBodyHandedAnim(animIdx, 2, Controls.LastFacingIdx);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed;
-            if(CanAttack() && Controls.AttackJustDown) StateMachine.SetState("attack");
+            if(CanAttack() && Controls.AttackJustDown) StateMachine.SetState("attacking");
             else if(Controls.IsCharging && Inventory.GetCount("sling_ammo") > 0) StateMachine.SetState("charging");
             else if(CanDodge() && Controls.DodgeJustDown) StateMachine.SetState("dodging");
             else if(CanHeal() && Controls.HealJustDown)
@@ -232,42 +229,6 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             else if(ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.T)) StateMachine.SetState("dancing");
         }
     }
-    public class Attack: SwPlayerState
-    {
-        public override string Name => "attack";
-        protected override double StaminaRegenClockMul => 0;
-        public override void BeginState(string lastState)
-        {
-            base.BeginState(lastState);
-            SpoonSprite.Visible = true;
-            SpoonSprite.Angle = (Controls.LastFacingIdx - 1) * ErMath.HALF_PI;
-            SpoonSprite.Play();
-            SetBodyHandedAnim(0, 0, Controls.LastFacingIdx);
-            Entity.Velocity = ErVec2.Zero;
-            SetHurtbox();
-            Entity.UseStamina(Entity.SpoonStaminaCost);
-            SpoonSprite.HFlip = !SpoonSprite.HFlip;
-        }
-        public override void Update(double dt)
-        {
-            base.Update(dt);
-            if(!SpoonSprite.IsPlaying) StateMachine.SetState("default");
-            SpoonHurtbox.Enabled = SpoonSprite.FrameIdx == 0;
-        }
-        public override void EndState(string nextState)
-        {
-            base.EndState(nextState);
-            SpoonSprite.Visible = false;
-            SpoonHurtbox.Enabled = false;
-        }
-        private void SetHurtbox()
-        {
-            var dir = ErVec2.FromAngle(Controls.LastFacingIdx * ErMath.HALF_PI);
-            double dis = 32;
-            SpoonHurtbox.Offset = dir * dis;
-            SpoonHurtbox.Enabled = true;
-        }
-    }
     public class ItemGet: SwPlayerState
     {
         public override string Name => "item_get";
@@ -281,6 +242,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         {
             base.Update(dt);
             if(BodySprite.IsPlaying) return;
+            Entity.PickupVisible = true;
             if(Entity.TempData is not PriNull)
             {
                 SwApp.CommandQueue.AddCommand(Entity.TempData);
@@ -291,7 +253,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         public override void EndState(string nextState)
         {
             base.EndState(nextState);
-            Entity.PickupTexture = null;
+            Entity.PickupVisible = false;
         }
     }
     public class Dancing: SwPlayerState
@@ -314,7 +276,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         return new(parent, name, [
             new Default(),
             new SwPlayerRespawn(),
-            new Attack(),
+            new SwPlayerAttacking(),
             new SwPlayerCharging(),
             new SwPlayerCharged(),
             new SwPlayerDodging(),

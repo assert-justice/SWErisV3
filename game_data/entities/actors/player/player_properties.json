@@ -26,7 +26,7 @@
         "dodge_speed_mul": 1.5,
         "dodge_invuln_delay": 0.2,
         "dodge_invuln_duration": 0.4,
-        "dodge_cancel_window": 0.225,
+        "dodge_cancel_window": 0.5,
         "dodge_cooldown": 0.25,
         "dodge_stamina_cost": 20
     },
@@ -42,10 +42,11 @@
         },
         "spoon_hurtbox_mask": 24,
         "spoon_hurtbox_size": {"x":32,"y":32},
-        "spoon_swing_duration":0.625,
+        "spoon_swing_duration_unused":0.625,
         "spoon_hurt_window_delay": 0.125,
         "spoon_hurt_window_end": 0.25,
-        "spoon_recovery_time": 0.25
+        "spoon_stamina_cost": 30,
+        "spoon_cancel_window": 0.5
     },
     "sling":{
         "sling_damage":{

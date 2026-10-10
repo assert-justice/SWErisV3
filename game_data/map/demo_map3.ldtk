@@ -6561,6 +6561,28 @@
 							],
 							"__worldX": 1088,
 							"__worldY": -2592
+						},
+						{
+							"__identifier": "checkpoint",
+							"__grid": [12,40],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 126, "x": 0, "y": 0, "w": 64, "h": 64 },
+							"__smartColor": "#C501FF",
+							"iid": "51d47b60-bde0-11f1-be5b-19b732ea2ce6",
+							"width": 64,
+							"height": 64,
+							"defUid": 28,
+							"px": [96,320],
+							"fieldInstances": [
+								{ "__identifier": "default", "__type": "Bool", "__value": false, "__tile": null, "defUid": 30, "realEditorValues": [{
+									"id": "V_Bool",
+									"params": [ false ]
+								}] },
+								{ "__identifier": "property_overrides_json", "__type": "String", "__value": null, "__tile": null, "defUid": 45, "realEditorValues": [] }
+							],
+							"__worldX": 736,
+							"__worldY": -2560
 						}
 					]
 				},

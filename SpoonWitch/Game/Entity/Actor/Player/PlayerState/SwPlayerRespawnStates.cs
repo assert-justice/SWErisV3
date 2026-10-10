@@ -9,11 +9,12 @@ public class SwPlayerRespawn: SwPlayerState
     private enum RespawnPhase
     {
         Continue,
+        StartFlying,
         Fly,
         Respawn,
     }
     // Todo: find a less awkward way to skip continue on the first respawn
-    private RespawnPhase Phase = RespawnPhase.Fly;
+    private RespawnPhase Phase = RespawnPhase.StartFlying;
     ErVec2 CheckpointPos;
     public override void BeginState(string lastState)
     {
@@ -35,6 +36,9 @@ public class SwPlayerRespawn: SwPlayerState
         {
             case RespawnPhase.Continue:
                 if(BodySprite.IsPlaying) return;
+                Phase = RespawnPhase.StartFlying;
+                break;
+            case RespawnPhase.StartFlying:
                 Phase = RespawnPhase.Fly;
                 PlayBodyAnim("fly");
                 break;

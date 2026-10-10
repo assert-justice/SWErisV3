@@ -5,7 +5,6 @@ namespace SpoonWitch.Game.Entity.Actor.Player.PlayerState;
 public class SwPlayerDodging : SwPlayerState
 {
     public override string Name => "dodging";
-    protected override double StaminaRegenClockMul => 0;
     private const int StartupPhase = 0;
     private const int InvulnPhase = 1;
     private const int CancelPhase = 2;
@@ -19,19 +18,36 @@ public class SwPlayerDodging : SwPlayerState
     public override void BeginState(string lastState)
     {
         base.BeginState(lastState);
+        Start();
+    }
+    private void Start()
+    {
         BodySprite.Stop();
+        HatSprite.Stop();
         SetBodyDodgeAnim(Controls.LastFacingIdx);
         // set and lock in velocity
         Entity.Velocity = Controls.Move.Normalized() * Entity.BaseSpeed * Entity.DodgeSpeedMul;
         DustParticles.Particles.Emitting = true;
         Entity.UseStamina(Entity.DodgeStaminaCost);
         Phase = 0;
+        //
     }
     public override void Update(double dt)
     {
         base.Update(dt);
         // check stuff on last phase
-        if(Phase == CancelPhase){}
+        if(Phase == CancelPhase)
+        {
+            if(CanAttack() && Controls.AttackJustDown)
+            {
+                StateMachine.SetState("attacking");
+                return;
+            }
+            else if(CanDodge() && Controls.DodgeJustDown)
+            {
+                Start();
+            }
+        }
         if(PhaseClock.IsRunning) return;
         switch (Phase)
         {
@@ -55,5 +71,6 @@ public class SwPlayerDodging : SwPlayerState
     {
         base.EndState(nextState);
         Entity.DodgeCooldownClock.SetDuration(Entity.DodgeCooldown);
+        Entity.ResumeStamina();
     }
 }

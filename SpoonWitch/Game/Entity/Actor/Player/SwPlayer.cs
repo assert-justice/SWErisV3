@@ -38,6 +38,7 @@ public class SwPlayer: SwActor
     public double Stamina = 100;
     public double MaxStamina = 100;
     public double StaminaRegen = 30;
+    public double StaminaRegenMul = 1;
     public double StaminaRegenDelay = 0.1;
     public double StaminaRegenDelayPenalty = 0.3;
     public readonly SwClock StaminaRegenClock;
@@ -61,12 +62,12 @@ public class SwPlayer: SwActor
     // Spoon
     // Note: SpoonDamage stays in props
     public bool SpoonEnabled = false;
-    public double SpoonSwingDuration = 0.625;
+    // public double SpoonSwingDuration = 0.625;
     public double SpoonHurtDelay = 0.125;
     public double SpoonHurtDuration = 0.125;
-    public double SpoonRecoveryTime = 0.125;
+    public double SpoonCancelWindow = 0.125;
     public double SpoonStaminaCost = 30;
-    public readonly SwClock SpoonCooldownClock;
+    public readonly SwClock SpoonClock;
     // Sling
     // Note: Likewise, SlingDamage stays in props
     public double SlingBulletSpeed = 600;
@@ -98,6 +99,7 @@ public class SwPlayer: SwActor
     public SwSpell? CurrentSpell;
     public SwStateMachine<SwPlayer> StateMachine{get; private set;} = null!;
     public ErTexture? PickupTexture;
+    public bool PickupVisible = false;
     public SwPlayerControls Controls{get; private set;} = null!;
     private readonly HashSet<string> DiscoveredItems = [];
     public SwAreaComponent ReviveArea = null!;
@@ -114,7 +116,7 @@ public class SwPlayer: SwActor
         HealthClock = AddClock();
         StaminaRegenClock = AddClock();
         DodgeCooldownClock = AddClock();
-        SpoonCooldownClock = AddClock();
+        SpoonClock = AddClock();
         SlingChargeClock = AddClock();
     }
     private void OnEnterSpoonHurtbox(SwEntity entity)
@@ -150,10 +152,10 @@ public class SwPlayer: SwActor
         if(Props.TryGet("dodge/dodge_stamina_cost", out d)) DodgeStaminaCost = d;
         // Spoon
         // Note: SpoonDamage stays in props
-        if(Props.TryGet("spoon/spoon_swing_duration", out d)) SpoonSwingDuration = d;
+        // if(Props.TryGet("spoon/spoon_swing_duration", out d)) SpoonSwingDuration = d;
         if(Props.TryGet("spoon/spoon_hurt_delay", out d)) SpoonHurtDelay = d;
         if(Props.TryGet("spoon/hurt_duration", out d)) SpoonHurtDuration = d;
-        if(Props.TryGet("spoon/spoon_recovery_time", out d)) SpoonRecoveryTime = d;
+        if(Props.TryGet("spoon/spoon_cancel_window", out d)) SpoonCancelWindow = d;
         if(Props.TryGet("spoon/spoon_stamina_cost", out d)) SpoonStaminaCost = d;
         if(TryGetComponent("spoon_hurtbox", out SwAreaComponent spoonHurtbox))
         {
@@ -214,7 +216,7 @@ public class SwPlayer: SwActor
     protected override void Draw()
     {
         base.Draw();
-        if(PickupTexture is not null)
+        if(PickupTexture is not null && PickupVisible)
         {
             var rect = ErRect2.Centered(Position + ErVec2.Up * 24, PickupTexture.Size);
             PickupTexture.Draw(rect.Position);
@@ -242,6 +244,11 @@ public class SwPlayer: SwActor
     public void UseStamina(double cost)
     {
         Stamina -= cost;
+        StaminaRegenMul = 0;
+    }
+    public void ResumeStamina()
+    {
+        StaminaRegenMul = 1;
         double delay = StaminaRegenDelay;
         if(Stamina < 0) delay += StaminaRegenDelayPenalty;
         StaminaRegenClock.Start(delay);
