@@ -163,7 +163,7 @@
    },
    {
     "filename": "particles",
-    "frame": { "x": 0, "y": 96, "w": 32, "h": 32 },
+    "frame": { "x": 64, "y": 64, "w": 32, "h": 32 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
@@ -172,7 +172,7 @@
    },
    {
     "filename": "particles",
-    "frame": { "x": 96, "y": 64, "w": 32, "h": 32 },
+    "frame": { "x": 0, "y": 96, "w": 32, "h": 32 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
@@ -208,7 +208,7 @@
    },
    {
     "filename": "particles",
-    "frame": { "x": 128, "y": 96, "w": 32, "h": 32 },
+    "frame": { "x": 0, "y": 96, "w": 32, "h": 32 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
@@ -217,7 +217,7 @@
    },
    {
     "filename": "particles",
-    "frame": { "x": 32, "y": 96, "w": 32, "h": 32 },
+    "frame": { "x": 128, "y": 96, "w": 32, "h": 32 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
@@ -253,7 +253,7 @@
    },
    {
     "filename": "particles",
-    "frame": { "x": 64, "y": 128, "w": 32, "h": 32 },
+    "frame": { "x": 128, "y": 96, "w": 32, "h": 32 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
@@ -262,7 +262,7 @@
    },
    {
     "filename": "particles",
-    "frame": { "x": 160, "y": 96, "w": 32, "h": 32 },
+    "frame": { "x": 64, "y": 128, "w": 32, "h": 32 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
@@ -307,24 +307,6 @@
    },
    {
     "filename": "particles",
-    "frame": { "x": 32, "y": 160, "w": 32, "h": 32 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
-    "sourceSize": { "w": 32, "h": 32 },
-    "duration": 125
-   },
-   {
-    "filename": "particles",
-    "frame": { "x": 0, "y": 160, "w": 32, "h": 32 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
-    "sourceSize": { "w": 32, "h": 32 },
-    "duration": 125
-   },
-   {
-    "filename": "particles",
     "frame": { "x": 160, "y": 128, "w": 32, "h": 32 },
     "rotated": false,
     "trimmed": false,
@@ -334,6 +316,24 @@
    },
    {
     "filename": "particles",
+    "frame": { "x": 128, "y": 128, "w": 32, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 125
+   },
+   {
+    "filename": "particles",
+    "frame": { "x": 32, "y": 160, "w": 32, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 125
+   },
+   {
+    "filename": "particles",
     "frame": { "x": 64, "y": 160, "w": 32, "h": 32 },
     "rotated": false,
     "trimmed": false,
@@ -361,24 +361,6 @@
    },
    {
     "filename": "particles",
-    "frame": { "x": 160, "y": 160, "w": 32, "h": 32 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
-    "sourceSize": { "w": 32, "h": 32 },
-    "duration": 125
-   },
-   {
-    "filename": "particles",
-    "frame": { "x": 128, "y": 160, "w": 32, "h": 32 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
-    "sourceSize": { "w": 32, "h": 32 },
-    "duration": 125
-   },
-   {
-    "filename": "particles",
     "frame": { "x": 96, "y": 160, "w": 32, "h": 32 },
     "rotated": false,
     "trimmed": false,
@@ -389,6 +371,15 @@
    {
     "filename": "particles",
     "frame": { "x": 64, "y": 160, "w": 32, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 125
+   },
+   {
+    "filename": "particles",
+    "frame": { "x": 32, "y": 160, "w": 32, "h": 32 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
@@ -404,16 +395,16 @@
   "size": { "w": 192, "h": 192 },
   "scale": "1",
   "frameTags": [
-   { "name": "blunt_hit", "from": 1, "to": 4, "direction": "forward", "repeat": "1" },
-   { "name": "slash_hit", "from": 5, "to": 10, "direction": "forward", "repeat": "1" },
-   { "name": "rock_chunks", "from": 11, "to": 14, "direction": "forward", "repeat": "1" },
-   { "name": "dust_1", "from": 15, "to": 19, "direction": "forward", "repeat": "1" },
-   { "name": "dust_2", "from": 20, "to": 24, "direction": "forward", "repeat": "1" },
-   { "name": "dust_3", "from": 25, "to": 29, "direction": "forward", "repeat": "1" },
-   { "name": "magic", "from": 30, "to": 30, "direction": "forward" },
-   { "name": "spell_orb", "from": 31, "to": 31, "direction": "forward" },
-   { "name": "aspect_charge", "from": 32, "to": 36, "direction": "forward" },
-   { "name": "heal", "from": 37, "to": 43, "direction": "forward" }
+   { "name": "blunt_hit", "from": 0, "to": 3, "direction": "forward", "repeat": "1" },
+   { "name": "slash_hit", "from": 4, "to": 9, "direction": "forward", "repeat": "1" },
+   { "name": "rock_chunks", "from": 10, "to": 13, "direction": "forward", "repeat": "1" },
+   { "name": "dust_1", "from": 14, "to": 18, "direction": "forward", "repeat": "1" },
+   { "name": "dust_2", "from": 19, "to": 23, "direction": "forward", "repeat": "1" },
+   { "name": "dust_3", "from": 24, "to": 28, "direction": "forward", "repeat": "1" },
+   { "name": "magic", "from": 29, "to": 29, "direction": "forward" },
+   { "name": "spell_orb", "from": 30, "to": 30, "direction": "forward" },
+   { "name": "aspect_charge", "from": 31, "to": 35, "direction": "forward" },
+   { "name": "heal", "from": 36, "to": 42, "direction": "forward" }
   ]
  }
 }
