@@ -123,6 +123,11 @@ public class SwApp : IErApp
         string menuName;
         if(!command.TryGet("duration", out double duration) || duration == 0)
         {
+            if (TextClock.IsRunning)
+            {
+                TextClock.Stop();
+                HideText();
+            }
             IsPaused = true;
             menuName = "text";
         }

@@ -1,10 +1,12 @@
 # Eris Roadmap
 
 ## PRGE 2026
-- coop revive
 - fix knight
 - build out level
 - finish the aspect
+- fix coop revive
+- fix coop inventory
+- fullscreen
 - misc particle effects
 - sfx/music
 - spells!
