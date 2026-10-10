@@ -8,9 +8,14 @@
         "base_speed": 150,
         "wander_speed_mul": 0.5
     },
+    "sword":{
+        "hurt_delay":0.375,
+        "hurt_duration": 0.125,
+        "cooldown": 0.5
+    },
     "hurtbox": {
         "size": {"x": 32, "y": 32},
-        "mask": 2
+        "mask": 4
     },
     "damage":{
         "verb": "damage",

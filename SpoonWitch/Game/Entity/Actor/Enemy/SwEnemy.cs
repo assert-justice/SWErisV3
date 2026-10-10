@@ -25,7 +25,9 @@ public abstract class SwEnemy: SwActor
     }
     public bool CanSeePoint(ErVec2 point)
     {
-        return !Game.PhysicsWorld.Raycast((uint)SwCollisionMask.IsOpaque, Position, point);
+        if(!Game.Map.InSameRoom(point, Position)) return false;
+        if(Game.PhysicsWorld.Raycast((uint)SwCollisionMask.IsOpaque, Position, point)) return false;
+        return true;
         // return false;
         // if(SwApp.Debug) return !SwGame.Map.PhysicsWorld.RaycastDebug(2, Position, point);
         // else return !SwGame.Map.PhysicsWorld.Raycast(2, Position, point);

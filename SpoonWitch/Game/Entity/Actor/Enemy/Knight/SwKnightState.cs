@@ -1,6 +1,6 @@
 using Eris;
-using Eris.Utils;
 using ErisMath;
+using SpoonWitch.Game.Entity.Actor.Player;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.State;
 using SpoonWitch.Rendering;
@@ -50,7 +50,7 @@ public abstract class SwKnightState: SwState<SwKnight>
     }
     private bool NeedsNewTarget()
     {
-        if(Entity.TimeoutClock <= 0) return true;
+        if(!Entity.TimeoutClock.IsRunning) return true;
         if(Entity.Velocity.GetLengthSquared() < CLOSE_ENOUGH) return true;
         if(Entity.DistanceToTarget() < CLOSE_ENOUGH) return true;
         return false;
@@ -78,27 +78,25 @@ public abstract class SwKnightState: SwState<SwKnight>
     private class Wandering: SwKnightState
     {
         public override string Name => "wandering";
-        // private bool TryRandomTarget()
-        // {
-        //     // Todo: optimize this
-        //     double angle = Random.Shared.NextDouble() * ErMath.TAU;
-        //     var dir = ErVec2.FromAngle(angle) * 128;
-        //     var pos = dir + Entity.Position;
-        //     if(!Entity.CanSeePoint(pos)) return false;
-        //     if(!SwGame.GetMap().TryGetRoom(pos, out var targetRoom)) return false;
-        //     if(!SwGame.GetMap().TryGetRoom(Entity.Position, out var room)) return false;
-        //     if(targetRoom.Id != room.Id) return false;
-        //     Entity.TargetPosition = pos;
-        //     return true;
-        // }
+        private bool TryRandomTarget()
+        {
+            // Todo: optimize this
+            double angle = Random.Shared.NextDouble() * ErMath.TAU;
+            var dir = ErVec2.FromAngle(angle) * 128;
+            var pos = dir + Entity.Position;
+            if(!Entity.CanSeePoint(pos)) return false;
+            if(!Entity.Game.Map.InSameRoom(Entity.Position, pos)) return false;
+            Entity.TargetPosition = pos;
+            Entity.TimeoutClock.Start(1);
+            return true;
+        }        
         private void SetNewWander()
         {
-            // Entity.TimeoutClock = 4;
-            // for (int i = 0; i < 50; i++)
-            // {
-            //     if(TryRandomTarget()) return;
-            // }
-            // ErEngine.LogWarning("slume could not find target pos");
+            for (int i = 0; i < 50; i++)
+            {
+                if(TryRandomTarget()) return;
+            }
+            ErEngine.LogWarning("knight could not find target pos");
         }
         public override void BeginState(string lastState)
         {
@@ -110,7 +108,6 @@ public abstract class SwKnightState: SwState<SwKnight>
             base.Update(dt);
             if(Entity.CanSeeAnyPlayer())StateMachine.SetState("chasing");
             else if(NeedsNewTarget()) SetNewWander();
-            else Entity.TimeoutClock -= dt;
             Entity.MoveToTarget(Entity.BaseSpeed * Entity.WanderSpeedMul);
             PlayBodyAnim(2);
         }
@@ -137,19 +134,29 @@ public abstract class SwKnightState: SwState<SwKnight>
     private class Chasing: SwKnightState
     {
         public override string Name => "chasing";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            if(Entity.TryGetClosestEntity<SwPlayer>(out var entity))
+            {
+                Entity.TargetEntity = entity;
+            }
+        }
         public override void Update(double dt)
         {
             base.Update(dt);
-            if (!Entity.CanSeeAnyPlayer())
+            var target = Entity.TargetEntity;
+            if(target is null || !Entity.CanSeePoint(target.Position))
             {
                 StateMachine.SetState("seeking");
                 return;
             }
-            // double attackRange = 64;
-            // Entity.TargetPosition = SwGame.PlayerPos;
-            // if(Entity.DistanceToTarget() < attackRange) StateMachine.SetState("attacking");
-            // Entity.MoveToTarget(Entity.BaseSpeed);
-            // PlayBodyAnim();
+            double attackRange = 64;
+            // Note: we are also setting the target position because if we lose sight of the target, the seek state will use it
+            Entity.TargetPosition = target.Position;
+            if(Entity.DistanceToTarget() < attackRange) StateMachine.SetState("attacking");
+            Entity.MoveToTarget(Entity.BaseSpeed);
+            PlayBodyAnim();
         }
     }
     private class Seeking: SwKnightState
@@ -158,7 +165,7 @@ public abstract class SwKnightState: SwState<SwKnight>
         public override void BeginState(string lastState)
         {
             base.BeginState(lastState);
-            Entity.TimeoutClock = 4;
+            Entity.TimeoutClock.Start(4);
         }
         public override void Update(double dt)
         {
@@ -171,6 +178,13 @@ public abstract class SwKnightState: SwState<SwKnight>
     private class Attacking: SwKnightState
     {
         public override string Name => "attacking";
+        private enum AttackPhase
+        {
+            Startup,
+            Hurt,
+            Cooldown,
+        }
+        private AttackPhase Phase;
         private void SetHurtbox()
         {
             var dir = ErVec2.FromAngle(Entity.FacingIdx * ErMath.HALF_PI);
@@ -180,11 +194,12 @@ public abstract class SwKnightState: SwState<SwKnight>
         }
         private void Attack()
         {
-            double attackDuration = 0.125 * 7;
-            Entity.TimeoutClock = attackDuration;
+            Entity.TimeoutClock.Start(Entity.HurtDelay);
             SwordSprite.Visible = true;
             SwordSprite.Play();
             SwordSprite.Angle = (Entity.FacingIdx - 1) * ErMath.HALF_PI;
+            SwordSprite.HFlip = !SwordSprite.HFlip;
+            Phase = AttackPhase.Startup;
         }
         public override void BeginState(string lastState)
         {
@@ -197,10 +212,26 @@ public abstract class SwKnightState: SwState<SwKnight>
         {
             base.Update(dt);
             if(!SwordSprite.IsPlaying) SwordSprite.Visible = false;
-            Hurtbox.Enabled = SwordSprite.FrameIdx == 0;
-            if(Entity.TimeoutClock <= 0) StateMachine.SetState("chasing");
-            else Entity.TimeoutClock -= dt;
-            PlayBodyAnim();
+            if(Entity.TimeoutClock.IsRunning) return;
+            switch (Phase)
+            {
+                case AttackPhase.Startup:
+                    Entity.TimeoutClock.Start(Entity.HurtDelay);
+                    Phase = AttackPhase.Hurt;
+                    Hurtbox.Enabled = true;
+                    break;
+                case AttackPhase.Hurt:
+                    Entity.TimeoutClock.Start(Entity.Cooldown);
+                    Phase = AttackPhase.Cooldown;
+                    Hurtbox.Enabled = false;
+                    break;
+                case AttackPhase.Cooldown:
+                    StateMachine.SetState("chasing");
+                    break;
+            }
+            // Hurtbox.Enabled = SwordSprite.FrameIdx == 0;
+            // if(!Entity.TimeoutClock.IsRunning) StateMachine.SetState("chasing");
+            // PlayBodyAnim();
         }
         public override void EndState(string nextState)
         {
