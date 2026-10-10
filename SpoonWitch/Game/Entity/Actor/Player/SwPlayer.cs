@@ -100,6 +100,8 @@ public class SwPlayer: SwActor
     public ErTexture? PickupTexture;
     public SwPlayerControls Controls{get; private set;} = null!;
     private readonly HashSet<string> DiscoveredItems = [];
+    public SwAreaComponent ReviveArea = null!;
+    public bool CanRevive = false;
     // private bool GotMad = false;
     public SwPlayer()
     {
@@ -108,6 +110,7 @@ public class SwPlayer: SwActor
         AddGlobalHandler("player_discover_item", PlayerDiscoverItem);
         AddGlobalHandler("player_item_get", PlayerItemGet);
         AddGlobalHandler("player_respawn", PlayerRespawn);
+        AddGlobalHandler("player_use", OnPlayerUse);
         HealthClock = AddClock();
         StaminaRegenClock = AddClock();
         DodgeCooldownClock = AddClock();
@@ -185,6 +188,9 @@ public class SwPlayer: SwActor
         RegisterComponent(StateMachine);
         StateMachine.SetDefaultState("respawn");
         IsAlive = false;
+        ReviveArea = RegisterComponent(
+            new SwAreaComponent(this, "revive_area", (uint)SwCollisionMask.PlayerTeam, new(48,48),enabled:false,
+            onBodyEnter:OnEnterRevive, onBodyExit:OnExitRevive));
     }
     protected override void Update(double dt)
     {
@@ -325,5 +331,19 @@ public class SwPlayer: SwActor
         StateMachine.SetState("respawn");
         // if(Game.Map.InSameRoom(Position, Game.Map.CurrentCheckpointPos)) StateMachine.SetState("respawn");
         // else StateMachine.SetState("respawn_fade_out");
+    }
+    private void OnEnterRevive(SwEntity entity)
+    {
+        if(entity.Id == Id) return;
+        CanRevive = true;
+    }
+    private void OnExitRevive(SwEntity entity)
+    {
+        if(entity.Id == Id) return;
+        CanRevive = false;
+    }
+    private void OnPlayerUse(PriNode _)
+    {
+        if(CanRevive) StateMachine?.SetState("revive");
     }
 }

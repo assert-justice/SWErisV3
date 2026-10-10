@@ -179,6 +179,22 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         //     else StateMachine.SetState("respawn_fade_out");
         // }
     }
+    public class SwPlayerRevive: SwPlayerState
+    {
+        public override string Name => "revive";
+        public override void BeginState(string lastState)
+        {
+            base.BeginState(lastState);
+            PlayBodyAnim("continue");
+        }
+        public override void Update(double dt)
+        {
+            base.Update(dt);
+            if(BodySprite.IsPlaying) return;
+            if(BodySprite.CurrentAnimation.Name == "continue") PlayBodyAnim("respawn");
+            else StateMachine.SetState("default");
+        }
+    }
     public class Default: SwPlayerState
     {
         public override string Name => "default";
@@ -205,6 +221,8 @@ public abstract class SwPlayerState : SwState<SwPlayer>
                 SwApp.CommandQueue.AddCommand(command);
             }
             else if(ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Semicolon)) Entity.TestDamage(70);
+            else if(ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Leftbracket) && Entity.PlayerIdx == 0) Entity.TestDamage(70);
+            else if(ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Rightbracket) && Entity.PlayerIdx == 1) Entity.TestDamage(70);
             // else if(Entity.CurrentSpell is not null && !Entity.CurrentSpell.IsActive && CanCast() && Controls.CastJustDown)
             // {
             //     Entity.CurrentSpell.Begin();
@@ -301,6 +319,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             new SwPlayerCharged(),
             new SwPlayerDodging(),
             new Dead(),
+            new SwPlayerRevive(),
             new ItemGet(),
             new Dancing(),
         ]);

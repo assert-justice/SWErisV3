@@ -1,14 +1,16 @@
 # Eris Roadmap
 
 ## PRGE 2026
-- death and respawning (coop)
-- finish the aspect
+- coop revive
 - fix knight
+- build out level
+- finish the aspect
 - misc particle effects
 - sfx/music
 - spells!
 
 ## Done
+- death and respawning (coop)
 - death and respawning
 - roots/healing
 - in game text
