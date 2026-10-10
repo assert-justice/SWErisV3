@@ -241,14 +241,13 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         public override void Update(double dt)
         {
             base.Update(dt);
+            Entity.PickupVisible = BodySprite.FrameIdx > 2;
             if(BodySprite.IsPlaying) return;
-            Entity.PickupVisible = true;
             if(Entity.TempData is not PriNull)
             {
                 SwApp.CommandQueue.AddCommand(Entity.TempData);
             }
             StateMachine.SetState("default");
-            // if(Controls.DodgeJustDown) StateMachine.SetState("default");
         }
         public override void EndState(string nextState)
         {
