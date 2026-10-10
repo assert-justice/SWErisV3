@@ -173,7 +173,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
         {
             base.EndState(nextState);
             Entity.ReviveArea.Enabled = false;
-            Entity.CanRevive = false;
+            // Entity.CanRevive = false;
         }
     }
     public class SwPlayerRevive: SwPlayerState
@@ -191,6 +191,12 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             if(BodySprite.CurrentAnimation.Name == "continue") PlayBodyAnim("respawn");
             else StateMachine.SetState("default");
         }
+        public override void EndState(string nextState)
+        {
+            base.EndState(nextState);
+            Entity.IsAlive = true;
+            Entity.Health = Entity.HealAmount;
+        }
     }
     public class Default: SwPlayerState
     {
@@ -201,6 +207,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
             SetBodyHandedAnim(animIdx, 2, Controls.LastFacingIdx);
             Entity.Velocity = Controls.Move * Entity.BaseSpeed;
+            Entity.UpdateUsable();
             if(CanAttack() && Controls.AttackJustDown) StateMachine.SetState("attacking");
             else if(Controls.IsCharging && Inventory.GetCount("sling_ammo") > 0) StateMachine.SetState("charging");
             else if(CanDodge() && Controls.DodgeJustDown) StateMachine.SetState("dodging");
@@ -210,12 +217,13 @@ public abstract class SwPlayerState : SwState<SwPlayer>
                 Entity.Roots -= 1;
                 HealParticles.Particles.Emitting = true;
             }
-            else if (Controls.UseJustDown)
+            else if (Entity.CanUse() && Controls.UseJustDown)
             {
-                PriDict command = [];
-                command.TrySet("verb", "player_use");
-                command.TrySet("player_idx", Entity.PlayerIdx);
-                SwApp.CommandQueue.AddCommand(command);
+                Entity.Use();
+                // PriDict command = [];
+                // command.TrySet("verb", "player_use");
+                // command.TrySet("player_idx", Entity.PlayerIdx);
+                // SwApp.CommandQueue.AddCommand(command);
             }
             else if(ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Semicolon)) Entity.TestDamage(70);
             else if(ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.Leftbracket) && Entity.PlayerIdx == 0) Entity.TestDamage(70);

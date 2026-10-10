@@ -29,6 +29,10 @@ public class SwPlayer: SwActor
             GetComponent<SwSpriteComponent>("hat")?.Sprite.SetPallet(value);
         }
     }
+    public readonly HashSet<SwEntity> UsableList = [];
+    public SwEntity? Usable;
+    // private (SwEntity entity, Action<PriNode> method)? UseStuff;
+    private SwSpriteComponent UsePromptSprite = null!;
     public SwCamera Camera = null!;
     // Health
     // Note: Health and MaxHealth defined in SwActor
@@ -103,16 +107,16 @@ public class SwPlayer: SwActor
     public SwPlayerControls Controls{get; private set;} = null!;
     private readonly HashSet<string> DiscoveredItems = [];
     public SwAreaComponent ReviveArea = null!;
-    public bool CanRevive = false;
+    // public bool CanRevive = false;
     // private bool GotMad = false;
     public SwPlayer()
     {
         AddHandler("ent_offer_item", EntOfferItem);
         AddHandler("enter_checkpoint", EnterCheckpoint);
+        AddHandler("player_use", OnPlayerUse);
         AddGlobalHandler("player_discover_item", PlayerDiscoverItem);
         AddGlobalHandler("player_item_get", PlayerItemGet);
         AddGlobalHandler("player_respawn", PlayerRespawn);
-        AddGlobalHandler("player_use", OnPlayerUse);
         HealthClock = AddClock();
         StaminaRegenClock = AddClock();
         DodgeCooldownClock = AddClock();
@@ -193,6 +197,24 @@ public class SwPlayer: SwActor
         ReviveArea = RegisterComponent(
             new SwAreaComponent(this, "revive_area", (uint)SwCollisionMask.PlayerTeam, new(48,48),enabled:false,
             onBodyEnter:OnEnterRevive, onBodyExit:OnExitRevive));
+        UsePromptSprite = GetComponent<SwSpriteComponent>("use_prompt")!;
+    }
+    public void UpdateUsable()
+    {
+        // update usable
+        Usable = null;
+        int rating = 0;
+        foreach (var item in UsableList)
+        {
+            // find highest ranking
+            int rank = RankUseable(item);
+            if(rank > rating)
+            {
+                rating = rank;
+                Usable = item;
+                // Usable = u;
+            }
+        }
     }
     protected override void Update(double dt)
     {
@@ -209,6 +231,24 @@ public class SwPlayer: SwActor
         //     GotMad = true;
         // }
     }
+    public bool CanUse()
+    {
+        return Usable is not null;
+    }
+    public void Use()
+    {
+        Usable?.AddCommandVerb("player_use");
+    }
+    private int RankUseable(SwEntity entity)
+    {
+        if(entity is SwPlayer player)
+        {
+            // if(player.IsAlive) return 0;
+            if(!player.IsAlive && Roots > 0) return 10;
+            else return 0;
+        }
+        else return 1;
+    }
     protected override void UpdateLate(double dt)
     {
         base.UpdateLate(dt);
@@ -220,6 +260,12 @@ public class SwPlayer: SwActor
         {
             var rect = ErRect2.Centered(Position + ErVec2.Up * 24, PickupTexture.Size);
             PickupTexture.Draw(rect.Position);
+        }
+        if(Usable is null) UsePromptSprite.Sprite.Visible = false;
+        else
+        {
+            UsePromptSprite.Sprite.Visible = true;
+            UsePromptSprite.Sprite.Offset = Usable.Position - Position + ErVec2.Up * 16;
         }
     }
     protected override double Damage(SwDamage damage)
@@ -342,15 +388,28 @@ public class SwPlayer: SwActor
     private void OnEnterRevive(SwEntity entity)
     {
         if(entity.Id == Id) return;
-        CanRevive = true;
+        // CanRevive = true;
+        if(entity is not SwPlayer player)
+        {
+            ErEngine.LogWarning("expected player entity, found ", entity);
+            return;
+        }
+        player.UsableList.Add(this);
     }
     private void OnExitRevive(SwEntity entity)
     {
         if(entity.Id == Id) return;
-        CanRevive = false;
+        // CanRevive = false;
+        if(entity is not SwPlayer player)
+        {
+            ErEngine.LogWarning("expected player entity, found ", entity);
+            return;
+        }
+        player.UsableList.Remove(this);
     }
     private void OnPlayerUse(PriNode _)
     {
-        if(CanRevive) StateMachine?.SetState("revive");
+        if(StateMachine.CurrentState.Name == "dead") StateMachine.SetState("revive");
+        else ErEngine.LogWarning("tried to use player while not in dead state");
     }
 }

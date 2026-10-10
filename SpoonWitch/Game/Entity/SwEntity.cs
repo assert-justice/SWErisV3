@@ -36,6 +36,13 @@ public abstract class SwEntity
     {
         CommandQueue.AddCommand(command);
     }
+    public PriDict AddCommandVerb(string verb)
+    {
+        PriDict command = [];
+        command.TrySet("verb", verb);
+        CommandQueue.AddCommand(command);
+        return command;
+    }
     public SwClock AddClock(double duration = 1, bool startRunning = false)
     {
         SwClock clock = new();
