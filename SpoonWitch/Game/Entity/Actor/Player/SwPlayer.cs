@@ -111,12 +111,13 @@ public class SwPlayer: SwActor
     // private bool GotMad = false;
     public SwPlayer()
     {
-        AddHandler("ent_offer_item", EntOfferItem);
+        // AddHandler("ent_offer_item", EntOfferItem);
         AddHandler("enter_checkpoint", EnterCheckpoint);
         AddHandler("player_use", OnPlayerUse);
-        AddGlobalHandler("player_discover_item", PlayerDiscoverItem);
-        AddGlobalHandler("player_item_get", PlayerItemGet);
+        // AddGlobalHandler("player_discover_item", PlayerDiscoverItem);
+        // AddGlobalHandler("player_item_get", PlayerItemGet);
         AddGlobalHandler("player_respawn", PlayerRespawn);
+        AddGlobalHandler("player_item_inc", PlayerItemInc);
         HealthClock = AddClock();
         StaminaRegenClock = AddClock();
         DodgeCooldownClock = AddClock();
@@ -299,78 +300,78 @@ public class SwPlayer: SwActor
         if(Stamina < 0) delay += StaminaRegenDelayPenalty;
         StaminaRegenClock.Start(delay);
     }
-    private void EntOfferItem(PriNode command)
-    {
-        if(!command.TryGet("ent_id", out int id)) return;
-        if(!Game.EntityLookup.TryGet<SwEntity>(id.ToString(), out var entity)) return;
-        if(!command.TryGet("count", out int count)) return;
-        if(count == 0) return;
-        if(!command.TryGet("pickup_type", out string pickup_type)) return;
-        int rem = 0;
-        if(command.TryGet("max", out int max) && max > Inventory.GetMax(pickup_type))
-        {
-            Inventory.SetCount(pickup_type, count, max);
-        }
-        else
-        {
-            Inventory.TryAdd(pickup_type, count, out rem);
-        }
-        // else if(!Inventory.TryAdd(pickup_type, count, out rem)) return;
-        // bool newItem = !Inventory.HasEntry(pickup_type);
-        if(!DiscoveredItems.Contains(pickup_type))
-        {
-            // handle new item
-            SwApp.CommandQueue.AddCommandVerb("player_discover_item").TrySet("pickup_type", pickup_type);
-        }
-        else
-        {
-            SwApp.CommandQueue.AddCommandVerb("player_item_get").TrySet("pickup_type", pickup_type);
-        }
-        PriDict com = [];
-        com.TrySet("verb", "pickup_set_rem");
-        com.TrySet("rem", rem);
-        entity.AddCommand(com);
-    }
-    private void PlayerItemGet(PriNode command)
-    {
-        if(!command.TryGet("pickup_type", out string pickup_type)) return;
-        StateMachine?.SetState("item_get");
-        string? texPath = null;
-        PriNode pickupProto = SwData.Prototypes.Get($"pickups/{pickup_type}");
-        if(pickupProto.TryGet("texture_filepath", out string s)) texPath = s;
-        if(texPath is not null)
-        {
-            if(!ErTexture.TryFromPath(texPath, out PickupTexture)) ErEngine.Log("bad pickup texture path");
-        }
-        if(PlayerIdx == 0)
-        {
-            TempData = pickupProto.Get("pickup_command");
-        }
-        if(pickup_type == "root")
-        {
-            MaxRoots++;
-            Roots = MaxRoots;
-        }
-    }
-    private void PlayerDiscoverItem(PriNode command)
-    {
-        if(!command.TryGet("pickup_type", out string pickup_type)) return;
-        StateMachine?.SetState("item_get");
-        DiscoveredItems.Add(pickup_type);
-        string? texPath = null;
-        PriNode pickupProto = SwData.Prototypes.Get($"pickups/{pickup_type}");
-        if(pickupProto.TryGet("discover_texture_filepath", out string s)) texPath = s;
-        else if(pickupProto.TryGet("texture_filepath", out s)) texPath = s;
-        if(texPath is not null)
-        {
-            if(!ErTexture.TryFromPath(texPath, out PickupTexture)) ErEngine.Log("bad pickup texture path");
-        }
-        if(PlayerIdx == 0)
-        {
-            TempData = pickupProto.Get("discover_command");
-        }
-        if(pickup_type == "spoon") SpoonEnabled = true;
-    }
+    // private void EntOfferItem(PriNode command)
+    // {
+    //     if(!command.TryGet("ent_id", out int id)) return;
+    //     if(!Game.EntityLookup.TryGet<SwEntity>(id.ToString(), out var entity)) return;
+    //     if(!command.TryGet("count", out int count)) return;
+    //     if(count == 0) return;
+    //     if(!command.TryGet("pickup_type", out string pickup_type)) return;
+    //     int rem = 0;
+    //     if(command.TryGet("max", out int max) && max > Inventory.GetMax(pickup_type))
+    //     {
+    //         Inventory.SetCount(pickup_type, count, max);
+    //     }
+    //     else
+    //     {
+    //         Inventory.TryAdd(pickup_type, count, out rem);
+    //     }
+    //     // else if(!Inventory.TryAdd(pickup_type, count, out rem)) return;
+    //     // bool newItem = !Inventory.HasEntry(pickup_type);
+    //     if(!DiscoveredItems.Contains(pickup_type))
+    //     {
+    //         // handle new item
+    // //         TempData = pickupProto.Get("discover_command");
+    //         SwApp.CommandQueue.AddCommandVerb("player_discover_item").TrySet("pickup_type", pickup_type);
+    //     }
+    //     else
+    //     {
+    //         SwApp.CommandQueue.AddCommandVerb("player_item_get").TrySet("pickup_type", pickup_type);
+    //     }
+    //     PriDict com = [];
+    //     com.TrySet("verb", "pickup_set_rem");
+    //     com.TrySet("rem", rem);
+    //     entity.AddCommand(com);
+    // }
+    // private void PlayerItemGet(PriNode command)
+    // {
+    //     if(!command.TryGet("pickup_type", out string pickup_type)) return;
+    //     StateMachine?.SetState("item_get");
+    //     string? texPath = null;
+    //     PriNode pickupProto = SwData.Prototypes.Get($"pickups/{pickup_type}");
+    //     if(pickupProto.TryGet("texture_filepath", out string s)) texPath = s;
+    //     if(texPath is not null)
+    //     {
+    //         if(!ErTexture.TryFromPath(texPath, out PickupTexture)) ErEngine.Log("bad pickup texture path");
+    //     }
+    //     if(PlayerIdx == 0)
+    //     {
+    //         TempData = pickupProto.Get("pickup_command");
+    //     }
+    //     if(pickup_type == "root")
+    //     {
+    //         MaxRoots++;
+    //         Roots = MaxRoots;
+    //     }
+    // }
+    // private void PlayerDiscoverItem(PriNode command)
+    // {
+    //     if(!command.TryGet("pickup_type", out string pickup_type)) return;
+    //     StateMachine?.SetState("item_get");
+    //     DiscoveredItems.Add(pickup_type);
+    //     string? texPath = null;
+    //     PriNode pickupProto = SwData.Prototypes.Get($"pickups/{pickup_type}");
+    //     if(pickupProto.TryGet("discover_texture_filepath", out string s)) texPath = s;
+    //     else if(pickupProto.TryGet("texture_filepath", out s)) texPath = s;
+    //     if(texPath is not null)
+    //     {
+    //         if(!ErTexture.TryFromPath(texPath, out PickupTexture)) ErEngine.Log("bad pickup texture path");
+    //     }
+    //     if(PlayerIdx == 0)
+    //     {
+    //     }
+    //     if(pickup_type == "spoon") SpoonEnabled = true;
+    // }
     private void EnterCheckpoint(PriNode command)
     {
         Health = MaxHealth;
@@ -411,5 +412,60 @@ public class SwPlayer: SwActor
     {
         if(StateMachine.CurrentState.Name == "dead") StateMachine.SetState("revive");
         else ErEngine.LogWarning("tried to use player while not in dead state");
+    }
+    private void PlayerItemInc(PriNode command)
+    {
+        if(!command.TryGet("pickup_type", out string pickup_type)) return;
+        if(!command.TryGet("count", out int count)) count = 1;
+        StateMachine?.SetState("item_get");
+        string? texPath = null;
+        PriNode pickupProto = SwData.Prototypes.Get($"pickups/{pickup_type}");
+        if(pickupProto.TryGet("texture_filepath", out string s)) texPath = s;
+        if(texPath is not null)
+        {
+            if(!ErTexture.TryFromPath(texPath, out PickupTexture)) ErEngine.Log("bad pickup texture path");
+        }
+        int oldMax = Inventory.GetMax(pickup_type);
+        int max = oldMax += count;
+        Inventory.SetCount(pickup_type, max, max);
+        if (!DiscoveredItems.Contains(pickup_type))
+        {
+            // discovered command
+            TempData = pickupProto.Get("discover_command");
+            if(pickup_type == "spoon") SpoonEnabled = true;
+        }
+        else
+        {
+            // not discoverd command
+            TempData = pickupProto.Get("pickup_command");
+        }
+        DiscoveredItems.Add(pickup_type);
+    //     if(PlayerIdx == 0)
+    //     {
+    //         TempData = pickupProto.Get("pickup_command");
+    //     }
+    //     if(pickup_type == "root")
+    //     {
+    //         MaxRoots++;
+    //         Roots = MaxRoots;
+    //     }
+
+    //     if(!command.TryGet("pickup_type", out string pickup_type)) return;
+    //     StateMachine?.SetState("item_get");
+    //     DiscoveredItems.Add(pickup_type);
+    //     string? texPath = null;
+    //     PriNode pickupProto = SwData.Prototypes.Get($"pickups/{pickup_type}");
+    //     if(pickupProto.TryGet("discover_texture_filepath", out string s)) texPath = s;
+    //     else if(pickupProto.TryGet("texture_filepath", out s)) texPath = s;
+    //     if(texPath is not null)
+    //     {
+    //         if(!ErTexture.TryFromPath(texPath, out PickupTexture)) ErEngine.Log("bad pickup texture path");
+    //     }
+    //     if(PlayerIdx == 0)
+    //     {
+    //         TempData = pickupProto.Get("discover_command");
+    //     }
+    //     if(pickup_type == "spoon") SpoonEnabled = true;
+
     }
 }

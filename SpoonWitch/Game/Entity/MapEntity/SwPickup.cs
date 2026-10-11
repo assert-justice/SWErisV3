@@ -4,7 +4,6 @@ using ErisMath;
 using Prion.Node;
 using SpoonWitch.Data;
 using SpoonWitch.Game.Entity.Component;
-using SpoonWitch.Utils;
 
 namespace SpoonWitch.Game.Entity.MapEntity;
 
@@ -17,19 +16,6 @@ public class SwPickup : SwMapEntity
     {
         get => Props.TryGet("fields/count", out int i) ? i : 0;
         set => Props.TrySet("fields/count", value);
-    }
-    // public int Max
-    // {
-    //     get => Props.TryGet("fields/max", out int i) ? i : 0;
-    //     set => Props.TrySet("fields/max", value);
-    // }
-    public SwPickup()
-    {
-        AddHandler("pickup_set_rem", SetRem);
-    }
-    public override void SetProps(PriNode props)
-    {
-        base.SetProps(props);
     }
     public override void Init()
     {
@@ -55,21 +41,14 @@ public class SwPickup : SwMapEntity
             Texture.Draw(Position + vec - center);
         }
     }
-    private void SetRem(PriNode command)
-    {
-        if(!command.TryGet("rem", out int rem)) return;
-        Props.TrySet("count", rem);
-        Count = rem;
-        if(rem == 0) Area.Enabled = false;
-    }
-    private void OnEnter(SwEntity entity)
+    private void OnEnter(SwEntity _)
     {
         PriDict command = [];
-        command.TrySet("verb", "ent_offer_item");
-        command.TrySet("ent_id", Id);
+        command.TrySet("verb", "player_item_inc");
         command.TrySet("pickup_type", PickupType);
         command.TrySet("count", Count);
-        command.Add("max", Props.Get("fields/max"));
-        entity.AddCommand(command);
+        SwApp.CommandQueue.AddCommand(command);
+        Count = 0;
+        Area.Enabled = false;
     }
 }
