@@ -368,6 +368,9 @@ public class SwMap
             case "fwoosher":
                 entId = Game.AddEntity<SwFwoosher>(props).Id;
                 break;
+            case "bollard":
+                entId = -1;
+                break;
             case "sign":
                 entId = Game.AddEntity<SwSign>(props).Id;
                 break;
