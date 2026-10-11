@@ -11,7 +11,7 @@
 	"iid": "56816e60-fa90-11f0-b4ec-5b883517cfbd",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 149,
+	"nextUid": 151,
 	"identifierStyle": "Lowercase",
 	"toc": [],
 	"worldLayout": "GridVania",
@@ -504,6 +504,43 @@
 					"acceptFileTypes": null,
 					"defaultOverride": null,
 					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
+				},
+				{
+					"identifier": "on_defeat_json",
+					"doc": null,
+					"__type": "String",
+					"uid": 150,
+					"type": "F_Text",
+					"isArray": false,
+					"canBeNull": true,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": "LangJson",
 					"symmetricalRef": false,
 					"autoChainRef": true,
 					"allowOutOfLevelRef": true,
@@ -2331,7 +2368,48 @@
 			"limitBehavior": "MoveLastOne",
 			"pivotX": 0,
 			"pivotY": 0,
-			"fieldDefs": []
+			"fieldDefs": [
+				{
+					"identifier": "start_up",
+					"doc": null,
+					"__type": "Bool",
+					"uid": 149,
+					"type": "F_Bool",
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": {
+						"id": "V_Bool",
+						"params": [ true ]
+					},
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
+				}
+			]
 		}
 	], "tilesets": [
 		{
@@ -3287,28 +3365,12 @@
 							"__tile": { "tilesetUid": 145, "x": 0, "y": 0, "w": 32, "h": 32 },
 							"__smartColor": "#2CE8F5",
 							"iid": "0ee670f0-bde0-11f1-9fad-c3e99007973a",
-							"width": 32,
+							"width": 64,
 							"height": 32,
 							"defUid": 146,
 							"px": [288,192],
-							"fieldInstances": [],
+							"fieldInstances": [{ "__identifier": "start_up", "__type": "Bool", "__value": true, "__tile": null, "defUid": 149, "realEditorValues": [null] }],
 							"__worldX": 928,
-							"__worldY": -128
-						},
-						{
-							"__identifier": "bollard",
-							"__grid": [10,6],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 145, "x": 0, "y": 0, "w": 32, "h": 32 },
-							"__smartColor": "#2CE8F5",
-							"iid": "0f64c8b0-bde0-11f1-9fad-7fdd7b9838ee",
-							"width": 32,
-							"height": 32,
-							"defUid": 146,
-							"px": [320,192],
-							"fieldInstances": [],
-							"__worldX": 960,
 							"__worldY": -128
 						},
 						{
@@ -3319,28 +3381,12 @@
 							"__tile": { "tilesetUid": 145, "x": 0, "y": 0, "w": 32, "h": 32 },
 							"__smartColor": "#2CE8F5",
 							"iid": "11b9dc40-bde0-11f1-9fad-8d272ce4b561",
-							"width": 32,
+							"width": 64,
 							"height": 32,
 							"defUid": 146,
 							"px": [288,64],
-							"fieldInstances": [],
+							"fieldInstances": [{ "__identifier": "start_up", "__type": "Bool", "__value": true, "__tile": null, "defUid": 149, "realEditorValues": [] }],
 							"__worldX": 928,
-							"__worldY": -256
-						},
-						{
-							"__identifier": "bollard",
-							"__grid": [10,2],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 145, "x": 0, "y": 0, "w": 32, "h": 32 },
-							"__smartColor": "#2CE8F5",
-							"iid": "12095bd0-bde0-11f1-9fad-11c86a77d8d5",
-							"width": 32,
-							"height": 32,
-							"defUid": 146,
-							"px": [320,64],
-							"fieldInstances": [],
-							"__worldX": 960,
 							"__worldY": -256
 						},
 						{
@@ -5766,7 +5812,7 @@
 							"height": 32,
 							"defUid": 146,
 							"px": [288,64],
-							"fieldInstances": [],
+							"fieldInstances": [{ "__identifier": "start_up", "__type": "Bool", "__value": true, "__tile": null, "defUid": 149, "realEditorValues": [] }],
 							"__worldX": 928,
 							"__worldY": -896
 						}
@@ -5816,7 +5862,8 @@
 								{ "__identifier": "trigger_on_load", "__type": "Bool", "__value": true, "__tile": null, "defUid": 9, "realEditorValues": [] },
 								{ "__identifier": "property_overrides_json", "__type": "String", "__value": null, "__tile": null, "defUid": 12, "realEditorValues": [] },
 								{ "__identifier": "max_uses", "__type": "Int", "__value": 1, "__tile": null, "defUid": 50, "realEditorValues": [] },
-								{ "__identifier": "is_passive", "__type": "Bool", "__value": false, "__tile": null, "defUid": 119, "realEditorValues": [] }
+								{ "__identifier": "is_passive", "__type": "Bool", "__value": false, "__tile": null, "defUid": 119, "realEditorValues": [] },
+								{ "__identifier": "on_defeat_json", "__type": "String", "__value": null, "__tile": null, "defUid": 150, "realEditorValues": [] }
 							],
 							"__worldX": 944,
 							"__worldY": -816
@@ -11275,7 +11322,8 @@
 								{ "__identifier": "trigger_on_load", "__type": "Bool", "__value": true, "__tile": null, "defUid": 9, "realEditorValues": [] },
 								{ "__identifier": "property_overrides_json", "__type": "String", "__value": null, "__tile": null, "defUid": 12, "realEditorValues": [] },
 								{ "__identifier": "max_uses", "__type": "Int", "__value": 1, "__tile": null, "defUid": 50, "realEditorValues": [] },
-								{ "__identifier": "is_passive", "__type": "Bool", "__value": false, "__tile": null, "defUid": 119, "realEditorValues": [null] }
+								{ "__identifier": "is_passive", "__type": "Bool", "__value": false, "__tile": null, "defUid": 119, "realEditorValues": [null] },
+								{ "__identifier": "on_defeat_json", "__type": "String", "__value": null, "__tile": null, "defUid": 150, "realEditorValues": [] }
 							],
 							"__worldX": 1264,
 							"__worldY": -2576
@@ -14260,7 +14308,8 @@
 								{ "__identifier": "trigger_on_load", "__type": "Bool", "__value": true, "__tile": null, "defUid": 9, "realEditorValues": [] },
 								{ "__identifier": "property_overrides_json", "__type": "String", "__value": null, "__tile": null, "defUid": 12, "realEditorValues": [] },
 								{ "__identifier": "max_uses", "__type": "Int", "__value": 1, "__tile": null, "defUid": 50, "realEditorValues": [] },
-								{ "__identifier": "is_passive", "__type": "Bool", "__value": false, "__tile": null, "defUid": 119, "realEditorValues": [] }
+								{ "__identifier": "is_passive", "__type": "Bool", "__value": false, "__tile": null, "defUid": 119, "realEditorValues": [] },
+								{ "__identifier": "on_defeat_json", "__type": "String", "__value": null, "__tile": null, "defUid": 150, "realEditorValues": [] }
 							],
 							"__worldX": 1600,
 							"__worldY": 192
@@ -14285,7 +14334,8 @@
 								{ "__identifier": "trigger_on_load", "__type": "Bool", "__value": true, "__tile": null, "defUid": 9, "realEditorValues": [] },
 								{ "__identifier": "property_overrides_json", "__type": "String", "__value": null, "__tile": null, "defUid": 12, "realEditorValues": [] },
 								{ "__identifier": "max_uses", "__type": "Int", "__value": 1, "__tile": null, "defUid": 50, "realEditorValues": [] },
-								{ "__identifier": "is_passive", "__type": "Bool", "__value": false, "__tile": null, "defUid": 119, "realEditorValues": [] }
+								{ "__identifier": "is_passive", "__type": "Bool", "__value": false, "__tile": null, "defUid": 119, "realEditorValues": [] },
+								{ "__identifier": "on_defeat_json", "__type": "String", "__value": null, "__tile": null, "defUid": 150, "realEditorValues": [] }
 							],
 							"__worldX": 1632,
 							"__worldY": 192
