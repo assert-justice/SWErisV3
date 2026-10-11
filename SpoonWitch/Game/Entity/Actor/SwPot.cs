@@ -11,6 +11,7 @@ public class SwPot: SwActor
         base.Init();
         KnockbackFactor = 0;
         ErTexture.TryFromPath("game_data/map/props/pot.png", out Texture);
+        Size = new(28, 28);
     }
     protected override void Draw()
     {

@@ -29,8 +29,8 @@ public class SwBollard: SwMapEntity
             Size = Size,
             Position = Rect.Position,
         };
-        // ErEngine.Log(Props);
-        if(!Game.Flags.ContainsKey(Iid)) Game.Flags[Iid] = 1;
+        if(!Props.TryGet("fields/start_up", out bool startUp)) startUp = true;
+        if(!Game.Flags.ContainsKey(Iid)) Game.Flags[Iid] = startUp ? 1 : 0;
         UpdateBollard();
     }
     private void HandleBollardUpdate(PriNode _)
