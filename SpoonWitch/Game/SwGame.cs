@@ -28,6 +28,7 @@ public class SwGame
         ErEngine.Renderer.PushViewport(CurrentCamera?.Rect.Position ?? ErVec2.Zero, RenderTextures[RenderLayerIdx]);
     }
     private readonly SwCamera[] Cameras;
+    public readonly Dictionary<string,int> Flags = [];
     private SwCamera? CurrentCamera{get; set;}
     private readonly List<ErVec2> FocusPoints = [];
     public readonly SwPlayerManager PlayerManager;
@@ -171,6 +172,7 @@ public class SwGame
             if(!SwHud.TryLoad(new(hudX, 0), out var hud)){}
             Huds[idx] = hud;
             hud.Player = player; 
+            // Todo: read saved flags
         }
         AddGlobalHandler("game_fade_out", (_) =>
         {
@@ -351,6 +353,7 @@ public class SwGame
         {
             SwApp.CommandQueue.RemoveHandler(verb, handler);
         }
+        // Todo: load saved flags
     }
     public T AddEntity<T>(PriNode props) where T: SwEntity, new()
     {

@@ -60,6 +60,8 @@ public class SwMap
         AddGlobalHandler("map_set_tiles_rect", HandleSetTilesRect);
         AddGlobalHandler("map_set_tiles_area", HandleSetTilesArea);
         AddGlobalHandler("map_set_checkpoint", HandleSetCheckpoint);
+        AddGlobalHandler("map_bollard_enable", HandleBollardEnable);
+        AddGlobalHandler("map_bollard_disable", HandleBollardDisable);
     }
     public bool IsPointInRoom(string roomId, ErVec2 point)
     {
@@ -118,6 +120,18 @@ public class SwMap
             return;
         }
         CurrentCheckpoint = mapObject;
+    }
+    private void HandleBollardEnable(PriNode command)
+    {
+        if(!command.TryGet("iid", out string iid)) ErEngine.LogWarning("no bollard id");
+        Game.Flags[iid] = 1;
+        SwApp.CommandQueue.AddCommandVerb("bollard_update");
+    }
+    private void HandleBollardDisable(PriNode command)
+    {
+        if(!command.TryGet("iid", out string iid)) ErEngine.LogWarning("no bollard id");
+        Game.Flags[iid] = 0;
+        SwApp.CommandQueue.AddCommandVerb("bollard_update");
     }
     private void SaveCommand(PriNode command)
     {
@@ -369,7 +383,7 @@ public class SwMap
                 entId = Game.AddEntity<SwFwoosher>(props).Id;
                 break;
             case "bollard":
-                entId = -1;
+                entId = Game.AddEntity<SwBollard>(props).Id;
                 break;
             case "sign":
                 entId = Game.AddEntity<SwSign>(props).Id;

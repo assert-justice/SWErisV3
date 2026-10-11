@@ -12,6 +12,7 @@ public abstract class SwMapEntity: SwEntity
     public string Iid{get; private set;} = string.Empty;
     public ErVec2 Size;
     public ErRect2I RectTiles;
+    public ErRect2 Rect => ErRect2.Centered(Position, Size);
     public override void Init()
     {
         base.Init();
