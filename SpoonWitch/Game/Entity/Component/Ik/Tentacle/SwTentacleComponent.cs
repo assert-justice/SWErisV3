@@ -25,7 +25,7 @@ public class SwTentacleComponent: SwComponent
     {
         base.Ready();
         ErVec2 pos = ErVec2.Zero;
-        double length = 4;
+        double length = 6;
         ErVec2 diff = ErVec2.Right * length;
         for (int idx = 0; idx < 32; idx++)
         {

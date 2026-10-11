@@ -5,7 +5,7 @@ namespace ErisPhysics2D.Collider;
 public abstract class ErColliderArea: ErCollider
 {
     private readonly Dictionary<int, ErColliderBody> _OverlappingBodies = [];
-    protected IEnumerable<ErColliderBody> OverlappingBodies => _OverlappingBodies.Values;
+    public IEnumerable<ErColliderBody> OverlappingBodies => _OverlappingBodies.Values;
     private readonly Queue<ErColliderBody> OldBodyQueue = [];
     private int tick = 0;
 

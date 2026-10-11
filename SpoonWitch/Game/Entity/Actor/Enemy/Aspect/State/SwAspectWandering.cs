@@ -8,7 +8,7 @@ public class SwAspectWandering : SwAspectState
 {
     public override string Name => "wandering";
     private ErVec2 Home;
-    private readonly double Tether = 140;
+    // private readonly double Tether = 140;
     private double LeftArmDelay;
     private double RightArmDelay;
     public override void BeginState(string lastState)
@@ -58,7 +58,7 @@ public class SwAspectWandering : SwAspectState
     private bool TryRandomTarget()
     {
         ErVec2 targetPos = SwRandom.GetRandomPointOnCircle(Entity.Position, Entity.WanderRadius);
-        if((targetPos-Home).GetLengthSquared() > Tether * Tether) return false;
+        // if((targetPos-Home).GetLengthSquared() > Tether * Tether) return false;
         if(!Entity.CanSeePoint(targetPos)) return false;
         if(!Entity.Game.Map.InSameRoom(Entity.Position, targetPos)) return false;
         Entity.TargetPosition = targetPos;

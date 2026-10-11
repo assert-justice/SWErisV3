@@ -5,7 +5,7 @@
         "max_health": 300
     },
     "speed":{
-        "base_speed": 150,
+        "base_speed": 50,
         "wander_speed_mul": 0.5
     },
     "sword":{

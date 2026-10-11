@@ -1,3 +1,16 @@
 {
-    "anim_data": "aspect_anim_data.json"
+    "anim_data": "aspect_anim_data.json",
+    "health":{
+        "health": 500,
+        "max_health": 500
+    },
+    "spine_damage":{
+        "verb": "damage",
+        "entries":[
+            {
+                "type": "Bludgeoning",
+                "value": 55
+            }
+        ]
+    }
 }

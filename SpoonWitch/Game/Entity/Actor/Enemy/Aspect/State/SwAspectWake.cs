@@ -7,10 +7,12 @@ public class SwAspectWake : SwAspectState
     {
         base.BeginState(lastState);
         BodySprite.Play("wake");
+        LeftArmState.SetState("awake");
+        RightArmState.SetState("awake");
     }
     public override void Update(double dt)
     {
         base.Update(dt);
-        if(!BodySprite.IsPlaying) StateMachine.SetState("uproot");
+        if(!BodySprite.IsPlaying) StateMachine.SetState("stationary");
     }
 }

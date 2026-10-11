@@ -7,7 +7,7 @@ namespace SpoonWitch.Game.Entity.Component;
 
 public class SwAreaComponent: SwComponent
 {
-    private readonly SwColliderArea Area;
+    public readonly SwColliderArea Area;
     private bool WasEnabled = false;
     public bool Enabled;
     public uint Mask;
