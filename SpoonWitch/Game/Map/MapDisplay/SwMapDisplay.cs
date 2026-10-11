@@ -164,7 +164,9 @@ public class SwMapDisplay
             var masks = TileAnimations[tileId];
             if(masks is null || masks.Length == 0){ErEngine.LogWarning("bad tile id ", tileId); return;}
             var variants = masks[(int)mask];
-            if(variants is null || variants.Length == 0){ErEngine.LogWarning("bad mask, tile id: ", tileId, " mask: ", mask); return;}
+            if(variants is null || variants.Length == 0){
+                ErEngine.LogWarning("bad mask, tile id: ", tileId, " mask: ", mask); return;
+            }
             int varIdx = seed % variants.Length;
             var anim = variants[varIdx];
             if(anim is null){ErEngine.LogWarning("bad variant"); return;}

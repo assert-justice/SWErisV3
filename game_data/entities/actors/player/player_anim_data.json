@@ -104,6 +104,22 @@
                     "loops": true
                 }
             ]
+        },
+        {
+            "name": "use_prompt",
+            "width": 10,
+            "height": 10,
+            "visible": false,
+            "animations":[
+                {
+                    "name": "default",
+                    "texture": "images/use_prompt.png",
+                    "first_frame":0,
+                    "last_frame":1,
+                    "fps": 2,
+                    "loops": true
+                }
+            ]
         }
     ]
 }

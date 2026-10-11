@@ -16,13 +16,13 @@
         },
         {
             "name": "sand",
-            "source": "tilesets/beach_tileset.png",
+            "source": "tilesets/sand_tile_filled.png",
             "move_speed_mul": 0.5
         },
         {
             "name": "dirt",
-            "source": "tilesets/demo_dirt_tiles.png",
-            "arable": 0.5
+            "source": "tilesets/dirt_tile_filled.png",
+            "arable": 0.1
         },
         {
             "name": "grass",
