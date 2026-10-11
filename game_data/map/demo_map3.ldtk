@@ -3485,7 +3485,7 @@
 								{ "__identifier": "on_enter_json", "__type": "String", "__value": "{\n  \"verb\":\"map_bollard_disable\",\n  \"iid\":\"0ee670f0-bde0-11f1-9fad-c3e99007973a\"\n}", "__tile": null, "defUid": 17, "realEditorValues": [{
 									"id": "V_String",
 									"params": [
-										"{\\n  \"verb\":\"map_bollard_disable\",\\n  \"iid\":\"0ee670f0-bde0-11f1-9fad-c3e99007973a\"\\n}"
+										"{\n  \"verb\":\"map_bollard_disable\",\n  \"iid\":\"0ee670f0-bde0-11f1-9fad-c3e99007973a\"\n}"
 									]
 								}] },
 								{ "__identifier": "mask", "__type": "Int", "__value": 4, "__tile": null, "defUid": 92, "realEditorValues": [] },
@@ -3511,7 +3511,7 @@
 								{ "__identifier": "on_enter_json", "__type": "String", "__value": "{\n  \"verb\":\"map_bollard_disable\",\n  \"iid\": \"11b9dc40-bde0-11f1-9fad-8d272ce4b561\"\n}", "__tile": null, "defUid": 17, "realEditorValues": [{
 									"id": "V_String",
 									"params": [
-										"{\\n  \"verb\":\"map_bollard_disable\",\\n  \"iid\": \"11b9dc40-bde0-11f1-9fad-8d272ce4b561\"\\n}"
+										"{\n  \"verb\":\"map_bollard_disable\",\n  \"iid\": \"11b9dc40-bde0-11f1-9fad-8d272ce4b561\"\n}"
 									]
 								}] },
 								{ "__identifier": "mask", "__type": "Int", "__value": 4, "__tile": null, "defUid": 92, "realEditorValues": [] },
@@ -3567,7 +3567,7 @@
 								{ "__identifier": "text", "__type": "String", "__value": "You can press RightBumper/R1 to dodge!\nWhile your feet are off the ground you\nare immune to damage! It's best not to\nask how this works...", "__tile": null, "defUid": 140, "realEditorValues": [{
 									"id": "V_String",
 									"params": [
-										"You can press RightBumper/R1 to dodge!\\nWhile your feet are off the ground you\\nare immune to damage! It's best not to\\nask how this works..."
+										"You can press RightBumper/R1 to dodge!\nWhile your feet are off the ground you\nare immune to damage! It's best not to\nask how this works..."
 									]
 								}] }
 							],
@@ -4941,7 +4941,7 @@
 								}] },
 								{ "__identifier": "text", "__type": "String", "__value": "You picked up your spoon!\nYou can use it to smash these pots!\nGet smashing!", "__tile": null, "defUid": 140, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["You picked up your spoon!\\nYou can use it to smash these pots!\\nGet smashing!"]
+									"params": ["You picked up your spoon!\nYou can use it to smash these pots!\nGet smashing!"]
 								}] }
 							],
 							"__worldX": 864,
@@ -5817,7 +5817,12 @@
 								{ "__identifier": "property_overrides_json", "__type": "String", "__value": null, "__tile": null, "defUid": 12, "realEditorValues": [] },
 								{ "__identifier": "max_uses", "__type": "Int", "__value": 1, "__tile": null, "defUid": 50, "realEditorValues": [] },
 								{ "__identifier": "is_passive", "__type": "Bool", "__value": false, "__tile": null, "defUid": 119, "realEditorValues": [] },
-								{ "__identifier": "on_defeat_json", "__type": "String", "__value": null, "__tile": null, "defUid": 150, "realEditorValues": [null] }
+								{ "__identifier": "on_defeat_json", "__type": "String", "__value": "{\n  \"verb\": \"map_bollard_disable\",\n  \"iid\": \"86e19120-bde0-11f1-85b9-516629c66cdd\"\n}", "__tile": null, "defUid": 150, "realEditorValues": [{
+									"id": "V_String",
+									"params": [
+										"{\\n  \"verb\": \"map_bollard_disable\",\\n  \"iid\": \"86e19120-bde0-11f1-85b9-516629c66cdd\"\\n}"
+									]
+								}] }
 							],
 							"__worldX": 944,
 							"__worldY": -816
