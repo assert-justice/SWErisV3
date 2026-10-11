@@ -4,7 +4,8 @@
     [
         {
             "name": "empty",
-            "move_speed_mul": 0
+            "move_speed_mul": 0,
+            "is_opaque":true
         },
         {
             "name": "water",
@@ -21,8 +22,7 @@
         },
         {
             "name": "dirt",
-            "source": "tilesets/dirt_tile_filled.png",
-            "arable": 0.1
+            "source": "tilesets/dirt_tile_filled.png"
         },
         {
             "name": "grass",
