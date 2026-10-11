@@ -22,6 +22,7 @@ public abstract class SwEnemy: SwActor
     {
         base.SetProps(props);
         IsPassive = Props.TryGet("is_passive", out bool isPassive) && isPassive;
+        ErEngine.Log(Props);
     }
     public bool CanSeePoint(ErVec2 point)
     {
@@ -84,6 +85,13 @@ public abstract class SwEnemy: SwActor
     {
         base.Update(dt);
         if(Velocity.IsNonzero()) FacingIdx = (byte)ErMath.RoundAngleToInt(Velocity.GetAngle(), 4);
+    }
+    protected override void Die()
+    {
+        base.Die();
+        var onDefeat = Props.Get("spawner_props/fields/on_defeat_json");
+        ErEngine.Log(onDefeat);
+        if(onDefeat is not PriNull) SwApp.CommandQueue.AddCommand(onDefeat);
     }
     public virtual void GetMad()
     {

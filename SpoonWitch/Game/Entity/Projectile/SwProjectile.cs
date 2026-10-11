@@ -87,7 +87,7 @@ public class SwProjectile : SwEntity
         }
         Position += Velocity * dt;
         uint tileMask = Game.PhysicsWorld.GetTileMaskAtPoint(Position);
-        uint overlap = (uint)SwCollisionMask.BlocksNav & tileMask;
+        uint overlap = (uint)SwCollisionMask.IsOpaque & tileMask;
         if(overlap != 0)
         {
             Impact();
