@@ -7,6 +7,7 @@ namespace SpoonWitch.Game.Entity.Actor.Enemy.Aspect.State.ArmState;
 public class SwArmAwake: SwAspectArmState
 {
     public override string Name => "awake";
+    ErVec2 Target;
     public override void BeginState(string lastState)
     {
         base.BeginState(lastState);
@@ -16,15 +17,23 @@ public class SwArmAwake: SwAspectArmState
     }
     private void SetTarget()
     {
-        ErVec2 target = Entity.Position + SwRandom.GetRandomPointInRect(StateM.WanderRect);
+        Target = SwRandom.GetRandomPointInRect(StateM.WanderRect);
         // ErVec2 target = Entity.Position + SwRandom.GetRandomPointOnCircle(new ErVec2(-64,-32),48);
-        Arm.SetTarget(target);
+        Arm.SetTarget(Target + Entity.Position);
         Clock.Start(Random.Shared.NextDouble() * 0.8 + 0.2);
     }
     public override void Update(double dt)
     {
         base.Update(dt);
-        if(StateM.VisionArea.Area.OverlappingCount > 0) StateM.SetState("attacking");
+        Arm.SetTarget(Target + Entity.Position);
+        // if (Entity.Dumb)
+        // {
+        //     ErEngine.Log(Arm.Name, StateM.VisionArea.Area.OverlappingCount);
+        // }
+        if(StateM.VisionArea.Area.OverlappingCount > 0)
+        {
+            StateM.SetState("attacking");
+        }
         else if(!Clock.IsRunning) SetTarget();
     }
     // public override void Draw()

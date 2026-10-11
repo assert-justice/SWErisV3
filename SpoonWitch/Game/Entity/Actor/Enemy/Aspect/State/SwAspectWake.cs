@@ -13,6 +13,9 @@ public class SwAspectWake : SwAspectState
     public override void Update(double dt)
     {
         base.Update(dt);
-        if(!BodySprite.IsPlaying) StateMachine.SetState("stationary");
+        if (!BodySprite.IsPlaying)
+        {
+            StateMachine.SetState(Entity.Mad ? "uproot" : "stationary");
+        }
     }
 }

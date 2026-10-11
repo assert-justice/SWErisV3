@@ -18,6 +18,7 @@ public class SwAspectStationary : SwAspectState
     public override void Update(double dt)
     {
         base.Update(dt);
+        Entity.Velocity = ErVec2.Zero;
         // ErVec2 target;
         // if (LeftArm.IsAtTarget)
         // {

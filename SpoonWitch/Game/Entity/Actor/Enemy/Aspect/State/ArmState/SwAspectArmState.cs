@@ -1,3 +1,4 @@
+using Eris;
 using ErisMath;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.Ik;
@@ -45,6 +46,11 @@ public abstract class SwAspectArmState: SwState<SwAspect>
         // LeftArm = Entity.GetComponent<SwTentacleComponent>("left_arm")!;
         // Legs = Entity.GetComponent<SwAspectLegsComponent>("legs")!;
     }
+    // public override void BeginState(string lastState)
+    // {
+    //     base.BeginState(lastState);
+    //     ErEngine.Log(Name);
+    // }
     public override void Update(double dt)
     {
         base.Update(dt);
@@ -78,6 +84,7 @@ public class SwArmStateMachine : SwStateMachine<SwAspect>
     public ErRect2 AttackRect;
     public SwAreaComponent VisionArea = null!;
     public SwHurtboxComponent Hurtbox = null!;
+    public bool Tracking = false;
     public SwArmStateMachine(SwAspect parent, string name, SwTentacleComponent arm, IEnumerable<SwState<SwAspect>> states) : base(parent, name, states)
     {
         Arm = arm;

@@ -8,11 +8,13 @@ public class SwArmCooldown: SwAspectArmState
         base.BeginState(lastState);
         Clock.Start(2);
         Arm.SetTarget(Entity.Position);
-        Arm.TipSpeed = Entity.BaseArmSpeed /8;
+        Arm.TipSpeed = StateM.Tracking ? Entity.BaseArmSpeed : Entity.BaseArmSpeed /3;
+        StateM.VisionArea.Enabled = false;
     }
     public override void Update(double dt)
     {
         base.Update(dt);
+        Arm.SetTarget(Entity.Position);
         if(!Clock.IsRunning) StateM.SetState("awake");
     }
 }

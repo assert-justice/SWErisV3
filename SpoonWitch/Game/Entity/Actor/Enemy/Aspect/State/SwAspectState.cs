@@ -1,3 +1,4 @@
+using Eris;
 using SpoonWitch.Game.Entity.Actor.Enemy.Aspect.State.ArmState;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Game.Entity.Component.Ik;
@@ -39,6 +40,11 @@ public abstract class SwAspectState: SwState<SwAspect>
         LeftArmState = Entity.GetComponent<SwArmStateMachine>("left_arm_state")!;
         Legs = Entity.GetComponent<SwAspectLegsComponent>("legs")!;
     }
+    // public override void BeginState(string lastState)
+    // {
+    //     base.BeginState(lastState);
+    //     ErEngine.Log(Name);
+    // }
     public static SwStateMachine<SwAspect> GetStateMachine(SwAspect parent, string name)
     {
         return new(parent, name, [

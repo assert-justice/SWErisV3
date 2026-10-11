@@ -40,6 +40,14 @@ public abstract class SwEnemy: SwActor
         }
         return false;
     }
+    public bool CanSeeAnyPlayer(double radius)
+    {
+        foreach (var p in GetVisibleEntities<SwPlayer>())
+        {
+            if((p.Position-Position).GetLength() < radius) return true;
+        }
+        return false;
+    }
     public void MoveToTarget(double speed)
     {
         var dir = TargetPosition - Position;

@@ -20,6 +20,8 @@ public class SwTentacleComponent: SwComponent
     public bool IsVisible = false;
     public bool IsActive = false;
     public ErVec2 GlobalPos => Parent.Position + Offset;
+    public double Length{get; private set;}
+    public bool TargetOutOfReach => (Target-GlobalPos).GetLength() > Length;
     public SwTentacleComponent(SwEntity parent, string name) : base(parent, name){}
     public override void Ready()
     {
@@ -27,7 +29,9 @@ public class SwTentacleComponent: SwComponent
         ErVec2 pos = ErVec2.Zero;
         double length = 6;
         ErVec2 diff = ErVec2.Right * length;
-        for (int idx = 0; idx < 32; idx++)
+        int numSegments = 32;
+        Length = length * numSegments;
+        for (int idx = 0; idx < numSegments; idx++)
         {
             SwTentacleSegment segment = new()
             {

@@ -25,6 +25,7 @@ public class SwAspect: SwEnemy
     public SwArmStateMachine LeftArmState = null!;
     public SwArmStateMachine RightArmState = null!;
     private SwStateMachine<SwAspect> StateMachine = null!;
+    public bool Mad = false;
     public SwAspect()
     {
         AddGlobalHandler("boss_wake", Wake);
@@ -42,28 +43,27 @@ public class SwAspect: SwEnemy
         StateMachine = RegisterComponent(SwAspectState.GetStateMachine(this, "state_machine"));
         StateMachine.SetDefaultState("asleep");
         var rightArmComp = RegisterComponent(new SwTentacleComponent(this, "right_arm"));
-        var leftArmComp = RegisterComponent(new SwTentacleComponent(this, "left_arm"));
-        var leftArmState = RegisterComponent(SwAspectArmState.GetStateMachine(this, "left_arm_state", leftArmComp));
         var rightArmState = RegisterComponent(SwAspectArmState.GetStateMachine(this, "right_arm_state", rightArmComp));
-        leftArmState.WanderRect = new(-128,-96,128,96);
         rightArmState.WanderRect = new(0,-96,128,96);
-        leftArmState.AttackRect = new(-128,-96,128,192);
         rightArmState.AttackRect = new(0,-96,128,192);
-        var leftVisionArea = RegisterComponent(new SwAreaComponent(this, "left_vision", (uint)SwCollisionMask.PlayerTeam, leftArmState.AttackRect.Size, leftArmState.AttackRect.Center));
         var rightVisionArea = RegisterComponent(new SwAreaComponent(this, "right_vision", (uint)SwCollisionMask.PlayerTeam, rightArmState.AttackRect.Size, rightArmState.AttackRect.Center));
-        leftArmState.VisionArea = leftVisionArea;
         rightArmState.VisionArea = rightVisionArea;
-        var leftHurtbox = RegisterComponent(new SwHurtboxComponent(this, "left_hurtbox"));
         var rightHurtbox = RegisterComponent(new SwHurtboxComponent(this, "right_hurtbox"));
-        leftHurtbox.Mask = (uint)SwCollisionMask.PlayerTeam;
-        leftHurtbox.Size = new(32,32);
-        leftHurtbox.DamageCommand = Props.Get("spine_damage");
         rightHurtbox.Mask = (uint)SwCollisionMask.PlayerTeam;
         rightHurtbox.Size = new(32,32);
         rightHurtbox.DamageCommand = Props.Get("spine_damage");
-        leftArmState.Hurtbox = leftHurtbox;
         rightArmState.Hurtbox = rightHurtbox;
-        // var leftHurtbox = RegisterComponent
+        var leftArmComp = RegisterComponent(new SwTentacleComponent(this, "left_arm"));
+        var leftArmState = RegisterComponent(SwAspectArmState.GetStateMachine(this, "left_arm_state", leftArmComp));
+        leftArmState.WanderRect = new(-128,-96,128,96);
+        leftArmState.AttackRect = new(-128,-96,128,192);
+        var leftVisionArea = RegisterComponent(new SwAreaComponent(this, "left_vision", (uint)SwCollisionMask.PlayerTeam, leftArmState.AttackRect.Size, leftArmState.AttackRect.Center));
+        leftArmState.VisionArea = leftVisionArea;
+        var leftHurtbox = RegisterComponent(new SwHurtboxComponent(this, "left_hurtbox"));
+        leftHurtbox.Mask = (uint)SwCollisionMask.PlayerTeam;
+        leftHurtbox.Size = new(32,32);
+        leftHurtbox.DamageCommand = Props.Get("spine_damage");
+        leftArmState.Hurtbox = leftHurtbox;
         var legs = RegisterComponent(new SwAspectLegsComponent(this, "legs"));
         legs.Offset = ErVec2.Down * 24;
         LoadSprites("anim_data/sprites");
@@ -75,12 +75,22 @@ public class SwAspect: SwEnemy
     protected override double Damage(SwDamage damage)
     {
         double oldHealth = Health;
-        double thresh = MaxHealth;
+        double thresh = MaxHealth * 0.5;
         var dam = base.Damage(damage);
-        if(oldHealth >= thresh && Health < thresh)
+        if(StateMachine.CurrentState.Name == "asleep")
+        {
+            Mad = true;
+            StateMachine.SetState("wake");
+        }
+        else if(oldHealth >= thresh && Health < thresh)
         {
             StateMachine.SetState("uproot");
         }
         return dam;
+    }
+    protected override void Die()
+    {
+        base.Die();
+        StateMachine.SetState("dead");
     }
 }

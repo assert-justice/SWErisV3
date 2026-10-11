@@ -3,4 +3,9 @@ namespace SpoonWitch.Game.Entity.Actor.Enemy.Aspect.State;
 public class SwAspectAsleep : SwAspectState
 {
     public override string Name => "asleep";
+    public override void Update(double dt)
+    {
+        base.Update(dt);
+        if(Entity.CanSeeAnyPlayer(200)) StateMachine.SetState("wake");
+    }
 }
