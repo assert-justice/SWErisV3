@@ -70,6 +70,8 @@ public class ErRenderer
             ErEngine.LogError($"Error creating window and rendering: {SDL.GetError()}");
             return;
         }
+        SDL.GetWindowSize(Window, out int w, out int h);
+        WindowSize = new(w,h);
         CleanupStack.Push(()=>SDL.DestroyWindow(Window));
         CleanupStack.Push(()=>SDL.DestroyRenderer(Handle));
         SDL.HideCursor();

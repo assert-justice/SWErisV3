@@ -3,6 +3,7 @@ using Eris.App;
 using Eris.Renderer;
 using ErisMath;
 using Prion.Node;
+using SDL3;
 using SpoonWitch.Command;
 using SpoonWitch.Data;
 using SpoonWitch.Game;
@@ -31,7 +32,7 @@ public class SwApp : IErApp
     // public static double GameSpeed => IsPaused ? GameSpeedMul : 0;
     // public static double GameSpeedMul => 1;
     public static bool IsPaused{get; private set;} = true;
-    public static bool Debug => false;// Settings.TryGet("debug/debug", out bool debug) && debug;
+    public static bool Debug => false;
     private bool IsGameVisible;
     private readonly SwClock TextClock = new();
     public static int Main()
@@ -42,7 +43,10 @@ public class SwApp : IErApp
             ErEngine.LogError("game initialization failed");
             return 1;
         }
-        ErEngine.Renderer.SetWindow("Spoon Witch", new(1920, 1080), SDL3.SDL.WindowFlags.Fullscreen);
+        SDL.WindowFlags windowFlags = default;
+        bool isFullscreen = !(SwData.Settings.TryGet("window/mode", out string windowMode) && windowMode == "windowed");
+        if(isFullscreen) windowFlags |= SDL.WindowFlags.Fullscreen;
+        ErEngine.Renderer.SetWindow("Spoon Witch", new(1920, 1080), windowFlags);
         ErEngine.Run(app);
         return 0;
     }

@@ -1,4 +1,5 @@
-﻿using Eris.App;
+﻿using System.Diagnostics;
+using Eris.App;
 using Eris.Audio;
 using Eris.Input;
 using Eris.Logging;
@@ -9,6 +10,12 @@ namespace Eris;
 
 public static class ErEngine
 {
+    public static bool IsDebug{get; private set;}
+    [Conditional("DEBUG")]
+    private static void IsDebugCheck(ref bool isDebug)
+    {
+        isDebug = true;
+    }
     public static bool HasError{get; private set;}
     public static ErLogger Logger{get; private set;} = new();
     public static ErInput Input{get; private set;} = new();
@@ -37,6 +44,12 @@ public static class ErEngine
     public static double LastFrameTime{get; private set;}
     public static double CurrentTime{get; private set;}
     public static double TimeStarted{get; private set;}
+    static ErEngine()
+    {
+        bool isDebug = false;
+        IsDebugCheck(ref isDebug);
+        IsDebug = isDebug;
+    }
     private static bool Init(IErApp app)
     {
         List<Action> initList = [

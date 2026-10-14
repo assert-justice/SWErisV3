@@ -116,6 +116,7 @@
                     "texture": "images/use_prompt.png",
                     "first_frame":0,
                     "last_frame":1,
+                    "autoplay":true,
                     "fps": 2,
                     "loops": true
                 }
