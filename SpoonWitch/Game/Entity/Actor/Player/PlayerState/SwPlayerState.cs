@@ -235,6 +235,7 @@ public abstract class SwPlayerState : SwState<SwPlayer>
             // }
             // else if(Entity.CurrentSpell is not null && Entity.CurrentSpell.IsActive && Controls.CastJustDown){}
             else if(ErEngine.Input.GetKeyDown(SDL3.SDL.Scancode.T)) StateMachine.SetState("dancing");
+            else if(ErEngine.Input.GetGamepadButtonJustDown(SDL3.SDL.GamepadButton.DPadUp,-1,0.5)) StateMachine.SetState("dancing");
         }
     }
     public class ItemGet: SwPlayerState

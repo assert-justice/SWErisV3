@@ -42,7 +42,7 @@ public class SwApp : IErApp
             ErEngine.LogError("game initialization failed");
             return 1;
         }
-        ErEngine.Renderer.SetWindow("Spoon Witch", new(1920, 1080));
+        ErEngine.Renderer.SetWindow("Spoon Witch", new(1920, 1080), SDL3.SDL.WindowFlags.Fullscreen);
         ErEngine.Run(app);
         return 0;
     }

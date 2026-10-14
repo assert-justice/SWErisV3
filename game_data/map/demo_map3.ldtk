@@ -3010,10 +3010,10 @@
 									"id": "V_String",
 									"params": ["Dodging!"]
 								}] },
-								{ "__identifier": "text", "__type": "String", "__value": "You can press RightBumper/R1 to dodge!\nWhile your feet are off the ground you\nare immune to damage! It's best not to\nask how this works...", "__tile": null, "defUid": 140, "realEditorValues": [{
+								{ "__identifier": "text", "__type": "String", "__value": "You can press Left Bumper/L1 to dodge!\nWhile your feet are off the ground you\nare immune to damage! It's best not to\nask how this works...", "__tile": null, "defUid": 140, "realEditorValues": [{
 									"id": "V_String",
 									"params": [
-										"You can press RightBumper/R1 to dodge!\\nWhile your feet are off the ground you\\nare immune to damage! It's best not to\\nask how this works..."
+										"You can press Left Bumper/L1 to dodge!\\nWhile your feet are off the ground you\\nare immune to damage! It's best not to\\nask how this works..."
 									]
 								}] }
 							],
@@ -3766,7 +3766,7 @@
 									"id": "V_String",
 									"params": ["root"]
 								}] },
-								{ "__identifier": "count", "__type": "Int", "__value": 2, "__tile": null, "defUid": 101, "realEditorValues": [{ "id": "V_Int", "params": [2] }] },
+								{ "__identifier": "count", "__type": "Int", "__value": 1, "__tile": null, "defUid": 101, "realEditorValues": [{ "id": "V_Int", "params": [1] }] },
 								{ "__identifier": "mask", "__type": "Int", "__value": 4, "__tile": null, "defUid": 102, "realEditorValues": [] }
 							],
 							"__worldX": 928,
@@ -5189,7 +5189,7 @@
 					"layerDefUid": 2,
 					"pxOffsetX": 0,
 					"pxOffsetY": 0,
-					"visible": true,
+					"visible": false,
 					"optionalRules": [],
 					"intGridCsv": [],
 					"autoLayerTiles": [],
@@ -5313,7 +5313,7 @@
 									"id": "V_String",
 									"params": ["root"]
 								}] },
-								{ "__identifier": "count", "__type": "Int", "__value": 2, "__tile": null, "defUid": 101, "realEditorValues": [{ "id": "V_Int", "params": [2] }] },
+								{ "__identifier": "count", "__type": "Int", "__value": 1, "__tile": null, "defUid": 101, "realEditorValues": [{ "id": "V_Int", "params": [1] }] },
 								{ "__identifier": "mask", "__type": "Int", "__value": 4, "__tile": null, "defUid": 102, "realEditorValues": [] }
 							],
 							"__worldX": 1520,
@@ -8326,7 +8326,7 @@
 						},
 						{
 							"__identifier": "sign",
-							"__grid": [40,12],
+							"__grid": [60,28],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": { "tilesetUid": 138, "x": 0, "y": 0, "w": 32, "h": 32 },
@@ -8335,7 +8335,7 @@
 							"width": 32,
 							"height": 32,
 							"defUid": 139,
-							"px": [320,96],
+							"px": [480,224],
 							"fieldInstances": [
 								{ "__identifier": "title", "__type": "String", "__value": "Shooting Range", "__tile": null, "defUid": 141, "realEditorValues": [{
 									"id": "V_String",
@@ -8346,8 +8346,8 @@
 									"params": ["Destroy the targets to\\nenter the next room!"]
 								}] }
 							],
-							"__worldX": -320,
-							"__worldY": -1184
+							"__worldX": -160,
+							"__worldY": -1056
 						},
 						{
 							"__identifier": "checkpoint",
@@ -8473,6 +8473,33 @@
 							],
 							"__worldX": -96,
 							"__worldY": -1024
+						},
+						{
+							"__identifier": "sign",
+							"__grid": [40,12],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 138, "x": 0, "y": 0, "w": 32, "h": 32 },
+							"__smartColor": "#124E89",
+							"iid": "56c14920-bde0-11f1-8203-173ff9d7111b",
+							"width": 32,
+							"height": 32,
+							"defUid": 139,
+							"px": [320,96],
+							"fieldInstances": [
+								{ "__identifier": "title", "__type": "String", "__value": "Shooting & Reloading", "__tile": null, "defUid": 141, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["Shooting & Reloading"]
+								}] },
+								{ "__identifier": "text", "__type": "String", "__value": "Right stick to aim, once your shot\nis charged, right bumper/R1 to fire!\nYou can reload at the checkpoint!", "__tile": null, "defUid": 140, "realEditorValues": [{
+									"id": "V_String",
+									"params": [
+										"Right stick to aim, once your shot\\nis charged, right bumper/R1 to fire!\\nYou can reload at the checkpoint!"
+									]
+								}] }
+							],
+							"__worldX": -320,
+							"__worldY": -1184
 						}
 					]
 				},
@@ -9489,6 +9516,8 @@
 						{ "px": [160,0], "src": [192,0], "f": 0, "t": 6, "d": [5], "a": 1 },
 						{ "px": [192,0], "src": [192,0], "f": 0, "t": 6, "d": [6], "a": 1 },
 						{ "px": [224,0], "src": [192,0], "f": 0, "t": 6, "d": [7], "a": 1 },
+						{ "px": [256,0], "src": [192,0], "f": 0, "t": 6, "d": [8], "a": 1 },
+						{ "px": [352,0], "src": [192,0], "f": 0, "t": 6, "d": [11], "a": 1 },
 						{ "px": [384,0], "src": [192,0], "f": 0, "t": 6, "d": [12], "a": 1 },
 						{ "px": [416,0], "src": [192,0], "f": 0, "t": 6, "d": [13], "a": 1 },
 						{ "px": [448,0], "src": [192,0], "f": 0, "t": 6, "d": [14], "a": 1 },
@@ -9617,22 +9646,25 @@
 					"seed": 2598662,
 					"overrideTilesetUid": null,
 					"gridTiles": [
-						{ "px": [256,0], "src": [192,0], "f": 0, "t": 6, "d": [8], "a": 1 },
+						{ "px": [192,0], "src": [128,0], "f": 0, "t": 4, "d": [6], "a": 1 },
+						{ "px": [224,0], "src": [128,0], "f": 0, "t": 4, "d": [7], "a": 1 },
+						{ "px": [256,0], "src": [128,0], "f": 0, "t": 4, "d": [8], "a": 1 },
 						{ "px": [288,0], "src": [128,0], "f": 0, "t": 4, "d": [9], "a": 1 },
 						{ "px": [320,0], "src": [128,0], "f": 0, "t": 4, "d": [10], "a": 1 },
-						{ "px": [352,0], "src": [192,0], "f": 0, "t": 6, "d": [11], "a": 1 },
+						{ "px": [352,0], "src": [128,0], "f": 0, "t": 4, "d": [11], "a": 1 },
+						{ "px": [384,0], "src": [128,0], "f": 0, "t": 4, "d": [12], "a": 1 },
 						{ "px": [32,32], "src": [128,0], "f": 0, "t": 4, "d": [41], "a": 1 },
 						{ "px": [64,32], "src": [128,0], "f": 0, "t": 4, "d": [42], "a": 1 },
 						{ "px": [96,32], "src": [128,0], "f": 0, "t": 4, "d": [43], "a": 1 },
 						{ "px": [128,32], "src": [128,0], "f": 0, "t": 4, "d": [44], "a": 1 },
 						{ "px": [160,32], "src": [128,0], "f": 0, "t": 4, "d": [45], "a": 1 },
 						{ "px": [192,32], "src": [128,0], "f": 0, "t": 4, "d": [46], "a": 1 },
-						{ "px": [224,32], "src": [192,0], "f": 0, "t": 6, "d": [47], "a": 1 },
+						{ "px": [224,32], "src": [128,0], "f": 0, "t": 4, "d": [47], "a": 1 },
 						{ "px": [256,32], "src": [128,0], "f": 0, "t": 4, "d": [48], "a": 1 },
 						{ "px": [288,32], "src": [128,0], "f": 0, "t": 4, "d": [49], "a": 1 },
 						{ "px": [320,32], "src": [128,0], "f": 0, "t": 4, "d": [50], "a": 1 },
 						{ "px": [352,32], "src": [128,0], "f": 0, "t": 4, "d": [51], "a": 1 },
-						{ "px": [384,32], "src": [192,0], "f": 0, "t": 6, "d": [52], "a": 1 },
+						{ "px": [384,32], "src": [128,0], "f": 0, "t": 4, "d": [52], "a": 1 },
 						{ "px": [416,32], "src": [128,0], "f": 0, "t": 4, "d": [53], "a": 1 },
 						{ "px": [448,32], "src": [128,0], "f": 0, "t": 4, "d": [54], "a": 1 },
 						{ "px": [480,32], "src": [128,0], "f": 0, "t": 4, "d": [55], "a": 1 },
@@ -9665,12 +9697,12 @@
 						{ "px": [128,64], "src": [128,0], "f": 0, "t": 4, "d": [84], "a": 1 },
 						{ "px": [160,64], "src": [128,0], "f": 0, "t": 4, "d": [85], "a": 1 },
 						{ "px": [192,64], "src": [128,0], "f": 0, "t": 4, "d": [86], "a": 1 },
-						{ "px": [224,64], "src": [192,0], "f": 0, "t": 6, "d": [87], "a": 1 },
-						{ "px": [256,64], "src": [192,0], "f": 0, "t": 6, "d": [88], "a": 1 },
+						{ "px": [224,64], "src": [128,0], "f": 0, "t": 4, "d": [87], "a": 1 },
+						{ "px": [256,64], "src": [128,0], "f": 0, "t": 4, "d": [88], "a": 1 },
 						{ "px": [288,64], "src": [128,0], "f": 0, "t": 4, "d": [89], "a": 1 },
 						{ "px": [320,64], "src": [128,0], "f": 0, "t": 4, "d": [90], "a": 1 },
-						{ "px": [352,64], "src": [192,0], "f": 0, "t": 6, "d": [91], "a": 1 },
-						{ "px": [384,64], "src": [192,0], "f": 0, "t": 6, "d": [92], "a": 1 },
+						{ "px": [352,64], "src": [128,0], "f": 0, "t": 4, "d": [91], "a": 1 },
+						{ "px": [384,64], "src": [128,0], "f": 0, "t": 4, "d": [92], "a": 1 },
 						{ "px": [416,64], "src": [128,0], "f": 0, "t": 4, "d": [93], "a": 1 },
 						{ "px": [448,64], "src": [128,0], "f": 0, "t": 4, "d": [94], "a": 1 },
 						{ "px": [480,64], "src": [128,0], "f": 0, "t": 4, "d": [95], "a": 1 },
@@ -11240,7 +11272,33 @@
 					"seed": 9496449,
 					"overrideTilesetUid": null,
 					"gridTiles": [],
-					"entityInstances": []
+					"entityInstances": [
+						{
+							"__identifier": "sign",
+							"__grid": [36,16],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 138, "x": 0, "y": 0, "w": 32, "h": 32 },
+							"__smartColor": "#124E89",
+							"iid": "0953f750-bde0-11f1-8203-f1791b8852d2",
+							"width": 32,
+							"height": 32,
+							"defUid": 139,
+							"px": [288,128],
+							"fieldInstances": [
+								{ "__identifier": "title", "__type": "String", "__value": "You Win!!", "__tile": null, "defUid": 141, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["You Win!!"]
+								}] },
+								{ "__identifier": "text", "__type": "String", "__value": "A spoon witch is you!\nPress Up on the D-Pad\nto victory dance!", "__tile": null, "defUid": 140, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["A spoon witch is you!\\nPress Up on the D-Pad\\nto victory dance!"]
+								}] }
+							],
+							"__worldX": 928,
+							"__worldY": -2432
+						}
+					]
 				},
 				{
 					"__identifier": "props",
@@ -11939,7 +11997,7 @@
 									"id": "V_String",
 									"params": ["sling_ammo"]
 								}] },
-								{ "__identifier": "count", "__type": "Int", "__value": 8, "__tile": null, "defUid": 101, "realEditorValues": [{ "id": "V_Int", "params": [8] }] },
+								{ "__identifier": "count", "__type": "Int", "__value": 6, "__tile": null, "defUid": 101, "realEditorValues": [{ "id": "V_Int", "params": [6] }] },
 								{ "__identifier": "mask", "__type": "Int", "__value": 4, "__tile": null, "defUid": 102, "realEditorValues": [] }
 							],
 							"__worldX": 384,
@@ -11962,7 +12020,7 @@
 									"id": "V_String",
 									"params": ["root"]
 								}] },
-								{ "__identifier": "count", "__type": "Int", "__value": 2, "__tile": null, "defUid": 101, "realEditorValues": [{ "id": "V_Int", "params": [2] }] },
+								{ "__identifier": "count", "__type": "Int", "__value": 1, "__tile": null, "defUid": 101, "realEditorValues": [{ "id": "V_Int", "params": [1] }] },
 								{ "__identifier": "mask", "__type": "Int", "__value": 4, "__tile": null, "defUid": 102, "realEditorValues": [] }
 							],
 							"__worldX": 384,
@@ -14843,9 +14901,14 @@
 						{ "px": [32,0], "src": [192,0], "f": 0, "t": 6, "d": [1], "a": 1 },
 						{ "px": [64,0], "src": [192,0], "f": 0, "t": 6, "d": [2], "a": 1 },
 						{ "px": [96,0], "src": [192,0], "f": 0, "t": 6, "d": [3], "a": 1 },
+						{ "px": [128,0], "src": [192,0], "f": 0, "t": 6, "d": [4], "a": 1 },
+						{ "px": [160,0], "src": [192,0], "f": 0, "t": 6, "d": [5], "a": 1 },
+						{ "px": [192,0], "src": [192,0], "f": 0, "t": 6, "d": [6], "a": 1 },
+						{ "px": [224,0], "src": [192,0], "f": 0, "t": 6, "d": [7], "a": 1 },
 						{ "px": [0,32], "src": [192,0], "f": 0, "t": 6, "d": [20], "a": 1 },
 						{ "px": [32,32], "src": [192,0], "f": 0, "t": 6, "d": [21], "a": 1 },
 						{ "px": [64,32], "src": [192,0], "f": 0, "t": 6, "d": [22], "a": 1 },
+						{ "px": [96,32], "src": [192,0], "f": 0, "t": 6, "d": [23], "a": 1 },
 						{ "px": [0,64], "src": [192,0], "f": 0, "t": 6, "d": [40], "a": 1 },
 						{ "px": [32,64], "src": [192,0], "f": 0, "t": 6, "d": [41], "a": 1 },
 						{ "px": [64,64], "src": [192,0], "f": 0, "t": 6, "d": [42], "a": 1 },

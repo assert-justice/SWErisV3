@@ -30,8 +30,10 @@
                     "font_size": 16,
                     "font_color": "#ffffff",
                     "font_color_focus": "#ff0000",
+                    "visible":false,
                     "on_click_command":{
                         "verb": "launch",
+                        "skip_kb": true,
                         "num_players": 2
                     }
                 },
