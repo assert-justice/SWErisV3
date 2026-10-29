@@ -2,6 +2,7 @@ using Eris;
 using Eris.Renderer;
 using ErisMath;
 using Prion.Node;
+using SpoonWitch.Data;
 using SpoonWitch.Game.Entity.Actor.Player;
 using SpoonWitch.Game.Entity.Component;
 using SpoonWitch.Rendering;
@@ -23,7 +24,8 @@ public class SwSign: SwMapEntity
         {
             Game.PhysicsWorld.SetTileMask(tileCoord,mask);
         }
-        ErTexture.TryFromPath("game_data/map/props/sign.png", out Texture);
+        string path = Path.Join(SwData.DataPath, "map/props/sign.png");
+        ErTexture.TryFromPath(path, out Texture);
         // if(ErTexture.TryFromPath("game_data/hud/use_prompt.png", out UsePromptTexture))
         // {
         //     var frames = SwFrame.GetAllFrames(new(UsePromptTexture),new(10,10));

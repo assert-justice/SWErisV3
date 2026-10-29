@@ -1,4 +1,5 @@
 using Eris.Renderer;
+using SpoonWitch.Data;
 
 namespace SpoonWitch.Game.Entity.Actor;
 
@@ -10,7 +11,8 @@ public class SwPot: SwActor
     {
         base.Init();
         KnockbackFactor = 0;
-        ErTexture.TryFromPath("game_data/map/props/pot.png", out Texture);
+        string path = Path.Join(SwData.DataPath, "map/props/pot.png");
+        ErTexture.TryFromPath(path, out Texture);
         Size = new(28, 28);
     }
     protected override void Draw()

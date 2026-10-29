@@ -10,17 +10,34 @@ namespace SpoonWitch.Data;
 
 public static class SwData
 {
-    public static readonly string ManifestPath = "game_data/manifest.json";
+    public static string ManifestPath{get; private set;} = "game_data/manifest.json";
+    public static string DataPath{get; private set;} = "";
     public static readonly PriDb Settings = new();
     public static readonly PriDb SaveData = new(new PriDict());
     public static readonly PriDb Manifest = new();
     public static readonly PriDb Prototypes = new();
     public static readonly PriDb UiConfig = new();
     private static string GameDataPath => Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SpoonWitch");
-    // public static string DefaultFontPath{get; private set;} = null!;
     private static readonly List<nint> PalletLookup = [];
+    private static bool TryGetManifestPath()
+    {
+        string manifestPath = "game_data/manifest.json";
+        string cwd = Directory.GetCurrentDirectory();
+        string root = Directory.GetDirectoryRoot(cwd);
+        while(cwd != root)
+        {
+            string path = Path.Join(cwd, manifestPath);
+            cwd = Path.GetDirectoryName(cwd)!;
+            if(!File.Exists(path)) continue;
+            ManifestPath = path;
+            DataPath = Path.GetDirectoryName(path)!;
+            return true;
+        }
+        return false;
+    }
     public static bool TryLoadManifest()
     {
+        if(!TryGetManifestPath()) return ErEngine.LogError("unable to locate manifest");
         if(!TryLoadAndExpand(out var data, ManifestPath, [".json", ".ldtk", ".ttf", ".png"])) return ErEngine.LogError("unable to load manifest");
         Manifest.SetData(data);
         if(!TryLoadSettings()) return ErEngine.LogError("unable to load settings");
