@@ -97,12 +97,14 @@ public readonly struct SwMapData
         if(!SwFoliageData.TryFromData(out var foliageData, ldtkData.Get("foliage_data"))) return false;
         if(!ldtkData.TryGet("ldtk_data", out PriDict data)) return ErEngine.LogWarning("missing ldtk_data");
         if(!data.TryGet("iid", out string mapIid)) return ErEngine.LogWarning("map missing id");
+        Dictionary<ErVec2I,int> sectorLookup = [];
         PriDict res = [];
         res.TrySet("iid", mapIid);
         res.TrySet("tile_data", tileData.ToPri());
         res.TrySet("foliage_data", foliageData.ToPri());
         ErVec2I sectorSizePx = SwPrion.GetVec2I(data, "worldGridWidth", "worldGridHeight", new(640, 320));
-        SwPrion.TrySetVec2I(res, "sector_size_tiles", sectorSizePx / tileData.TileSize);
+        ErVec2I sectorSizeTiles = sectorSizePx / tileData.TileSize;
+        SwPrion.TrySetVec2I(res, "sector_size_tiles", sectorSizeTiles);
         if(!data.TryGet("defs", out PriDict defs)) return ErEngine.LogWarning("map missing defs");
         if(!defs.TryGet("layers", out PriList layers)) return ErEngine.LogWarning("map missing layers");
         int numTileLayers = 0;
@@ -136,6 +138,11 @@ public readonly struct SwMapData
             }
             var levelRectPx = SwPrion.GetRect2I(levelData, "worldX", "worldY", "pxWid", "pxHei");
             var levelRectSectors = levelRectPx / sectorSizePx;
+            int roomIdx = rooms.Count - 1;
+            foreach (var sec in levelRectSectors.GetInnerCoords())
+            {
+                sectorLookup[sec] = roomIdx;
+            }
             SwPrion.TrySetRect2I(roomData, "rect_sectors", levelRectSectors);
             PriList roomObjectIds = [];
             roomData.Add("object_ids", roomObjectIds);
@@ -173,7 +180,7 @@ public readonly struct SwMapData
                                 else res.TrySet("default_checkpoint", mapObjectDataPri);
                             }
                             objects.Add(mapObjectDataPri);
-                            roomObjectIds.Add(mapObjectDataPri.Get("iid"));
+                            // roomObjectIds.Add(mapObjectDataPri.Get("iid"));
                         }
                         break;
                     case "Tiles":
@@ -203,6 +210,22 @@ public readonly struct SwMapData
             }
         }
         if(!res.TryGet("default_checkpoint", out PriDict _)) return ErEngine.LogWarning("no default checkpoint");
+        HashSet<int> roomIndices = [];
+        foreach (var obj in objects.Values)
+        {
+            roomIndices.Clear();
+            var rect_tiles = SwPrion.GetRect2I(obj.Get("rect_tiles"));
+            foreach (var tile in rect_tiles.GetInnerCoords())
+            {
+                var sec = tile / sectorSizeTiles;
+                if(sectorLookup.TryGetValue(sec, out int roomIdx)) roomIndices.Add(roomIdx);
+            }
+            foreach (var idx in roomIndices)
+            {
+                if(!rooms.Data[idx].TryGet("object_ids", out PriList ids)) throw new("badness");
+                ids.Add(obj.Get("iid"));
+            }
+        }
         mapDataPri = res;
         return true;
     }

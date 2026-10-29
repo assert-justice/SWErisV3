@@ -7,56 +7,48 @@ namespace SpoonWitch.Game.Entity.MapEntity;
 
 public class SwBollard: SwMapEntity
 {
-    private SwColliderBody Body = null!;
     private SwSpriteComponent Sprite = null!;
-    public virtual SwCollisionMask Mask => IsEnabled ? SwCollisionMask.BlocksNav : SwCollisionMask.None;
-    public bool IsEnabled = true;
+    private bool WasUp = false;
     public SwBollard()
     {
         AddGlobalHandler("bollard_update", HandleBollardUpdate);
-        // AddGlobalHandler("bollard_disable", OnDisable);
     }
     public override void Init()
     {
         base.Init();
         LoadSprites("sprites");
         Sprite = GetComponent<SwSpriteComponent>("sprite")!;
-        IsEnabled = Game.Flags.TryGetValue(Iid, out int i) && i > 0;
         Sprite.Sprite.Visible = false;
         Sprite.Sprite.Centered = false;
-        Body = new(SwApp.GetNextId(), Id)
-        {
-            Size = Size,
-            Position = Rect.Position,
-        };
         if(!Props.TryGet("fields/start_up", out bool startUp)) startUp = true;
-        if(!Game.Flags.ContainsKey(Iid)) Game.Flags[Iid] = startUp ? 1 : 0;
-        UpdateBollard();
+        bool isUp;
+        if(Game.Flags.TryGetValue(Iid, out int flag)) isUp = flag != 0;
+        else
+        {
+            Game.Flags[Iid] = startUp ? 1 : 0;
+            isUp = startUp;
+        }
+        SetIsUp(isUp);
     }
     private void HandleBollardUpdate(PriNode _)
     {
-        bool isEnabled = Game.Flags.TryGetValue(Iid, out int i) && i > 0;
-        if(IsEnabled == isEnabled) return;
-        UpdateBollard();
-        // IsEnabled = isEnabled;
-        // Body.Mask = (uint)Mask;
-        // Game.PhysicsWorld.MoveAndSlide(0.16, Body);
-        // Sprite.Sprite.Play(isEnabled ? "extend" : "retract");
+        bool isUp = Game.Flags.TryGetValue(Iid, out int i) && i != 0;
+        // bool wasUp = Body.Mask != 0;
+        if(isUp != WasUp) SetIsUp(isUp);
     }
-    private void UpdateBollard()
+    private void SetIsUp(bool isUp)
     {
-        bool isEnabled = Game.Flags.TryGetValue(Iid, out int i) && i > 0;
-        IsEnabled = isEnabled;
-        Body.Mask = (uint)Mask;
-        Game.PhysicsWorld.MoveAndSlide(0.16, Body);
-        Sprite.Sprite.Play(isEnabled ? "extend" : "retract");
+        WasUp = isUp;
+        uint mask = isUp ? (uint)SwCollisionMask.BlocksNav : 0;
+        foreach (var tileCoord in RectTiles.GetInnerCoords())
+        {
+            Game.PhysicsWorld.SetTileMask(tileCoord, mask);
+        }
+        // Body.Mask = isUp ? (uint)SwCollisionMask.BlocksNav : 0;
+        // if(isUp) Game.PhysicsWorld.MoveAndSlide(0.16, Body);
+        // else Game.PhysicsWorld.RemoveBody(Body.Id);
+        Sprite.Sprite.Play(isUp ? "extend" : "retract");
     }
-    // protected override void Update(double dt)
-    // {
-    //     base.Update(dt);
-    //     Body.Mask = (uint)Mask;
-    //     Game.PhysicsWorld.MoveAndSlide(dt, Body);
-    // }
     protected override void Draw()
     {
         base.Draw();
@@ -68,15 +60,4 @@ public class SwBollard: SwMapEntity
         }
         Sprite.Sprite.Visible = false;
     }
-    // private void OnEnable(PriNode command)
-    // {
-    //     if(!command.TryGet("iid", out string iid) || iid != Iid) return;
-    //     IsEnabled = true;
-    //     Game.Flags[Iid] = 1;
-    // }
-    // private void OnDisable(PriNode command)
-    // {
-    //     IsEnabled = false;
-    //     Game.Flags[Iid] = 0;
-    // }
 }
