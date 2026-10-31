@@ -28,7 +28,7 @@ public class SwPlayerAttacking: SwPlayerState
         BodySprite.Stop();
         HatSprite.Stop();
         SetBodyHandedAnim(0, 0, Controls.LastFacingIdx);
-        Entity.Velocity = ErVec2.Zero;
+        // Entity.Velocity = ErVec2.Zero;
         // Note: we are positioning the hurtbox but not enabling it yet
         SetHurtbox();
         Entity.UseStamina(Entity.SpoonStaminaCost);
@@ -39,6 +39,9 @@ public class SwPlayerAttacking: SwPlayerState
     public override void Update(double dt)
     {
         base.Update(dt);
+        int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
+        SetBodyHandedAnim(animIdx, 1, Controls.LastFacingIdx);
+        Entity.Velocity = Controls.Move * Entity.BaseSpeed;
         if(Phase == AttackPhase.Cancel)
         {
             if(CanAttack() && Controls.AttackJustDown)

@@ -4,7 +4,7 @@
     "health":{
         "health": 100,
         "max_health": 100,
-        "heal_amount": 30
+        "heal_amount": 50
     },
     "stamina":{
         "stamina": 100,
@@ -24,8 +24,8 @@
     },
     "dodge":{
         "dodge_speed_mul": 1.5,
-        "dodge_invuln_delay": 0.2,
-        "dodge_invuln_duration": 0.4,
+        "dodge_invuln_delay": 0,
+        "dodge_invuln_duration": 0.6,
         "dodge_cancel_window": 0.5,
         "dodge_cooldown": 0.25,
         "dodge_stamina_cost": 20
