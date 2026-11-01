@@ -1716,7 +1716,7 @@
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
     "sourceSize": { "w": 64, "h": 64 },
-    "duration": 500
+    "duration": 125
    },
    {
     "filename": "Belladonna",
@@ -2022,7 +2022,7 @@
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
     "sourceSize": { "w": 64, "h": 64 },
-    "duration": 500
+    "duration": 125
    },
    {
     "filename": "Belladonna",
@@ -2274,7 +2274,7 @@
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
     "sourceSize": { "w": 64, "h": 64 },
-    "duration": 135
+    "duration": 125
    },
    {
     "filename": "Belladonna",
@@ -2283,7 +2283,7 @@
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
     "sourceSize": { "w": 64, "h": 64 },
-    "duration": 135
+    "duration": 125
    },
    {
     "filename": "Belladonna",
@@ -2292,56 +2292,11 @@
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
     "sourceSize": { "w": 64, "h": 64 },
-    "duration": 135
+    "duration": 125
    },
    {
     "filename": "Belladonna",
     "frame": { "x": 384, "y": 384, "w": 64, "h": 64 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
-    "sourceSize": { "w": 64, "h": 64 },
-    "duration": 135
-   },
-   {
-    "filename": "Belladonna",
-    "frame": { "x": 64, "y": 576, "w": 64, "h": 64 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
-    "sourceSize": { "w": 64, "h": 64 },
-    "duration": 135
-   },
-   {
-    "filename": "Belladonna",
-    "frame": { "x": 128, "y": 576, "w": 64, "h": 64 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
-    "sourceSize": { "w": 64, "h": 64 },
-    "duration": 135
-   },
-   {
-    "filename": "Belladonna",
-    "frame": { "x": 64, "y": 576, "w": 64, "h": 64 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
-    "sourceSize": { "w": 64, "h": 64 },
-    "duration": 135
-   },
-   {
-    "filename": "Belladonna",
-    "frame": { "x": 384, "y": 384, "w": 64, "h": 64 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
-    "sourceSize": { "w": 64, "h": 64 },
-    "duration": 135
-   },
-   {
-    "filename": "Belladonna",
-    "frame": { "x": 192, "y": 576, "w": 64, "h": 64 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
@@ -2350,7 +2305,34 @@
    },
    {
     "filename": "Belladonna",
-    "frame": { "x": 192, "y": 576, "w": 64, "h": 64 },
+    "frame": { "x": 64, "y": 576, "w": 64, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 125
+   },
+   {
+    "filename": "Belladonna",
+    "frame": { "x": 128, "y": 576, "w": 64, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 125
+   },
+   {
+    "filename": "Belladonna",
+    "frame": { "x": 64, "y": 576, "w": 64, "h": 64 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
+    "sourceSize": { "w": 64, "h": 64 },
+    "duration": 125
+   },
+   {
+    "filename": "Belladonna",
+    "frame": { "x": 384, "y": 384, "w": 64, "h": 64 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 64 },
@@ -2429,24 +2411,24 @@
   "size": { "w": 704, "h": 640 },
   "scale": "1",
   "frameTags": [
-   { "name": "idle_d_2h", "from": 0, "to": 11, "direction": "forward", "repeat": "1" },
+   { "name": "idle_d_2h", "from": 0, "to": 11, "direction": "forward" },
    { "name": "idle_d_1h", "from": 12, "to": 23, "direction": "forward" },
    { "name": "idle_d_0h", "from": 24, "to": 35, "direction": "forward" },
-   { "name": "idle_dr_2h", "from": 36, "to": 47, "direction": "forward" },
    { "name": "idle_dl_2h", "from": 36, "to": 47, "direction": "forward", "data": "fliph" },
-   { "name": "idle_dr_1h", "from": 48, "to": 59, "direction": "forward" },
+   { "name": "idle_dr_2h", "from": 36, "to": 47, "direction": "forward" },
    { "name": "idle_dl_1h", "from": 48, "to": 59, "direction": "forward", "data": "fliph" },
-   { "name": "idle_dr_0h", "from": 60, "to": 71, "direction": "forward" },
+   { "name": "idle_dr_1h", "from": 48, "to": 59, "direction": "forward" },
    { "name": "idle_dl_0h", "from": 60, "to": 71, "direction": "forward", "data": "fliph" },
+   { "name": "idle_dr_0h", "from": 60, "to": 71, "direction": "forward" },
    { "name": "idle_u_2h", "from": 72, "to": 77, "direction": "forward" },
    { "name": "idle_u_1h", "from": 78, "to": 83, "direction": "forward" },
    { "name": "idle_u_0h", "from": 84, "to": 89, "direction": "forward" },
-   { "name": "idle_ur_2h", "from": 90, "to": 95, "direction": "forward" },
    { "name": "idle_ul_2h", "from": 90, "to": 95, "direction": "forward", "data": "fliph" },
-   { "name": "idle_ur_1h", "from": 96, "to": 101, "direction": "forward" },
+   { "name": "idle_ur_2h", "from": 90, "to": 95, "direction": "forward" },
    { "name": "idle_ul_1h", "from": 96, "to": 101, "direction": "forward", "data": "fliph" },
-   { "name": "idle_ur_0h", "from": 102, "to": 107, "direction": "forward" },
+   { "name": "idle_ur_1h", "from": 96, "to": 101, "direction": "forward" },
    { "name": "idle_ul_0h", "from": 102, "to": 107, "direction": "forward", "data": "fliph" },
+   { "name": "idle_ur_0h", "from": 102, "to": 107, "direction": "forward" },
    { "name": "move_d_2h", "from": 108, "to": 113, "direction": "forward" },
    { "name": "move_d_1h", "from": 114, "to": 119, "direction": "forward" },
    { "name": "move_d_0h", "from": 120, "to": 125, "direction": "forward" },
@@ -2466,11 +2448,11 @@
    { "name": "respawn", "from": 208, "to": 224, "direction": "forward", "repeat": "1" },
    { "name": "def_dodge_d", "from": 225, "to": 233, "direction": "forward", "repeat": "1" },
    { "name": "def_dodge_u", "from": 234, "to": 242, "direction": "forward", "repeat": "1" },
-   { "name": "def_dodge_dr", "from": 243, "to": 251, "direction": "forward", "repeat": "1" },
    { "name": "def_dodge_dl", "from": 243, "to": 251, "direction": "forward", "repeat": "1", "data": "fliph" },
+   { "name": "def_dodge_dr", "from": 243, "to": 251, "direction": "forward", "repeat": "1" },
    { "name": "dance", "from": 252, "to": 259, "direction": "forward" },
-   { "name": "swipe_d", "from": 260, "to": 264, "direction": "forward", "repeat": "1" },
-   { "name": "spin_sling", "from": 265, "to": 268, "direction": "forward" }
+   { "name": "swipe_d", "from": 260, "to": 262, "direction": "forward", "repeat": "1" },
+   { "name": "spin_sling", "from": 263, "to": 266, "direction": "forward" }
   ]
  }
 }
