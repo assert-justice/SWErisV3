@@ -9,7 +9,7 @@
         "wander_speed_mul": 0.5
     },
     "sword":{
-        "hurt_delay":0.375,
+        "hurt_delay":0.25,
         "hurt_duration": 0.125,
         "cooldown": 0.5
     },

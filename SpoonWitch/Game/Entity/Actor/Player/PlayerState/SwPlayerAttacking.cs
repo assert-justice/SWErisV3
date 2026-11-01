@@ -40,7 +40,7 @@ public class SwPlayerAttacking: SwPlayerState
     {
         base.Update(dt);
         int animIdx = Entity.Velocity.IsNonzero() ? 1 : 0;
-        SetBodyHandedAnim(animIdx, 1, Controls.LastFacingIdx);
+        SetBodyHandedAnim(animIdx, 0, Controls.LastFacingIdx);
         Entity.Velocity = Controls.Move * Entity.BaseSpeed;
         if(Phase == AttackPhase.Cancel)
         {
