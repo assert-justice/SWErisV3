@@ -190,7 +190,7 @@ public abstract class SwKnightState: SwState<SwKnight>
             var dir = ErVec2.FromAngle(Entity.FacingIdx * ErMath.HALF_PI);
             double dis = 32;
             Hurtbox.Offset = dir * dis;
-            Hurtbox.Enabled = true;
+            // Hurtbox.Enabled = true;
         }
         private void Attack()
         {
@@ -205,6 +205,7 @@ public abstract class SwKnightState: SwState<SwKnight>
         {
             base.BeginState(lastState);
             Entity.Velocity = ErVec2.Zero;
+            Hurtbox.Enabled = false;
             Attack();
             SetHurtbox();
         }
@@ -218,12 +219,11 @@ public abstract class SwKnightState: SwState<SwKnight>
                 case AttackPhase.Startup:
                     Entity.TimeoutClock.Start(Entity.HurtDelay);
                     Phase = AttackPhase.Hurt;
-                    Hurtbox.Enabled = true;
                     break;
                 case AttackPhase.Hurt:
                     Entity.TimeoutClock.Start(Entity.Cooldown);
                     Phase = AttackPhase.Cooldown;
-                    Hurtbox.Enabled = false;
+                    Hurtbox.Enabled = true;
                     break;
                 case AttackPhase.Cooldown:
                     StateMachine.SetState("chasing");
